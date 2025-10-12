@@ -1,7 +1,35 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { authService } from '../supabase'
 import Swal from 'sweetalert2'
+
+// 简单的认证服务
+const authService = {
+  // 模拟登录
+  async login(email, password) {
+    // 简单的admin验证
+    if (email === 'admin' && password === 'admin') {
+      const user = { id: 1, email: 'admin', name: '管理员' }
+      localStorage.setItem('user', JSON.stringify(user))
+      return { user, error: null }
+    } else {
+      return { user: null, error: '用户名或密码错误' }
+    }
+  },
+  
+  async logout() {
+    localStorage.removeItem('user')
+    return { error: null }
+  },
+  
+  getCurrentUser() {
+    const user = localStorage.getItem('user')
+    return user ? JSON.parse(user) : null
+  },
+  
+  isAuthenticated() {
+    return !!this.getCurrentUser()
+  }
+}
 
 export const useAuth = () => {
   const router = useRouter()

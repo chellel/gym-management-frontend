@@ -1,11 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { authService } from '../supabase.js'
 import Home from '../views/Home.vue'
 import Login from '../views/Login.vue'
 import Welcome from '../views/Welcome.vue'
 import MemberManagement from '../views/MemberManagement.vue'
 import ClassBooking from '../views/ClassBooking.vue'
 import ScheduleManagement from '../views/ScheduleManagement.vue'
+
+// 简单的认证检查函数（不依赖Supabase）
+const isAuthenticated = () => {
+  const user = localStorage.getItem('user')
+  return !!user
+}
 
 const routes = [
   {
@@ -58,11 +63,11 @@ const router = createRouter({
 // 导航守卫
 router.beforeEach((to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
-  const isAuthenticated = authService.isAuthenticated()
+  const userIsAuthenticated = isAuthenticated()
 
-  if (requiresAuth && !isAuthenticated) {
+  if (requiresAuth && !userIsAuthenticated) {
     next('/login')
-  } else if (to.path === '/login' && isAuthenticated) {
+  } else if (to.path === '/login' && userIsAuthenticated) {
     next('/welcome')
   } else {
     next()

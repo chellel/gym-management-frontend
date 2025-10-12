@@ -1,51 +1,61 @@
-import { supabase } from '../supabase'
-
 // 会员数据服务
 export const memberService = {
   // 获取会员列表（分页）
   async getMembers(start = 0, end = 9, search = '', status = 'all') {
-    let query = supabase
-      .from('members')
-      .select('*', { count: 'exact' })
+    try {
+      // 从localStorage获取会员数据
+      const storedMembers = localStorage.getItem('gym_members')
+      let allMembers = storedMembers ? JSON.parse(storedMembers) : mockMembers
 
-    // 搜索条件
-    if (search) {
-      query = query.or(`name.ilike.%${search}%,member_id.ilike.%${search}%,phone.ilike.%${search}%`)
-    }
-
-    // 状态筛选
-    if (status !== 'all') {
-      const isActive = status === 'active'
-      if (isActive) {
-        query = query.gte('expire_date', new Date().toISOString())
-      } else {
-        query = query.lt('expire_date', new Date().toISOString())
+      // 搜索条件
+      if (search) {
+        const searchLower = search.toLowerCase()
+        allMembers = allMembers.filter(member => 
+          member.name.toLowerCase().includes(searchLower) ||
+          member.member_id.toLowerCase().includes(searchLower) ||
+          member.phone.includes(search)
+        )
       }
-    }
 
-    const { data, error, count } = await query
-      .order('created_at', { ascending: false })
-      .range(start, end)
+      // 状态筛选
+      if (status !== 'all') {
+        const isActive = status === 'active'
+        allMembers = allMembers.filter(member => {
+          const isMemberActive = new Date(member.expire_date) >= new Date()
+          return isActive ? isMemberActive : !isMemberActive
+        })
+      }
 
-    if (error) {
+      // 排序
+      allMembers.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+
+      // 分页
+      const data = allMembers.slice(start, end + 1)
+      const count = allMembers.length
+
+      return { data, count }
+    } catch (error) {
       console.error('Error fetching members:', error)
       throw error
     }
-
-    return { data, count }
   },
 
   // 添加会员
   async addMember(memberData) {
-    const { error } = await supabase
-      .from('members')
-      .insert([{
+    try {
+      const storedMembers = localStorage.getItem('gym_members')
+      const members = storedMembers ? JSON.parse(storedMembers) : mockMembers
+      
+      const newMember = {
         ...memberData,
+        id: Date.now(), // 简单的ID生成
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
-      }])
-
-    if (error) {
+      }
+      
+      members.push(newMember)
+      localStorage.setItem('gym_members', JSON.stringify(members))
+    } catch (error) {
       console.error('Error adding member:', error)
       throw error
     }
@@ -53,15 +63,20 @@ export const memberService = {
 
   // 更新会员
   async updateMember(id, memberData) {
-    const { error } = await supabase
-      .from('members')
-      .update({
-        ...memberData,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id)
-
-    if (error) {
+    try {
+      const storedMembers = localStorage.getItem('gym_members')
+      const members = storedMembers ? JSON.parse(storedMembers) : mockMembers
+      
+      const index = members.findIndex(member => member.id === id)
+      if (index !== -1) {
+        members[index] = {
+          ...members[index],
+          ...memberData,
+          updated_at: new Date().toISOString()
+        }
+        localStorage.setItem('gym_members', JSON.stringify(members))
+      }
+    } catch (error) {
       console.error('Error updating member:', error)
       throw error
     }
@@ -69,12 +84,13 @@ export const memberService = {
 
   // 删除会员
   async deleteMember(id) {
-    const { error } = await supabase
-      .from('members')
-      .delete()
-      .eq('id', id)
-
-    if (error) {
+    try {
+      const storedMembers = localStorage.getItem('gym_members')
+      const members = storedMembers ? JSON.parse(storedMembers) : mockMembers
+      
+      const filteredMembers = members.filter(member => member.id !== id)
+      localStorage.setItem('gym_members', JSON.stringify(filteredMembers))
+    } catch (error) {
       console.error('Error deleting member:', error)
       throw error
     }
@@ -83,29 +99,24 @@ export const memberService = {
   // 获取会员统计信息
   async getMemberStats() {
     try {
-      // 获取总会员数
-      const { count: totalMembers } = await supabase
-        .from('members')
-        .select('*', { count: 'exact', head: true })
-
-      // 获取活跃会员数
-      const { count: activeMembers } = await supabase
-        .from('members')
-        .select('*', { count: 'exact', head: true })
-        .gte('expire_date', new Date().toISOString())
-
-      // 获取本月新增会员数
-      const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
-      const { count: newMembers } = await supabase
-        .from('members')
-        .select('*', { count: 'exact', head: true })
-        .gte('created_at', startOfMonth)
+      const storedMembers = localStorage.getItem('gym_members')
+      const members = storedMembers ? JSON.parse(storedMembers) : mockMembers
+      
+      const totalMembers = members.length
+      const activeMembers = members.filter(member => 
+        new Date(member.expire_date) >= new Date()
+      ).length
+      
+      const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+      const newMembers = members.filter(member => 
+        new Date(member.created_at) >= startOfMonth
+      ).length
 
       return {
-        totalMembers: totalMembers || 0,
-        activeMembers: activeMembers || 0,
-        expiredMembers: (totalMembers || 0) - (activeMembers || 0),
-        newMembers: newMembers || 0
+        totalMembers,
+        activeMembers,
+        expiredMembers: totalMembers - activeMembers,
+        newMembers
       }
     } catch (error) {
       console.error('Error fetching member stats:', error)
@@ -119,7 +130,7 @@ export const memberService = {
   }
 }
 
-// 模拟数据（当Supabase不可用时使用）
+// 模拟数据
 export const mockMembers = [
   {
     id: 1,

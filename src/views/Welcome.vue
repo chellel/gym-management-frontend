@@ -176,21 +176,16 @@
 <script>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { authService } from '../supabase.js'
+import { useAuth } from '../composables/useAuth'
 
 export default {
   name: 'Welcome',
   setup() {
     const router = useRouter()
-    const user = ref(null)
-
-    onMounted(() => {
-      user.value = authService.getCurrentUser()
-    })
+    const { user, logout } = useAuth()
 
     const handleLogout = async () => {
-      await authService.logout()
-      await router.push('/login')
+      await logout()
     }
 
     const navigateTo = (section) => {

@@ -43,7 +43,7 @@ export const useMembers = () => {
       pagination.total = count || 0
     } catch (err) {
       console.error('Failed to fetch members:', err)
-      // 如果Supabase不可用，使用模拟数据
+      // 使用模拟数据作为后备
       members.value = mockMembers.filter(member => {
         if (filters.search) {
           const searchLower = filters.search.toLowerCase()

@@ -140,13 +140,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { authService } from '../supabase'
 import { useAuth } from '../composables/useAuth'
 
 const router = useRouter()
-const { logout } = useAuth()
+const { user, logout } = useAuth()
 
-const user = ref(null)
 const mobileMenuOpen = ref(false)
 
 // 导航菜单
@@ -158,12 +156,8 @@ const navigation = [
   { name: '数据报表', href: '/reports', icon: 'DataAnalysis' }
 ]
 
-// 初始化用户信息
-onMounted(() => {
-  user.value = authService.getCurrentUser()
-})
-
 // 退出登录
 const handleLogout = async () => {
   await logout()
-}</script>
+}
+</script>

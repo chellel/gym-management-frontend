@@ -334,7 +334,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import Layout from '../components/Layout.vue'
 import { classService, mockClasses } from '../services/classService'
-import { authService } from '../supabase'
+import { useAuth } from '../composables/useAuth'
 import Swal from 'sweetalert2'
 // Element Plus 图标已全局注册，无需导入
 
@@ -371,7 +371,8 @@ const filteredClasses = computed(() => {
 
 // 初始化
 onMounted(async () => {
-  currentUser.value = authService.getCurrentUser()
+  const { getCurrentUser } = useAuth()
+  currentUser.value = getCurrentUser()
   await fetchClasses()
   await fetchMyBookings()
 })

@@ -93,8 +93,7 @@ src/
 │   └── index.js          # 路由入口
 ├── App.vue              # 主应用组件
 ├── main.js              # 应用入口
-├── style.css            # 全局样式
-└── supabase.js          # Supabase配置
+└── style.css            # 全局样式
 ```
 
 ## 🛠️ 开发指南
@@ -175,8 +174,8 @@ npm run build
 在 `.env` 文件中配置：
 
 ```
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
+VITE_APP_NAME=GymSys 健身房管理系统
+VITE_APP_VERSION=1.0.0
 ```
 
 ### 2. 构建部署

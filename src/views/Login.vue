@@ -100,44 +100,20 @@
 <script>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { authService } from '../supabase.js'
+import { useAuth } from '../composables/useAuth'
 
 export default {
   name: 'Login',
   setup() {
     const router = useRouter()
-    const form = ref({
-      username: '',
-      password: ''
-    })
-    const loading = ref(false)
-    const error = ref('')
+    const { loginForm, loading, error, login } = useAuth()
 
     const handleLogin = async () => {
-      loading.value = true
-      error.value = ''
-
-      try {
-        const { user, error: loginError } = await authService.login(
-          form.value.username,
-          form.value.password
-        )
-
-        if (loginError) {
-          error.value = loginError
-        } else {
-          // 登录成功，跳转到欢迎页
-          await router.push('/welcome')
-        }
-      } catch (err) {
-        error.value = '登录失败，请重试'
-      } finally {
-        loading.value = false
-      }
+      await login()
     }
 
     return {
-      form,
+      form: loginForm,
       loading,
       error,
       handleLogin
