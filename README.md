@@ -1,6 +1,6 @@
 # GymSys - 健身房管理系统
 
-一个基于 Vue 3、Tailwind CSS 和 Supabase 的现代化健身房管理系统前端应用，采用模块化架构设计，支持快速迭代和二次开发。
+一个基于 Vue 3、Tailwind CSS 的现代化健身房管理系统前端应用，采用模块化架构设计，支持快速迭代和二次开发。
 
 ## 📋 项目概述
 
@@ -25,7 +25,6 @@ GymSys (Gym Management System) 是一个现代化的健身房管理系统，旨�
 |------|------|------|
 | Vue 3 | ^3.4.0 | 前端框架 |
 | Vue Router | ^4.2.5 | 路由管理 |
-| Supabase JS | ^2.39.1 | 后端服务 |
 | Tailwind CSS | ^3.4.0 | 样式设计 |
 | Element Plus Icons | ^2.3.2 | 图标库 |
 | SweetAlert2 | ^11.0.0 | 通知系统 |
