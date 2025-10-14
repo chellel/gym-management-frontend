@@ -1,10 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from '../views/Home.vue'
-import Login from '../views/Login.vue'
-import Welcome from '../views/Welcome.vue'
-import MemberManagement from '../views/MemberManagement.vue'
-import ClassBooking from '../views/ClassBooking.vue'
-import ScheduleManagement from '../views/ScheduleManagement.vue'
+import Layout from '@/layout/index.vue'
+import AdminLayout from '@/layout/admin.vue'
+import Home from '@/views/Home.vue'
+import Login from '@/views/Login.vue'
+import Welcome from '@/views/Welcome.vue'
 
 // 简单的认证检查函数（不依赖Supabase）
 const isAuthenticated = () => {
@@ -30,27 +29,31 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/members',
-    name: 'MemberManagement',
-    component: MemberManagement,
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/classes',
-    name: 'ClassBooking',
-    component: ClassBooking,
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/schedules',
-    name: 'ScheduleManagement',
-    component: ScheduleManagement,
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/reports',
-    name: 'Reports',
-    component: () => import('../views/Reports.vue'),
+    path: '/admin',
+    name: 'admin',
+    component: AdminLayout,
+    children: [
+      {
+        path: 'members',
+        name: 'MemberManagement',
+        component: () => import('@/views/member/index.vue')
+      },
+      {
+        path: 'classes',
+        name: 'ClassBooking',
+        component: () => import('@/views/ClassBooking.vue')
+      },
+      {
+        path: 'schedules',
+        name: 'ScheduleManagement',
+        component: () => import('@/views/ScheduleManagement.vue')
+      },
+      {
+        path: 'reports',
+        name: 'Reports',
+        component: () => import('@/views/Reports.vue')
+      }
+    ],
     meta: { requiresAuth: true }
   }
 ]

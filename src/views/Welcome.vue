@@ -190,10 +190,10 @@ export default {
 
     const navigateTo = (section) => {
       const routes = {
-        members: '/members',
-        classes: '/classes',
-        trainers: '/schedules',
-        reports: '/reports'
+        members: '/admin/members',
+        classes: '/admin/classes',
+        trainers: '/admin/schedules',
+        reports: '/admin/reports'
       }
       
       const route = routes[section]

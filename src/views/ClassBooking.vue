@@ -1,6 +1,5 @@
 <template>
-  <Layout>
-    <div class="space-y-6">
+  <div class="space-y-6">
       <!-- 页面标题 -->
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
         <div>
@@ -327,12 +326,10 @@
         </div>
       </div>
     </div>
-  </Layout>
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import Layout from '../components/Layout.vue'
 import { classService, mockClasses } from '../services/classService'
 import { useAuth } from '../composables/useAuth'
 import Swal from 'sweetalert2'
