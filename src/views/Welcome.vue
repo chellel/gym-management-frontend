@@ -53,139 +53,69 @@
 
       <!-- 快速操作面板 -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <!-- 管理员功能 -->
-        <template v-if="user?.email === 'admin'">
-          <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200 cursor-pointer" @click="navigateTo('members')">
-            <div class="flex items-center">
-              <div class="flex-shrink-0">
-                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <svg class="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                </div>
-              </div>
-              <div class="ml-4">
-                <h3 class="text-lg font-semibold text-gray-900">会员管理</h3>
-                <p class="text-gray-600 text-sm">管理会员信息</p>
+        <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200 cursor-pointer" @click="navigateTo('members')">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
               </div>
             </div>
+            <div class="ml-4">
+              <h3 class="text-lg font-semibold text-gray-900">会员管理</h3>
+              <p class="text-gray-600 text-sm">管理会员信息</p>
+            </div>
           </div>
+        </div>
 
-          <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200 cursor-pointer" @click="navigateTo('classes')">
-            <div class="flex items-center">
-              <div class="flex-shrink-0">
-                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <svg class="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-              </div>
-              <div class="ml-4">
-                <h3 class="text-lg font-semibold text-gray-900">课程管理</h3>
-                <p class="text-gray-600 text-sm">安排和管理课程</p>
+        <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200 cursor-pointer" @click="navigateTo('classes')">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
               </div>
             </div>
+            <div class="ml-4">
+              <h3 class="text-lg font-semibold text-gray-900">课程管理</h3>
+              <p class="text-gray-600 text-sm">安排和管理课程</p>
+            </div>
           </div>
+        </div>
 
-          <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200 cursor-pointer" @click="navigateTo('trainers')">
-            <div class="flex items-center">
-              <div class="flex-shrink-0">
-                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <svg class="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </div>
-              </div>
-              <div class="ml-4">
-                <h3 class="text-lg font-semibold text-gray-900">教练管理</h3>
-                <p class="text-gray-600 text-sm">管理教练信息</p>
+        <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200 cursor-pointer" @click="navigateTo('trainers')">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
               </div>
             </div>
+            <div class="ml-4">
+              <h3 class="text-lg font-semibold text-gray-900">教练管理</h3>
+              <p class="text-gray-600 text-sm">管理教练信息</p>
+            </div>
           </div>
+        </div>
 
-          <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200 cursor-pointer" @click="navigateTo('reports')">
-            <div class="flex items-center">
-              <div class="flex-shrink-0">
-                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                  <svg class="w-6 h-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </div>
-              </div>
-              <div class="ml-4">
-                <h3 class="text-lg font-semibold text-gray-900">数据报表</h3>
-                <p class="text-gray-600 text-sm">查看业务数据</p>
+        <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200 cursor-pointer" @click="navigateTo('reports')">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
               </div>
             </div>
-          </div>
-        </template>
-
-        <!-- 会员功能 -->
-        <template v-else>
-          <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200 cursor-pointer" @click="navigateTo('checkin')">
-            <div class="flex items-center">
-              <div class="flex-shrink-0">
-                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <svg class="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-              </div>
-              <div class="ml-4">
-                <h3 class="text-lg font-semibold text-gray-900">每日签到</h3>
-                <p class="text-gray-600 text-sm">签到进入健身房</p>
-              </div>
+            <div class="ml-4">
+              <h3 class="text-lg font-semibold text-gray-900">数据报表</h3>
+              <p class="text-gray-600 text-sm">查看业务数据</p>
             </div>
           </div>
-
-          <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200 cursor-pointer" @click="navigateTo('center')">
-            <div class="flex items-center">
-              <div class="flex-shrink-0">
-                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <svg class="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </div>
-              </div>
-              <div class="ml-4">
-                <h3 class="text-lg font-semibold text-gray-900">会员中心</h3>
-                <p class="text-gray-600 text-sm">查看个人信息</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200 cursor-pointer" @click="navigateTo('booking')">
-            <div class="flex items-center">
-              <div class="flex-shrink-0">
-                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <svg class="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-              </div>
-              <div class="ml-4">
-                <h3 class="text-lg font-semibold text-gray-900">课程预约</h3>
-                <p class="text-gray-600 text-sm">预约健身课程</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200 cursor-pointer" @click="navigateTo('courses')">
-            <div class="flex items-center">
-              <div class="flex-shrink-0">
-                <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <svg class="w-6 h-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </div>
-              </div>
-              <div class="ml-4">
-                <h3 class="text-lg font-semibold text-gray-900">课程查询</h3>
-                <p class="text-gray-600 text-sm">浏览所有课程</p>
-              </div>
-            </div>
-          </div>
-        </template>
+        </div>
       </div>
 
       <!-- 今日概览 -->
@@ -253,32 +183,18 @@ export default {
   name: 'Welcome',
   setup() {
     const router = useRouter()
-    const { user, logout, getCurrentUser } = useAuth()
+    const { user, logout } = useAuth()
 
     const handleLogout = async () => {
       await logout()
     }
 
     const navigateTo = (section) => {
-      const user = getCurrentUser()
-      let routes = {}
-      
-      if (user?.email === 'admin') {
-        // 管理员路由
-        routes = {
-          members: '/admin/members',
-          classes: '/admin/classes',
-          trainers: '/admin/schedules',
-          reports: '/admin/reports'
-        }
-      } else {
-        // 会员路由
-        routes = {
-          checkin: '/member/checkin',
-          center: '/member/center',
-          booking: '/member/booking',
-          courses: '/member/courses'
-        }
+      const routes = {
+        members: '/admin/members',
+        classes: '/admin/classes',
+        trainers: '/admin/schedules',
+        reports: '/admin/reports'
       }
       
       const route = routes[section]
