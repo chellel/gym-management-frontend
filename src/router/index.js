@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Layout from '@/layout/index.vue'
 import AdminLayout from '@/layout/admin.vue'
 import Home from '@/views/Home.vue'
-import Login from '@/views/login/index.vue'
+import Login from '@/views/Login/index.vue'
 import Welcome from '@/views/Welcome.vue'
 
 // 简单的认证检查函数（不依赖Supabase）
@@ -25,7 +25,7 @@ const routes = [
   {
     path: '/register',
     name: 'Register',
-    component: () => import('@/views/login/registor.vue')
+    component: () => import('@/views/Login/Registor.vue')
   },
   {
     path: '/welcome',
@@ -33,15 +33,49 @@ const routes = [
     component: Welcome,
     meta: { requiresAuth: true }
   },
+  // 前台会员功能
+  {
+    path: '/member',
+    name: 'MemberFrontend',
+    component: Layout,
+    children: [
+      {
+        path: 'checkin',
+        name: 'MemberCheckin',
+        component: () => import('@/views/Member/Checkin.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'center',
+        name: 'MemberCenter',
+        component: () => import('@/views/Member/Center.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'booking',
+        name: 'MemberBooking',
+        component: () => import('@/views/Member/Booking.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'courses',
+        name: 'MemberCourses',
+        component: () => import('@/views/Member/Courses.vue'),
+        meta: { requiresAuth: true }
+      }
+    ],
+    meta: { requiresAuth: true }
+  },
+  // 后台管理功能
   {
     path: '/admin',
     name: 'admin',
     component: AdminLayout,
     children: [
       {
-        path: 'members',
+        path: 'member',
         name: 'MemberManagement',
-        component: () => import('@/views/member/index.vue')
+        component: () => import('@/admin/member/index.vue')
       },
       {
         path: 'classes',
