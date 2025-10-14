@@ -3,7 +3,6 @@ import Layout from '@/layout/index.vue'
 import AdminLayout from '@/layout/admin.vue'
 import Home from '@/views/Home.vue'
 import Login from '@/views/Login/index.vue'
-import Welcome from '@/views/Welcome.vue'
 
 // 简单的认证检查函数（不依赖Supabase）
 const isAuthenticated = () => {
@@ -26,12 +25,6 @@ const routes = [
     path: '/register',
     name: 'Register',
     component: () => import('@/views/Login/Registor.vue')
-  },
-  {
-    path: '/welcome',
-    name: 'Welcome',
-    component: Welcome,
-    meta: { requiresAuth: true }
   },
   // 前台会员功能
   {
@@ -73,6 +66,12 @@ const routes = [
     component: AdminLayout,
     children: [
       {
+        path: 'home',
+        name: 'AdminHome',
+        component: () => import('@/admin/Home/index.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
         path: 'member',
         name: 'MemberManagement',
         component: () => import('@/admin/member/index.vue')
@@ -110,7 +109,7 @@ router.beforeEach((to, from, next) => {
   if (requiresAuth && !userIsAuthenticated) {
     next('/login')
   } else if (to.path === '/login' && userIsAuthenticated) {
-    next('/welcome')
+    next('/admin/home')
   } else {
     next()
   }
