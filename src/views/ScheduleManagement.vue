@@ -8,15 +8,16 @@
         <h1 class="text-2xl font-bold text-gray-900">排班管理</h1>
         <p class="mt-1 text-sm text-gray-600">管理教练排班和场地预约安排。</p>
       </div>
-      <button
+      <el-button
         @click="showAddScheduleModal = true"
-        class="btn-primary inline-flex items-center"
+        type="primary"
+        class="inline-flex items-center"
       >
         <el-icon class="w-5 h-5 mr-2">
           <Plus />
         </el-icon>
         添加排班
-      </button>
+      </el-button>
     </div>
 
     <!-- 视图切换和日期选择 -->
@@ -26,45 +27,43 @@
       >
         <!-- 视图切换 -->
         <div class="flex space-x-1 bg-gray-100 p-1 rounded-lg">
-          <button
+          <el-button
             v-for="view in views"
             :key="view.key"
             @click="currentView = view.key"
+            :type="currentView === view.key ? 'primary' : 'default'"
             class="px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200"
-            :class="
-              currentView === view.key
-                ? 'bg-white text-primary-600 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
-            "
           >
             {{ view.name }}
-          </button>
+          </el-button>
         </div>
 
         <!-- 日期选择 -->
         <div class="flex items-center space-x-4">
-          <button
+          <el-button
             @click="previousWeek"
+            type="text"
             class="p-2 text-gray-400 hover:text-gray-600"
           >
             <el-icon class="h-5 w-5">
               <ArrowLeft />
             </el-icon>
-          </button>
+          </el-button>
           <div class="text-lg font-medium text-gray-900">
             {{ formatWeekRange(currentWeek) }}
           </div>
-          <button
+          <el-button
             @click="nextWeek"
+            type="text"
             class="p-2 text-gray-400 hover:text-gray-600"
           >
             <el-icon class="h-5 w-5">
               <ArrowRight />
             </el-icon>
-          </button>
-          <button @click="goToCurrentWeek" class="btn-secondary text-sm">
+          </el-button>
+          <el-button @click="goToCurrentWeek" type="default" size="small">
             本周
-          </button>
+          </el-button>
         </div>
       </div>
     </div>
@@ -289,155 +288,108 @@
           <h3 class="text-lg font-medium text-gray-900">
             {{ showAddScheduleModal ? "添加排班" : "编辑排班" }}
           </h3>
-          <button @click="closeModal" class="text-gray-400 hover:text-gray-600">
+          <el-button @click="closeModal" type="text" class="text-gray-400 hover:text-gray-600">
             <el-icon class="h-6 w-6">
               <Close />
             </el-icon>
-          </button>
+          </el-button>
         </div>
 
-        <form
+        <el-form
           @submit.prevent="
             showAddScheduleModal ? handleAddSchedule() : handleUpdateSchedule()
           "
           class="space-y-4"
         >
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label
-                for="trainer"
-                class="block text-sm font-medium text-gray-700"
-                >教练 *</label
-              >
-              <select
-                id="trainer"
+            <el-form-item label="教练" required>
+              <el-select
                 v-model="scheduleForm.trainer_id"
-                required
-                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                placeholder="选择教练"
+                class="w-full"
               >
-                <option value="">请选择教练</option>
-                <option
+                <el-option
                   v-for="trainer in trainers"
                   :key="trainer.id"
+                  :label="trainer.name"
                   :value="trainer.id"
-                >
-                  {{ trainer.name }}
-                </option>
-              </select>
-            </div>
+                />
+              </el-select>
+            </el-form-item>
 
-            <div>
-              <label
-                for="location"
-                class="block text-sm font-medium text-gray-700"
-                >场地 *</label
-              >
-              <select
-                id="location"
+            <el-form-item label="场地" required>
+              <el-select
                 v-model="scheduleForm.location_id"
-                required
-                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                placeholder="选择场地"
+                class="w-full"
               >
-                <option value="">请选择场地</option>
-                <option
+                <el-option
                   v-for="location in locations"
                   :key="location.id"
+                  :label="location.name"
                   :value="location.id"
-                >
-                  {{ location.name }}
-                </option>
-              </select>
-            </div>
+                />
+              </el-select>
+            </el-form-item>
 
-            <div>
-              <label
-                for="schedule-date"
-                class="block text-sm font-medium text-gray-700"
-                >日期 *</label
-              >
-              <input
-                id="schedule-date"
+            <el-form-item label="日期" required>
+              <el-date-picker
                 v-model="scheduleForm.date"
                 type="date"
-                required
-                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                placeholder="选择日期"
+                class="w-full"
               />
-            </div>
+            </el-form-item>
 
-            <div>
-              <label
-                for="activity"
-                class="block text-sm font-medium text-gray-700"
-                >活动内容 *</label
-              >
-              <input
-                id="activity"
+            <el-form-item label="活动内容" required>
+              <el-input
                 v-model="scheduleForm.activity"
-                type="text"
-                required
-                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                placeholder="请输入活动内容"
+                clearable
               />
-            </div>
+            </el-form-item>
 
-            <div>
-              <label
-                for="schedule-start-time"
-                class="block text-sm font-medium text-gray-700"
-                >开始时间 *</label
-              >
-              <input
-                id="schedule-start-time"
+            <el-form-item label="开始时间" required>
+              <el-time-picker
                 v-model="scheduleForm.start_time"
-                type="time"
-                required
-                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                placeholder="选择开始时间"
+                class="w-full"
               />
-            </div>
+            </el-form-item>
 
-            <div>
-              <label
-                for="schedule-end-time"
-                class="block text-sm font-medium text-gray-700"
-                >结束时间 *</label
-              >
-              <input
-                id="schedule-end-time"
+            <el-form-item label="结束时间" required>
+              <el-time-picker
                 v-model="scheduleForm.end_time"
-                type="time"
-                required
-                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                placeholder="选择结束时间"
+                class="w-full"
               />
-            </div>
+            </el-form-item>
 
-            <div class="md:col-span-2">
-              <label for="notes" class="block text-sm font-medium text-gray-700"
-                >备注</label
-              >
-              <textarea
-                id="notes"
+            <el-form-item label="备注" class="md:col-span-2">
+              <el-input
                 v-model="scheduleForm.notes"
-                rows="3"
-                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
-              ></textarea>
-            </div>
+                type="textarea"
+                :rows="3"
+                placeholder="请输入备注"
+              />
+            </el-form-item>
           </div>
 
           <div class="flex justify-end space-x-3 pt-4">
-            <button
-              type="button"
+            <el-button
               @click="closeModal"
-              class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              type="default"
             >
               取消
-            </button>
-            <button
-              type="submit"
-              class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            </el-button>
+            <el-button
+              type="primary"
+              native-type="submit"
             >
               {{ showAddScheduleModal ? "添加" : "保存" }}
-            </button>
+            </el-button>
           </div>
-        </form>
+        </el-form>
       </div>
     </div>
   </div>

@@ -24,60 +24,44 @@
         </div>
 
         <!-- 登录表单 -->
-        <form @submit.prevent="handleLogin" class="space-y-6">
-          <div>
-            <label for="username" class="block text-sm font-medium text-gray-700 mb-2">
-              用户名
-            </label>
-            <input
-              id="username"
+        <el-form @submit.prevent="handleLogin" class="space-y-6">
+          <el-form-item label="用户名" required>
+            <el-input
               v-model="form.username"
-              type="text"
-              required
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200"
               placeholder="请输入用户名"
+              clearable
             />
-          </div>
+          </el-form-item>
 
-          <div>
-            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
-              密码
-            </label>
-            <input
-              id="password"
+          <el-form-item label="密码" required>
+            <el-input
               v-model="form.password"
               type="password"
-              required
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200"
               placeholder="请输入密码"
+              show-password
+              clearable
             />
-          </div>
+          </el-form-item>
 
           <!-- 错误信息 -->
-          <div v-if="error" class="bg-red-50 border border-red-200 rounded-lg p-3">
-            <div class="flex items-center">
-              <svg class="w-5 h-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-              </svg>
-              <span class="text-red-700 text-sm">{{ error }}</span>
-            </div>
-          </div>
+          <el-alert
+            v-if="error"
+            :title="error"
+            type="error"
+            show-icon
+            :closable="false"
+          />
 
-          <button
-            type="submit"
-            :disabled="loading"
-            class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+          <el-button
+            type="primary"
+            native-type="submit"
+            :loading="loading"
+            class="w-full"
+            size="large"
           >
-            <span v-if="loading" class="flex items-center">
-              <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              登录中...
-            </span>
-            <span v-else>登录</span>
-          </button>
-        </form>
+            {{ loading ? '登录中...' : '登录' }}
+          </el-button>
+        </el-form>
 
         <!-- 提示信息 -->
         <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">

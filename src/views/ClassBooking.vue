@@ -6,15 +6,16 @@
           <h1 class="text-2xl font-bold text-gray-900">课程预约</h1>
           <p class="mt-1 text-sm text-gray-600">查看和预约健身课程，管理课程安排。</p>
         </div>
-        <button
+        <el-button
           @click="showAddClassModal = true"
-          class="btn-primary inline-flex items-center"
+          type="primary"
+          class="inline-flex items-center"
         >
           <el-icon class="w-5 h-5 mr-2">
             <Plus />
           </el-icon>
           添加课程
-        </button>
+        </el-button>
       </div>
 
       <!-- 日期选择器 -->
@@ -24,21 +25,21 @@
             <label for="date-select" class="block text-sm font-medium text-gray-700 mb-2">
               选择日期
             </label>
-            <input
-              id="date-select"
+            <el-date-picker
               v-model="selectedDate"
               @change="handleDateChange"
               type="date"
-              class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+              placeholder="选择日期"
+              class="w-full"
             />
           </div>
           <div class="flex items-end">
-            <button
+            <el-button
               @click="goToToday"
-              class="btn-secondary"
+              type="default"
             >
               今天
-            </button>
+            </el-button>
           </div>
         </div>
       </div>
@@ -121,32 +122,37 @@
               </div>
 
               <div class="ml-6 flex items-center space-x-2">
-                <button
+                <el-button
                   v-if="canBook(classItem)"
                   @click="bookClass(classItem)"
-                  class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                  type="success"
+                  size="small"
                 >
                   <el-icon class="h-4 w-4 mr-1">
                     <Calendar />
                   </el-icon>
                   预约
-                </button>
-                <button
+                </el-button>
+                <el-button
                   @click="editClass(classItem)"
-                  class="inline-flex items-center p-2 border border-transparent rounded-full shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                  type="primary"
+                  size="small"
+                  circle
                 >
                   <el-icon class="h-4 w-4">
                     <Edit />
                   </el-icon>
-                </button>
-                <button
+                </el-button>
+                <el-button
                   @click="deleteClass(classItem.id, classItem.name)"
-                  class="inline-flex items-center p-2 border border-transparent rounded-full shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  type="danger"
+                  size="small"
+                  circle
                 >
                   <el-icon class="h-4 w-4">
                     <Delete />
                   </el-icon>
-                </button>
+                </el-button>
               </div>
             </div>
           </div>
@@ -183,12 +189,13 @@
                   {{ booking.classes?.instructor }} · {{ booking.classes?.location }}
                 </p>
               </div>
-              <button
+              <el-button
                 @click="cancelBooking(booking.class_id)"
-                class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                type="danger"
+                size="small"
               >
                 取消预约
-              </button>
+              </el-button>
             </div>
           </div>
           <div v-else class="text-center text-gray-500">
@@ -206,123 +213,102 @@
             <h3 class="text-lg font-medium text-gray-900">
               {{ showAddClassModal ? '添加课程' : '编辑课程' }}
             </h3>
-            <button
+            <el-button
               @click="closeModal"
+              type="text"
               class="text-gray-400 hover:text-gray-600"
             >
               <el-icon class="h-6 w-6">
                 <Close />
               </el-icon>
-            </button>
+            </el-button>
           </div>
 
-          <form @submit.prevent="showAddClassModal ? handleAddClass() : handleUpdateClass()" class="space-y-4">
+          <el-form @submit.prevent="showAddClassModal ? handleAddClass() : handleUpdateClass()" class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label for="class-name" class="block text-sm font-medium text-gray-700">课程名称 *</label>
-                <input
-                  id="class-name"
+              <el-form-item label="课程名称" required>
+                <el-input
                   v-model="classForm.name"
-                  type="text"
-                  required
-                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="请输入课程名称"
+                  clearable
                 />
-              </div>
+              </el-form-item>
 
-              <div>
-                <label for="instructor" class="block text-sm font-medium text-gray-700">教练 *</label>
-                <input
-                  id="instructor"
+              <el-form-item label="教练" required>
+                <el-input
                   v-model="classForm.instructor"
-                  type="text"
-                  required
-                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="请输入教练姓名"
+                  clearable
                 />
-              </div>
+              </el-form-item>
 
-              <div>
-                <label for="class-date" class="block text-sm font-medium text-gray-700">课程日期 *</label>
-                <input
-                  id="class-date"
+              <el-form-item label="课程日期" required>
+                <el-date-picker
                   v-model="classForm.date"
                   type="date"
-                  required
-                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="选择课程日期"
+                  class="w-full"
                 />
-              </div>
+              </el-form-item>
 
-              <div>
-                <label for="location" class="block text-sm font-medium text-gray-700">上课地点 *</label>
-                <input
-                  id="location"
+              <el-form-item label="上课地点" required>
+                <el-input
                   v-model="classForm.location"
-                  type="text"
-                  required
-                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="请输入上课地点"
+                  clearable
                 />
-              </div>
+              </el-form-item>
 
-              <div>
-                <label for="start-time" class="block text-sm font-medium text-gray-700">开始时间 *</label>
-                <input
-                  id="start-time"
+              <el-form-item label="开始时间" required>
+                <el-time-picker
                   v-model="classForm.start_time"
-                  type="time"
-                  required
-                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="选择开始时间"
+                  class="w-full"
                 />
-              </div>
+              </el-form-item>
 
-              <div>
-                <label for="end-time" class="block text-sm font-medium text-gray-700">结束时间 *</label>
-                <input
-                  id="end-time"
+              <el-form-item label="结束时间" required>
+                <el-time-picker
                   v-model="classForm.end_time"
-                  type="time"
-                  required
-                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="选择结束时间"
+                  class="w-full"
                 />
-              </div>
+              </el-form-item>
 
-              <div>
-                <label for="max-participants" class="block text-sm font-medium text-gray-700">最大参与人数 *</label>
-                <input
-                  id="max-participants"
+              <el-form-item label="最大参与人数" required>
+                <el-input-number
                   v-model="classForm.max_participants"
-                  type="number"
-                  min="1"
-                  required
-                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                  :min="1"
+                  placeholder="请输入最大参与人数"
+                  class="w-full"
                 />
-              </div>
+              </el-form-item>
 
-              <div class="md:col-span-2">
-                <label for="description" class="block text-sm font-medium text-gray-700">课程描述</label>
-                <textarea
-                  id="description"
+              <el-form-item label="课程描述" class="md:col-span-2">
+                <el-input
                   v-model="classForm.description"
-                  rows="3"
-                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
-                ></textarea>
-              </div>
+                  type="textarea"
+                  :rows="3"
+                  placeholder="请输入课程描述"
+                />
+              </el-form-item>
             </div>
 
             <div class="flex justify-end space-x-3 pt-4">
-              <button
-                type="button"
+              <el-button
                 @click="closeModal"
-                class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                type="default"
               >
                 取消
-              </button>
-              <button
-                type="submit"
-                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              </el-button>
+              <el-button
+                type="primary"
+                native-type="submit"
               >
                 {{ showAddClassModal ? '添加' : '保存' }}
-              </button>
+              </el-button>
             </div>
-          </form>
+          </el-form>
         </div>
       </div>
     </div>

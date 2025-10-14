@@ -7,15 +7,16 @@
             <h1 class="text-2xl font-bold text-gray-900">会员管理</h1>
             <p class="mt-1 text-sm text-gray-600">管理健身房会员信息，包括新增、编辑和查看会员详情。</p>
           </div>
-          <button
+          <el-button
             @click="showAddMemberModal = true"
-            class="btn-primary inline-flex items-center"
+            type="primary"
+            class="inline-flex items-center"
           >
             <el-icon class="w-5 h-5 mr-2">
               <Plus />
             </el-icon>
             新增会员
-          </button>
+          </el-button>
         </div>
   
         <!-- 统计卡片 -->
@@ -106,13 +107,12 @@
                       <Search />
                     </el-icon>
                   </div>
-                  <input
-                    id="search"
+                  <el-input
                     v-model="searchTerm"
                     @input="handleSearch"
-                    type="text"
-                    class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
                     placeholder="搜索会员姓名、会员号或手机号..."
+                    clearable
+                    prefix-icon="Search"
                   />
                 </div>
               </div>
@@ -120,16 +120,16 @@
               <!-- 状态筛选 -->
               <div>
                 <label for="status-filter" class="sr-only">状态筛选</label>
-                <select
-                  id="status-filter"
+                <el-select
                   v-model="selectedStatus"
                   @change="handleStatusFilter"
-                  class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="选择状态"
+                  class="w-full"
                 >
-                  <option value="all">全部状态</option>
-                  <option value="active">正常会员</option>
-                  <option value="expired">过期会员</option>
-                </select>
+                  <el-option label="全部状态" value="all" />
+                  <el-option label="正常会员" value="active" />
+                  <el-option label="过期会员" value="expired" />
+                </el-select>
               </div>
             </div>
           </div>
@@ -155,12 +155,13 @@
             <h3 class="mt-2 text-sm font-medium text-gray-900">加载失败</h3>
             <p class="mt-1 text-sm text-gray-500">{{ error }}</p>
             <div class="mt-4">
-              <button
+              <el-button
                 @click="fetchMembers"
-                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                type="primary"
+                size="small"
               >
                 重新加载
-              </button>
+              </el-button>
             </div>
           </div>
   
@@ -195,22 +196,26 @@
                 </div>
   
                 <div class="flex items-center space-x-2">
-                  <button
+                  <el-button
                     @click="editMember(member)"
-                    class="inline-flex items-center p-2 border border-transparent rounded-full shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                    type="primary"
+                    size="small"
+                    circle
                   >
                     <el-icon class="h-4 w-4">
                       <Edit />
                     </el-icon>
-                  </button>
-                  <button
+                  </el-button>
+                  <el-button
                     @click="deleteMember(member.id, member.name)"
-                    class="inline-flex items-center p-2 border border-transparent rounded-full shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                    type="danger"
+                    size="small"
+                    circle
                   >
                     <el-icon class="h-4 w-4">
                       <Delete />
                     </el-icon>
-                  </button>
+                  </el-button>
                 </div>
               </div>
             </li>
@@ -228,20 +233,22 @@
         <!-- 分页 -->
         <div v-if="pagination.total > pagination.pageSize" class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 rounded-lg shadow">
           <div class="flex-1 flex justify-between sm:hidden">
-            <button
+            <el-button
               @click="goToPage(pagination.currentPage - 1)"
               :disabled="pagination.currentPage === 1"
-              class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              type="default"
+              size="small"
             >
               上一页
-            </button>
-            <button
+            </el-button>
+            <el-button
               @click="goToPage(pagination.currentPage + 1)"
               :disabled="pagination.currentPage === totalPages"
-              class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              type="default"
+              size="small"
             >
               下一页
-            </button>
+            </el-button>
           </div>
           <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
@@ -257,35 +264,37 @@
             </div>
             <div>
               <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                <button
+                <el-button
                   @click="goToPage(pagination.currentPage - 1)"
                   :disabled="pagination.currentPage === 1"
-                  class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  type="default"
+                  size="small"
+                  circle
                 >
                   <el-icon class="h-5 w-5">
                     <ArrowLeft />
                   </el-icon>
-                </button>
-                <button
+                </el-button>
+                <el-button
                   v-for="page in visiblePages"
                   :key="page"
                   @click="goToPage(page)"
-                  class="relative inline-flex items-center px-4 py-2 border text-sm font-medium"
-                  :class="page === pagination.currentPage
-                    ? 'z-10 bg-primary-50 border-primary-500 text-primary-600'
-                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'"
+                  :type="page === pagination.currentPage ? 'primary' : 'default'"
+                  size="small"
                 >
                   {{ page }}
-                </button>
-                <button
+                </el-button>
+                <el-button
                   @click="goToPage(pagination.currentPage + 1)"
                   :disabled="pagination.currentPage === totalPages"
-                  class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  type="default"
+                  size="small"
+                  circle
                 >
                   <el-icon class="h-5 w-5">
                     <ArrowRight />
                   </el-icon>
-                </button>
+                </el-button>
               </nav>
             </div>
           </div>
@@ -300,106 +309,92 @@
               <h3 class="text-lg font-medium text-gray-900">
                 {{ showAddMemberModal ? '新增会员' : '编辑会员' }}
               </h3>
-              <button
+              <el-button
                 @click="closeModal"
+                type="text"
                 class="text-gray-400 hover:text-gray-600"
               >
                 <el-icon class="h-6 w-6">
                   <Close />
                 </el-icon>
-              </button>
+              </el-button>
             </div>
   
-            <form @submit.prevent="showAddMemberModal ? handleAddMember() : handleUpdateMember()" class="space-y-4">
+            <el-form @submit.prevent="showAddMemberModal ? handleAddMember() : handleUpdateMember()" class="space-y-4">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label for="name" class="block text-sm font-medium text-gray-700">姓名 *</label>
-                  <input
-                    id="name"
+                <el-form-item label="姓名" required>
+                  <el-input
                     v-model="memberForm.name"
-                    type="text"
-                    required
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                    placeholder="请输入姓名"
+                    clearable
                   />
-                </div>
-  
-                <div>
-                  <label for="member_id" class="block text-sm font-medium text-gray-700">会员号 *</label>
-                  <input
-                    id="member_id"
+                </el-form-item>
+
+                <el-form-item label="会员号" required>
+                  <el-input
                     v-model="memberForm.member_id"
-                    type="text"
-                    required
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                    placeholder="请输入会员号"
+                    clearable
                   />
-                </div>
-  
-                <div>
-                  <label for="phone" class="block text-sm font-medium text-gray-700">手机号 *</label>
-                  <input
-                    id="phone"
+                </el-form-item>
+
+                <el-form-item label="手机号" required>
+                  <el-input
                     v-model="memberForm.phone"
                     type="tel"
-                    required
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                    placeholder="请输入手机号"
+                    clearable
                   />
-                </div>
-  
-                <div>
-                  <label for="email" class="block text-sm font-medium text-gray-700">邮箱</label>
-                  <input
-                    id="email"
+                </el-form-item>
+
+                <el-form-item label="邮箱">
+                  <el-input
                     v-model="memberForm.email"
                     type="email"
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                    placeholder="请输入邮箱"
+                    clearable
                   />
-                </div>
-  
-                <div>
-                  <label for="membership_type" class="block text-sm font-medium text-gray-700">会员类型 *</label>
-                  <select
-                    id="membership_type"
+                </el-form-item>
+
+                <el-form-item label="会员类型" required>
+                  <el-select
                     v-model="memberForm.membership_type"
-                    required
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                    placeholder="请选择会员类型"
+                    class="w-full"
                   >
-                    <option value="">请选择会员类型</option>
-                    <option value="月度会员">月度会员</option>
-                    <option value="季度会员">季度会员</option>
-                    <option value="半年会员">半年会员</option>
-                    <option value="年度会员">年度会员</option>
-                    <option value="终身会员">终身会员</option>
-                  </select>
-                </div>
-  
-                <div>
-                  <label for="expire_date" class="block text-sm font-medium text-gray-700">到期日期 *</label>
-                  <input
-                    id="expire_date"
+                    <el-option label="月度会员" value="月度会员" />
+                    <el-option label="季度会员" value="季度会员" />
+                    <el-option label="半年会员" value="半年会员" />
+                    <el-option label="年度会员" value="年度会员" />
+                    <el-option label="终身会员" value="终身会员" />
+                  </el-select>
+                </el-form-item>
+
+                <el-form-item label="到期日期" required>
+                  <el-date-picker
                     v-model="memberForm.expire_date"
                     type="date"
-                    required
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                    placeholder="选择到期日期"
+                    class="w-full"
                   />
-                </div>
+                </el-form-item>
               </div>
-  
+
               <div class="flex justify-end space-x-3 pt-4">
-                <button
-                  type="button"
+                <el-button
                   @click="closeModal"
-                  class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                  type="default"
                 >
                   取消
-                </button>
-                <button
-                  type="submit"
-                  class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                </el-button>
+                <el-button
+                  type="primary"
+                  native-type="submit"
                 >
                   {{ showAddMemberModal ? '添加' : '保存' }}
-                </button>
+                </el-button>
               </div>
-            </form>
+            </el-form>
           </div>
         </div>
       </div>

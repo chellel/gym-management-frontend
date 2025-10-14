@@ -45,9 +45,9 @@
               <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
             </svg>
           </router-link>
-          <button class="inline-flex items-center px-8 py-3 border border-gray-300 text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
+          <el-button type="default" size="large" class="inline-flex items-center px-8 py-3 text-base font-medium rounded-lg transition-colors duration-200">
             了解更多
-          </button>
+          </el-button>
         </div>
       </div>
 

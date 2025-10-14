@@ -35,14 +35,14 @@
             <!-- 右侧用户信息和操作 -->
             <div class="flex items-center space-x-4">
               <!-- 通知按钮 -->
-              <button
-                type="button"
+              <el-button
+                type="text"
                 class="bg-white p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
               >
                 <el-icon class="h-6 w-6">
                   <Bell />
                 </el-icon>
-              </button>
+              </el-button>
   
               <!-- 用户信息 -->
               <div class="relative">
@@ -62,21 +62,22 @@
               </div>
   
               <!-- 退出按钮 -->
-              <button
+              <el-button
                 @click="handleLogout"
-                class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
+                type="danger"
+                class="inline-flex items-center px-3 py-2 text-sm leading-4 font-medium rounded-md transition-colors duration-200"
               >
                 <el-icon class="w-4 h-4 mr-1">
                   <SwitchButton />
                 </el-icon>
                 退出
-              </button>
+              </el-button>
   
               <!-- 移动端菜单按钮 -->
               <div class="md:hidden">
-                <button
+                <el-button
                   @click="mobileMenuOpen = !mobileMenuOpen"
-                  type="button"
+                  type="text"
                   class="bg-white inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                 >
                   <span class="sr-only">打开主菜单</span>
@@ -86,7 +87,7 @@
                   <el-icon v-else class="block h-6 w-6">
                     <Close />
                   </el-icon>
-                </button>
+                </el-button>
               </div>
             </div>
           </div>

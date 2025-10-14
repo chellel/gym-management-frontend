@@ -14,15 +14,16 @@
           </div>
           <div class="flex items-center space-x-4">
             <span class="text-gray-700">欢迎，{{ user?.name || '管理员' }}</span>
-            <button
+            <el-button
               @click="handleLogout"
-              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors duration-200"
+              type="danger"
+              class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
             >
               <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
               退出登录
-            </button>
+            </el-button>
           </div>
         </div>
       </div>

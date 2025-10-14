@@ -20,11 +20,11 @@
           >
             开始日期
           </label>
-          <input
-            id="start-date"
+          <el-date-picker
             v-model="dateRange.start"
             type="date"
-            class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+            placeholder="选择开始日期"
+            class="w-full"
           />
         </div>
         <div class="flex-1">
@@ -34,23 +34,23 @@
           >
             结束日期
           </label>
-          <input
-            id="end-date"
+          <el-date-picker
             v-model="dateRange.end"
             type="date"
-            class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"
+            placeholder="选择结束日期"
+            class="w-full"
           />
         </div>
         <div class="flex items-end space-x-2">
-          <button @click="setQuickRange('week')" class="btn-secondary text-sm">
+          <el-button @click="setQuickRange('week')" type="default" size="small">
             本周
-          </button>
-          <button @click="setQuickRange('month')" class="btn-secondary text-sm">
+          </el-button>
+          <el-button @click="setQuickRange('month')" type="default" size="small">
             本月
-          </button>
-          <button @click="refreshData" class="btn-primary text-sm">
+          </el-button>
+          <el-button @click="refreshData" type="primary" size="small">
             刷新数据
-          </button>
+          </el-button>
         </div>
       </div>
     </div>
@@ -244,19 +244,15 @@
       <!-- 标签切换 -->
       <div class="border-b border-gray-200">
         <nav class="-mb-px flex space-x-8 px-6">
-          <button
+          <el-button
             v-for="tab in tabs"
             :key="tab.key"
             @click="currentTab = tab.key"
+            :type="currentTab === tab.key ? 'primary' : 'default'"
             class="py-2 px-1 border-b-2 font-medium text-sm"
-            :class="
-              currentTab === tab.key
-                ? 'border-primary-500 text-primary-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            "
           >
             {{ tab.name }}
-          </button>
+          </el-button>
         </nav>
       </div>
 
@@ -438,24 +434,26 @@
           <p class="mt-1 text-sm text-gray-600">导出报表数据，支持多种格式。</p>
         </div>
         <div class="flex space-x-3">
-          <button
+          <el-button
             @click="exportData('excel')"
-            class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            type="default"
+            class="inline-flex items-center px-4 py-2 text-sm font-medium"
           >
             <el-icon class="w-4 h-4 mr-2">
               <Document />
             </el-icon>
             导出 Excel
-          </button>
-          <button
+          </el-button>
+          <el-button
             @click="exportData('pdf')"
-            class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            type="default"
+            class="inline-flex items-center px-4 py-2 text-sm font-medium"
           >
             <el-icon class="w-4 h-4 mr-2">
               <Document />
             </el-icon>
             导出 PDF
-          </button>
+          </el-button>
         </div>
       </div>
     </div>
