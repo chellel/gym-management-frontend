@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Layout from '@/layout/index.vue'
 import AdminLayout from '@/layout/admin.vue'
 import Home from '@/views/Home.vue'
-import Login from '@/views/Login.vue'
+import Login from '@/views/login/index.vue'
 import Welcome from '@/views/Welcome.vue'
 
 // 简单的认证检查函数（不依赖Supabase）
@@ -21,6 +21,11 @@ const routes = [
     path: '/login',
     name: 'Login',
     component: Login
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: () => import('@/views/login/registor.vue')
   },
   {
     path: '/welcome',

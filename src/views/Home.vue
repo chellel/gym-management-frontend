@@ -12,7 +12,10 @@
               <h1 class="ml-2 text-xl font-bold text-gray-900">健身房管理系统</h1>
             </div>
           </div>
-          <div class="flex items-center">
+          <div class="flex items-center space-x-4">
+            <router-link to="/register" class="text-primary-600 hover:text-primary-700 font-medium transition-colors duration-200">
+              注册会员
+            </router-link>
             <router-link to="/login" class="btn-primary">
               登录系统
             </router-link>
@@ -39,15 +42,18 @@
           现代化的健身房管理解决方案，帮助您高效管理会员、课程、教练和设备，提升运营效率。
         </p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          <router-link to="/login" class="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 transition-colors duration-200">
-            立即开始
+          <router-link to="/register" class="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 transition-colors duration-200">
+            注册会员
             <svg class="ml-2 -mr-1 w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
             </svg>
           </router-link>
-          <el-button type="default" size="large" class="inline-flex items-center px-8 py-3 text-base font-medium rounded-lg transition-colors duration-200">
-            了解更多
-          </el-button>
+          <router-link to="/login" class="inline-flex items-center px-8 py-3 border border-gray-300 text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
+            管理员登录
+            <svg class="ml-2 -mr-1 w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+          </router-link>
         </div>
       </div>
 
