@@ -147,6 +147,23 @@
           </div>
         </div>
 
+        <!-- 错误提示 -->
+        <div v-else-if="error && members.length === 0" class="p-6 text-center">
+          <el-icon class="mx-auto h-12 w-12 text-red-400">
+            <WarningFilled />
+          </el-icon>
+          <h3 class="mt-2 text-sm font-medium text-gray-900">加载失败</h3>
+          <p class="mt-1 text-sm text-gray-500">{{ error }}</p>
+          <div class="mt-4">
+            <button
+              @click="fetchMembers"
+              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            >
+              重新加载
+            </button>
+          </div>
+        </div>
+
         <ul v-else-if="members.length > 0" class="divide-y divide-gray-200">
           <li v-for="member in members" :key="member.id" class="px-6 py-4 hover:bg-gray-50">
             <div class="flex items-center justify-between">
@@ -393,14 +410,16 @@
 import { ref, reactive, computed } from 'vue'
 import Layout from '../components/Layout.vue'
 import { useMembers } from '../composables/useMembers'
-// Element Plus 图标已全局注册，无需导入
+import { getPlanList } from '@/api/member'
 
 // 使用会员管理 composable
 const {
   members,
   loading,
+  error,
   stats,
   pagination,
+  fetchMembers,
   addMember,
   updateMember,
   deleteMember,

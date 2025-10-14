@@ -30,7 +30,7 @@ export const useMembers = () => {
   const fetchMembers = async () => {
     loading.value = true
     error.value = null
-    
+
     try {
       const { data, count } = await memberService.getMembers(
         pagination.start,
@@ -41,29 +41,16 @@ export const useMembers = () => {
       
       members.value = data || []
       pagination.total = count || 0
+      
+      // 如果数据为空且没有错误，显示提示信息
+      if (members.value.length === 0 && !filters.search && filters.status === 'all') {
+        error.value = '暂无会员数据'
+      }
     } catch (err) {
       console.error('Failed to fetch members:', err)
-      // 使用模拟数据作为后备
-      members.value = mockMembers.filter(member => {
-        if (filters.search) {
-          const searchLower = filters.search.toLowerCase()
-          return (
-            member.name.toLowerCase().includes(searchLower) ||
-            member.member_id.toLowerCase().includes(searchLower) ||
-            member.phone.includes(filters.search)
-          )
-        }
-        return true
-      }).filter(member => {
-        if (filters.status === 'active') {
-          return new Date(member.expire_date) >= new Date()
-        } else if (filters.status === 'expired') {
-          return new Date(member.expire_date) < new Date()
-        }
-        return true
-      })
-      pagination.total = members.value.length
-      error.value = '使用模拟数据'
+      members.value = []
+      pagination.total = 0
+      error.value = err.message || '获取会员数据失败，请检查网络连接'
     } finally {
       loading.value = false
     }
@@ -76,14 +63,12 @@ export const useMembers = () => {
       Object.assign(stats, memberStats)
     } catch (err) {
       console.error('Failed to fetch stats:', err)
-      // 使用模拟数据计算统计
-      const total = mockMembers.length
-      const active = mockMembers.filter(m => new Date(m.expire_date) >= new Date()).length
+      // 重置统计信息
       Object.assign(stats, {
-        totalMembers: total,
-        activeMembers: active,
-        expiredMembers: total - active,
-        newMembers: 12
+        totalMembers: 0,
+        activeMembers: 0,
+        expiredMembers: 0,
+        newMembers: 0
       })
     }
   }

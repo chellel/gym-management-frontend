@@ -1,9 +1,43 @@
+import { 
+  getMemberList, 
+  createMember, 
+  updateMember, 
+  deleteMember, 
+  getMemberStats 
+} from '@/api/member'
+
 // 会员数据服务
 export const memberService = {
   // 获取会员列表（分页）
   async getMembers(start = 0, end = 9, search = '', status = 'all') {
     try {
-      // 从localStorage获取会员数据
+      const page = Math.floor(start / (end - start + 1)) + 1
+      const pageSize = end - start + 1
+      
+      const params = {
+        page,
+        pageSize,
+        ...(search && { search }),
+        ...(status !== 'all' && { status })
+      }
+
+      const response = await getMemberList(params)
+      
+      // 假设API返回格式为 { data: [], total: number, page: number, pageSize: number }
+      return {
+        data: response.data || response.list || [],
+        count: response.total || response.count || 0
+      }
+    } catch (error) {
+      console.error('Error fetching members:', error)
+      // 如果API失败，回退到localStorage
+      return this.getMembersFromLocalStorage(start, end, search, status)
+    }
+  },
+
+  // 从localStorage获取会员数据（作为后备方案）
+  getMembersFromLocalStorage(start = 0, end = 9, search = '', status = 'all') {
+    try {
       const storedMembers = localStorage.getItem('gym_members')
       let allMembers = storedMembers ? JSON.parse(storedMembers) : mockMembers
 
@@ -35,13 +69,25 @@ export const memberService = {
 
       return { data, count }
     } catch (error) {
-      console.error('Error fetching members:', error)
-      throw error
+      console.error('Error fetching members from localStorage:', error)
+      return { data: [], count: 0 }
     }
   },
 
   // 添加会员
   async addMember(memberData) {
+    try {
+      const response = await createMember(memberData)
+      return response
+    } catch (error) {
+      console.error('Error adding member:', error)
+      // 如果API失败，回退到localStorage
+      return this.addMemberToLocalStorage(memberData)
+    }
+  },
+
+  // 添加会员到localStorage（作为后备方案）
+  addMemberToLocalStorage(memberData) {
     try {
       const storedMembers = localStorage.getItem('gym_members')
       const members = storedMembers ? JSON.parse(storedMembers) : mockMembers
@@ -55,14 +101,27 @@ export const memberService = {
       
       members.push(newMember)
       localStorage.setItem('gym_members', JSON.stringify(members))
+      return newMember
     } catch (error) {
-      console.error('Error adding member:', error)
+      console.error('Error adding member to localStorage:', error)
       throw error
     }
   },
 
   // 更新会员
   async updateMember(id, memberData) {
+    try {
+      const response = await updateMember(id, memberData)
+      return response
+    } catch (error) {
+      console.error('Error updating member:', error)
+      // 如果API失败，回退到localStorage
+      return this.updateMemberInLocalStorage(id, memberData)
+    }
+  },
+
+  // 更新localStorage中的会员（作为后备方案）
+  updateMemberInLocalStorage(id, memberData) {
     try {
       const storedMembers = localStorage.getItem('gym_members')
       const members = storedMembers ? JSON.parse(storedMembers) : mockMembers
@@ -75,9 +134,11 @@ export const memberService = {
           updated_at: new Date().toISOString()
         }
         localStorage.setItem('gym_members', JSON.stringify(members))
+        return members[index]
       }
+      throw new Error('Member not found')
     } catch (error) {
-      console.error('Error updating member:', error)
+      console.error('Error updating member in localStorage:', error)
       throw error
     }
   },
@@ -85,19 +146,44 @@ export const memberService = {
   // 删除会员
   async deleteMember(id) {
     try {
+      const response = await deleteMember(id)
+      return response
+    } catch (error) {
+      console.error('Error deleting member:', error)
+      // 如果API失败，回退到localStorage
+      return this.deleteMemberFromLocalStorage(id)
+    }
+  },
+
+  // 从localStorage删除会员（作为后备方案）
+  deleteMemberFromLocalStorage(id) {
+    try {
       const storedMembers = localStorage.getItem('gym_members')
       const members = storedMembers ? JSON.parse(storedMembers) : mockMembers
       
       const filteredMembers = members.filter(member => member.id !== id)
       localStorage.setItem('gym_members', JSON.stringify(filteredMembers))
+      return { success: true }
     } catch (error) {
-      console.error('Error deleting member:', error)
+      console.error('Error deleting member from localStorage:', error)
       throw error
     }
   },
 
   // 获取会员统计信息
   async getMemberStats() {
+    try {
+      const response = await getMemberStats()
+      return response
+    } catch (error) {
+      console.error('Error fetching member stats:', error)
+      // 如果API失败，回退到localStorage计算
+      return this.getMemberStatsFromLocalStorage()
+    }
+  },
+
+  // 从localStorage计算会员统计信息（作为后备方案）
+  getMemberStatsFromLocalStorage() {
     try {
       const storedMembers = localStorage.getItem('gym_members')
       const members = storedMembers ? JSON.parse(storedMembers) : mockMembers
@@ -119,7 +205,7 @@ export const memberService = {
         newMembers
       }
     } catch (error) {
-      console.error('Error fetching member stats:', error)
+      console.error('Error fetching member stats from localStorage:', error)
       return {
         totalMembers: 0,
         activeMembers: 0,
