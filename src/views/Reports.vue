@@ -184,7 +184,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <!-- 会员增长趋势 -->
       <div class="bg-white shadow rounded-lg">
-        <div class="px-6 py-4 border-b border-gray-200">
+        <div class="px-6 py-4">
           <h3 class="text-lg leading-6 font-medium text-gray-900">
             会员增长趋势
           </h3>
@@ -198,7 +198,7 @@
 
       <!-- 收入分析 -->
       <div class="bg-white shadow rounded-lg">
-        <div class="px-6 py-4 border-b border-gray-200">
+        <div class="px-6 py-4">
           <h3 class="text-lg leading-6 font-medium text-gray-900">收入分析</h3>
         </div>
         <div class="p-6">
@@ -213,7 +213,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <!-- 课程预约 Top 5 -->
       <div class="bg-white shadow rounded-lg">
-        <div class="px-6 py-4 border-b border-gray-200">
+        <div class="px-6 py-4">
           <h3 class="text-lg leading-6 font-medium text-gray-900">
             课程预约 Top 5
           </h3>
@@ -227,7 +227,7 @@
 
       <!-- 训练高峰期 -->
       <div class="bg-white shadow rounded-lg">
-        <div class="px-6 py-4 border-b border-gray-200">
+        <div class="px-6 py-4">
           <h3 class="text-lg leading-6 font-medium text-gray-900">训练高峰期</h3>
         </div>
         <div class="p-6">
@@ -240,191 +240,189 @@
 
     <!-- 详细数据表格 -->
     <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-      <div class="px-6 py-4 border-b border-gray-200">
+      <div class="px-6 py-4">
         <h3 class="text-lg leading-6 font-medium text-gray-900">详细数据</h3>
       </div>
 
       <!-- 标签切换 -->
-      <div class="border-b border-gray-200">
-        <nav class="-mb-px flex space-x-8 px-6">
-          <el-button
-            v-for="tab in tabs"
-            :key="tab.key"
-            @click="currentTab = tab.key"
-            :type="currentTab === tab.key ? 'primary' : 'default'"
-            class="py-2 px-1 border-b-2 font-medium text-sm"
-          >
-            {{ tab.name }}
-          </el-button>
-        </nav>
-      </div>
+      <el-tabs 
+        v-model="currentTab" 
+        class="px-6"
+      >
+        <el-tab-pane label="会员数据" name="members">
+          <!-- 会员数据表格 -->
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    会员类型
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    数量
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    占比
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    平均收入
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr v-for="item in memberData" :key="item.type">
+                  <td
+                    class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
+                  >
+                    {{ item.type }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ item.count }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ item.percentage }}%
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    ¥{{ item.avgRevenue.toLocaleString() }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </el-tab-pane>
 
-      <!-- 会员数据表格 -->
-      <div v-if="currentTab === 'members'" class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                会员类型
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                数量
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                占比
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                平均收入
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="item in memberData" :key="item.type">
-              <td
-                class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
-              >
-                {{ item.type }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {{ item.count }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {{ item.percentage }}%
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                ¥{{ item.avgRevenue.toLocaleString() }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- 课程数据表格 -->
-      <div v-if="currentTab === 'classes'" class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                课程名称
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                预约次数
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                签到率
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                满意度
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="item in classData" :key="item.name">
-              <td
-                class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
-              >
-                {{ item.name }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {{ item.bookings }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {{ item.attendanceRate }}%
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                <div class="flex items-center">
-                  <div class="flex-shrink-0 w-10 h-10">
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        class="bg-yellow-400 h-2 rounded-full"
-                        :style="{ width: item.satisfaction + '%' }"
-                      ></div>
+        <el-tab-pane label="课程数据" name="classes">
+          <!-- 课程数据表格 -->
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    课程名称
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    预约次数
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    签到率
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    满意度
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr v-for="item in classData" :key="item.name">
+                  <td
+                    class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
+                  >
+                    {{ item.name }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ item.bookings }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ item.attendanceRate }}%
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <div class="flex items-center">
+                      <div class="flex-shrink-0 w-10 h-10">
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                          <div
+                            class="bg-yellow-400 h-2 rounded-full"
+                            :style="{ width: item.satisfaction + '%' }"
+                          ></div>
+                        </div>
+                      </div>
+                      <div class="ml-4">
+                        <div class="text-sm text-gray-900">
+                          {{ item.satisfaction }}%
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div class="ml-4">
-                    <div class="text-sm text-gray-900">
-                      {{ item.satisfaction }}%
-                    </div>
-                  </div>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </el-tab-pane>
 
-      <!-- 财务数据表格 -->
-      <div v-if="currentTab === 'finance'" class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                收入来源
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                金额
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                占比
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                同比
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="item in financeData" :key="item.source">
-              <td
-                class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
-              >
-                {{ item.source }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                ¥{{ item.amount.toLocaleString() }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {{ item.percentage }}%
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <span
-                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                  :class="
-                    item.growth >= 0
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-red-100 text-red-800'
-                  "
-                >
-                  {{ item.growth >= 0 ? "+" : "" }}{{ item.growth }}%
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+        <el-tab-pane label="财务数据" name="finance">
+          <!-- 财务数据表格 -->
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    收入来源
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    金额
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    占比
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    同比
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr v-for="item in financeData" :key="item.source">
+                  <td
+                    class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
+                  >
+                    {{ item.source }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    ¥{{ item.amount.toLocaleString() }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ item.percentage }}%
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <span
+                      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                      :class="
+                        item.growth >= 0
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
+                      "
+                    >
+                      {{ item.growth >= 0 ? "+" : "" }}{{ item.growth }}%
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </el-tab-pane>
+      </el-tabs>
+
     </div>
 
     <!-- 导出功能 -->
@@ -655,7 +653,7 @@ const refreshData = async () => {
       title: "数据已更新",
       text: `已加载 ${dateRange.value[0]} 至 ${dateRange.value[1]} 的数据`,
       icon: "success",
-      timer: 2000,
+      timer: 1500,
       showConfirmButton: false,
     });
   } catch (error) {
