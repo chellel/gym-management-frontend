@@ -93,6 +93,21 @@ const routes = [
       }
     ],
     meta: { requiresAuth: true }
+  },
+  // 教练工作台
+  {
+    path: '/coach',
+    name: 'coach',
+    component: AdminLayout,
+    children: [
+      {
+        path: 'workbench',
+        name: 'CoachWorkbench',
+        component: () => import('@/views/CoachWorkbench.vue'),
+        meta: { requiresAuth: true, role: 'coach' }
+      }
+    ],
+    meta: { requiresAuth: true, role: 'coach' }
   }
 ]
 

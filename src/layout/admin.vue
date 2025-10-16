@@ -151,10 +151,11 @@
   // 导航菜单
   const navigation = [
     { name: '首页', href: '/welcome', icon: 'House' },
-    { name: '会员管理', href: '/admin/members', icon: 'User' },
+    { name: '会员管理', href: '/admin/member', icon: 'User' },
     { name: '课程预约', href: '/admin/classes', icon: 'Calendar' },
     { name: '排班管理', href: '/admin/schedules', icon: 'Clock' },
-    { name: '数据报表', href: '/admin/reports', icon: 'DataAnalysis' }
+    { name: '数据报表', href: '/admin/reports', icon: 'DataAnalysis' },
+    { name: '教练工作台', href: '/coach/workbench', icon: 'UserFilled' }
   ]
   
   // 退出登录
