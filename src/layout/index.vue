@@ -291,20 +291,26 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { useAuth } from "../composables/useAuth";
+import { useUserinfoStore } from "@/stores/userinfo";
 import { checkinService } from "@/services/checkinService";
 
 const router = useRouter();
-const { user, logout, getCurrentUser, isCoach } = useAuth();
+const userinfoStore = useUserinfoStore();
 
 const mobileMenuOpen = ref(false);
 const checkinStatus = ref(false);
 
 // 获取用户角色
-const userRole = computed(() => {
-  const currentUser = getCurrentUser();
-  return currentUser?.role || "member";
-});
+const userRole = computed(() => userinfoStore.userRole);
+
+// 获取用户信息
+const user = computed(() => userinfoStore.userinfo);
+
+// 登出方法
+const logout = async () => {
+  userinfoStore.clearUserinfo();
+  await router.push('/login');
+};
 
 const navigation = computed(() => {
   if (userRole.value === "coach") {
@@ -349,7 +355,7 @@ const checkCheckinStatus = async () => {
   if (userRole.value !== "member") return;
 
   try {
-    const currentUser = getCurrentUser();
+    const currentUser = userinfoStore.userinfo;
     if (currentUser) {
       const isCheckedIn = await checkinService.isCheckedInToday(currentUser.id);
       checkinStatus.value = isCheckedIn;

@@ -393,24 +393,34 @@
   </template>
   
   <script setup>
-  import { ref, reactive, computed, onMounted } from "vue";
-  import Swal from "sweetalert2";
-  import { useAuth } from "@/composables/useAuth";
+import { ref, reactive, computed, onMounted } from "vue";
+import Swal from "sweetalert2";
+import { useUserinfoStore } from "@/stores/userinfo";
   // Element Plus 图标已全局注册，无需导入
   
-  // 认证相关
-  const { getCurrentUser, getUserRole, isAdmin, isCoach } = useAuth();
-  
-  // 响应式数据
-  const currentView = ref("trainers");
-  const currentWeek = ref(new Date());
-  const schedules = ref([]);
-  const trainers = ref([]);
-  const locations = ref([]);
-  
-  // 当前用户信息
-  const currentUser = computed(() => getCurrentUser());
-  const userRole = computed(() => getUserRole());
+// 认证相关
+const userinfoStore = useUserinfoStore();
+
+// 响应式数据
+const currentView = ref("trainers");
+const currentWeek = ref(new Date());
+const schedules = ref([]);
+const trainers = ref([]);
+const locations = ref([]);
+
+// 当前用户信息
+const currentUser = computed(() => userinfoStore.userinfo);
+const userRole = computed(() => userinfoStore.userRole);
+
+// 检查是否为管理员
+const isAdmin = () => {
+  return userRole.value === 'admin';
+};
+
+// 检查是否为教练
+const isCoach = () => {
+  return userRole.value === 'coach';
+};
   
   // 模态框状态
   const showAddScheduleModal = ref(false);

@@ -4,11 +4,10 @@
     subtitle="请输入您的登录信息"
     back-to="/"
     back-text="返回首页"
-    @login-success="handleLoginSuccess"
-    @login-error="handleLoginError"
+    @login="handleLogin"
   >
-    <template #test-accounts>
-      <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+    <template #bottom>
+      <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
         <div class="flex items-start">
           <svg
             class="w-5 h-5 text-blue-400 mt-0.5 mr-2"
@@ -23,16 +22,12 @@
           </svg>
           <div class="text-blue-700 text-sm">
             <p class="font-medium mb-1">测试账号</p>
-            <p><span class="font-medium">管理员：</span>admin / admin</p>
             <p><span class="font-medium">教练：</span>coach / coach</p>
             <p><span class="font-medium">会员：</span>member / member</p>
           </div>
         </div>
       </div>
-    </template>
-
-    <template #register-link>
-      <div class="text-center">
+      <div class="mt-4 text-center">
         <p class="text-sm text-gray-600">
           还没有账号？
           <router-link
@@ -48,20 +43,27 @@
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router'
-import LoginForm from '@/components/common/LoginForm.vue'
-
-const router = useRouter()
-
-// 登录成功处理
-const handleLoginSuccess = () => {
-  // 登录成功后的跳转逻辑已经在 useAuth 中处理
-  console.log('Login successful')
-}
-
-// 登录错误处理
-const handleLoginError = (error) => {
-  console.error('Login error:', error)
-}
+import { useRouter } from "vue-router";
+import LoginForm from "@/components/common/LoginForm.vue";
+import { useAuth } from "@/composables/useAuth";
+import { useUserinfoStore } from "@/stores/userinfo";
+const router = useRouter();
+const { login } = useAuth();
+const handleLogin = async (loginForm) => {
+  try {
+    const params = {
+      username: loginForm.username,
+      password: loginForm.password,
+    };
+    await login(params);
+    const isCoach = userinfoStore.userinfo.role === "coach";
+    if (isCoach) {
+      router.push("/coach");
+    } else {
+      router.push("/member");
+    }
+  } catch (error) {
+    console.error("Login error:", error);
+  }
+};
 </script>
-  

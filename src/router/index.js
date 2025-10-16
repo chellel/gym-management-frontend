@@ -3,16 +3,17 @@ import Layout from '@/layout/index.vue'
 import AdminLayout from '@/layout/admin.vue'
 import Login from '@/views/Login/index.vue'
 import AdminLogin from '@/admin/Login/index.vue'
+import { useUserinfoStore } from '@/stores/userinfo'
 
 // 认证和角色检查函数
 const isAuthenticated = () => {
-  const user = localStorage.getItem('user')
-  return !!user
+  const store = useUserinfoStore()
+  return store.isAuthenticated
 }
 
 const getUserRole = () => {
-  const user = localStorage.getItem('user')
-  return user ? JSON.parse(user).role : null
+  const store = useUserinfoStore()
+  return store.userRole
 }
 
 // 根据路径前缀获取所需角色

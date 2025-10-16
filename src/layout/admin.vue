@@ -139,13 +139,23 @@
   </template>
   
   <script setup>
-  import { ref, computed, onMounted } from 'vue'
-  import { useRouter } from 'vue-router'
-  import { useAuth } from '../composables/useAuth'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useUserinfoStore } from '@/stores/userinfo'
   
-const { user, logout } = useAuth()
+const router = useRouter()
+const userinfoStore = useUserinfoStore()
 
 const mobileMenuOpen = ref(false)
+
+// 获取用户信息
+const user = computed(() => userinfoStore.userinfo)
+
+// 登出方法
+const logout = async () => {
+  userinfoStore.clearUserinfo()
+  await router.push('/admin/login')
+}
 
 // 导航菜单 - 根据角色显示不同菜单
 const navigation = computed(() => {

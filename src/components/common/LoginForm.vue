@@ -95,48 +95,9 @@
         </el-form>
 
         <!-- 测试账号信息插槽 -->
-        <div v-if="showTestAccounts" class="mt-6">
-          <slot name="test-accounts">
-            <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <div class="flex items-start">
-                <svg
-                  class="w-5 h-5 text-blue-400 mt-0.5 mr-2"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-                <div class="text-blue-700 text-sm">
-                  <p class="font-medium mb-1">测试账号</p>
-                  <div v-for="account in testAccounts" :key="account.role" class="mb-1">
-                    <p><span class="font-medium">{{ account.label }}：</span>{{ account.username }} / {{ account.password }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </slot>
-        </div>
-
-        <!-- 注册链接插槽 -->
-        <div v-if="showRegisterLink" class="mt-6">
-          <slot name="register-link">
-            <div class="text-center">
-              <p class="text-sm text-gray-600">
-                还没有账号？
-                <router-link
-                  :to="registerPath"
-                  class="text-primary-600 hover:text-primary-700 font-medium"
-                >
-                  {{ registerText }}
-                </router-link>
-              </p>
-            </div>
-          </slot>
-        </div>
+        <slot name="bottom">
+         
+        </slot>
       </div>
     </div>
   </div>
@@ -145,6 +106,7 @@
 <script setup>
 import { reactive } from 'vue'
 import { useAuth } from '@/composables/useAuth'
+import { useAdminAuth } from '@/composables/useAdminAuth'
 
 // Props
 const props = defineProps({
@@ -164,10 +126,7 @@ const props = defineProps({
     type: String,
     default: '返回首页'
   },
-  showTestAccounts: {
-    type: Boolean,
-    default: true
-  },
+  
   showRegisterLink: {
     type: Boolean,
     default: true
@@ -180,21 +139,30 @@ const props = defineProps({
     type: String,
     default: '立即注册会员'
   },
+  authType: {
+    type: String,
+    default: 'member', // 'member' 或 'admin'
+    validator: (value) => ['member', 'admin'].includes(value)
+  },
   testAccounts: {
     type: Array,
-    default: () => [
-      { role: 'admin', label: '管理员', username: 'admin', password: 'admin' },
-      { role: 'coach', label: '教练', username: 'coach', password: 'coach' },
-      { role: 'member', label: '会员', username: 'member', password: 'member' }
-    ]
+    default: () => {
+      return [
+        { role: 'coach', label: '教练', username: 'coach', password: 'coach' },
+        { role: 'member', label: '会员', username: 'member', password: 'member' }
+      ]
+    }
   }
 })
 
-// Emits
-const emit = defineEmits(['login-success', 'login-error'])
+const emit = defineEmits(['login'])
 
 // 使用认证服务
-const { loginForm, loading, error, login } = useAuth()
+const memberAuth = useAuth()
+const adminAuth = useAdminAuth()
+
+// 根据authType选择认证服务
+const currentAuth = props.authType === 'admin' ? adminAuth : memberAuth
 
 // 表单数据
 const form = reactive({
@@ -202,17 +170,8 @@ const form = reactive({
   password: ''
 })
 
-// 处理登录
 const handleLogin = async () => {
-  // 同步表单数据到认证服务
-  loginForm.username = form.username
-  loginForm.password = form.password
-  
-  try {
-    await login()
-    emit('login-success')
-  } catch (err) {
-    emit('login-error', err)
-  }
+  emit('login', form)
+
 }
 </script>
