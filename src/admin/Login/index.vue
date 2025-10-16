@@ -17,7 +17,7 @@
           ></svg>
           <div class="text-blue-700 text-sm">
             <p class="font-medium mb-1">测试账号</p>
-            <p><span class="font-medium">管理员：</span>admin / admin</p>
+            <p><span class="font-medium">管理员：</span>admin / 123456</p>
           </div>
         </div>
       </div>
@@ -25,23 +25,31 @@
   </LoginForm>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import { useRouter } from "vue-router";
 import LoginForm from "@/components/common/LoginForm.vue";
 import { useAdminAuth } from "@/composables/useAdminAuth";
+import Swal from "sweetalert2";
 const router = useRouter();
 const { login } = useAdminAuth();
-// 登录成功处理
+
 const handleLogin = async (loginForm) => {
-  const params = {
-    username: loginForm.username,
-    password: loginForm.password,
-  };
   try {
-    await login(params);
+    const params = {
+      username: loginForm.username,
+      password: loginForm.password,
+    };
+    const res = await login(params);
+    if(!res.success){
+      Swal.fire({
+        text: res.message,
+        icon: "error",
+      });
+      return;
+    }
     router.push("/admin");
   } catch (error) {
-    console.error("Admin login error:", error);
+    console.error("Login error:", error);
   }
 };
 </script>

@@ -90,13 +90,13 @@
               </el-button>
               <template #dropdown>
                 <el-dropdown-menu>
-                  <el-dropdown-item command="profile">
+                  <el-dropdown-item v-if="userRole === 'member'" command="profile">
                     <el-icon class="w-4 h-4 mr-2">
                       <User />
                     </el-icon>
                     个人资料
                   </el-dropdown-item>
-                  <el-dropdown-item divided command="logout">
+                  <el-dropdown-item :divided="userRole === 'member'" command="logout">
                     <el-icon class="w-4 h-4 mr-2">
                       <SwitchButton />
                     </el-icon>
@@ -105,19 +105,6 @@
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
-
-            <!-- 教练直接退出按钮 -->
-            <el-button
-              v-if="userRole === 'coach'"
-              @click="handleLogout"
-              type="danger"
-              class="inline-flex items-center px-3 py-2 text-sm leading-4 font-medium rounded-md transition-colors duration-200"
-            >
-              <el-icon class="w-4 h-4 mr-1">
-                <SwitchButton />
-              </el-icon>
-              退出
-            </el-button>
 
             <!-- 移动端菜单按钮 -->
             <div class="md:hidden">

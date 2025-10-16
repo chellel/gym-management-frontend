@@ -17,15 +17,6 @@ export const useUserinfoStore = defineStore('userinfo', () => {
   const userEmail = computed(() => userinfo.value?.email || '')
   const userAvatar = computed(() => userinfo.value?.avatar || null)
 
-  // 管理员相关计算属性
-  const adminPermissions = computed(() => userinfo.value?.permissions || [])
-  const hasPermission = computed(() => (permission) => {
-    return adminPermissions.value.includes(permission)
-  })
-  const hasAnyPermission = computed(() => (permissions) => {
-    return permissions.some(permission => adminPermissions.value.includes(permission))
-  })
-
   // 会员相关计算属性
   const membershipType = computed(() => userinfo.value?.membership_type || null)
   const isVipMember = computed(() => membershipType.value === 'VIP')
@@ -84,16 +75,6 @@ export const useUserinfoStore = defineStore('userinfo', () => {
     return userRole.value === role
   }
 
-  // 权限检查方法（管理员专用）
-  const checkPermission = (permission) => {
-    if (!isAdmin.value) return false
-    return adminPermissions.value.includes(permission)
-  }
-
-  const checkAnyPermission = (permissions) => {
-    if (!isAdmin.value) return false
-    return permissions.some(permission => adminPermissions.value.includes(permission))
-  }
 
   // 会员相关方法
   const getMembershipInfo = () => {
@@ -134,11 +115,6 @@ export const useUserinfoStore = defineStore('userinfo', () => {
     userEmail,
     userAvatar,
     
-    // 管理员相关
-    adminPermissions,
-    hasPermission,
-    hasAnyPermission,
-    
     // 会员相关
     membershipType,
     isVipMember,
@@ -158,8 +134,6 @@ export const useUserinfoStore = defineStore('userinfo', () => {
     
     // 方法
     hasRole,
-    checkPermission,
-    checkAnyPermission,
     getMembershipInfo,
     getCoachInfo
   }

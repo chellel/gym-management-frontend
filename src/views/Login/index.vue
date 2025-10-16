@@ -22,8 +22,8 @@
           </svg>
           <div class="text-blue-700 text-sm">
             <p class="font-medium mb-1">测试账号</p>
-            <p><span class="font-medium">教练：</span>coach / coach</p>
-            <p><span class="font-medium">会员：</span>member / member</p>
+            <p><span class="font-medium">教练：</span>coach / 123456</p>
+            <p><span class="font-medium">会员：</span>member / 123456</p>
           </div>
         </div>
       </div>
@@ -46,10 +46,10 @@
 import { useRouter } from "vue-router";
 import LoginForm from "@/components/common/LoginForm.vue";
 import { useAuth } from "@/composables/useAuth";
-import { useUserinfoStore } from "@/stores/userinfo";
+import Swal from "sweetalert2";
+
 const router = useRouter();
 const { login } = useAuth();
-const userinfoStore = useUserinfoStore();
 const handleLogin = async (loginForm) => {
   try {
     const params = {
@@ -57,8 +57,15 @@ const handleLogin = async (loginForm) => {
       password: loginForm.password,
     };
     const res = await login(params);
-    const isCoach = userinfoStore.userRole === "coach";
-    if (isCoach) {
+    if (!res.success) {
+      Swal.fire({
+        text: res.message,
+        icon: "error",
+      });
+      return;
+    }
+    const { isCoach } = useAuth();
+    if (isCoach.value) {
       router.push("/coach");
     } else {
       router.push("/member");
