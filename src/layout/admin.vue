@@ -139,24 +139,26 @@
   </template>
   
   <script setup>
-  import { ref, onMounted } from 'vue'
+  import { ref, computed, onMounted } from 'vue'
   import { useRouter } from 'vue-router'
   import { useAuth } from '../composables/useAuth'
   
-  const router = useRouter()
-  const { user, logout } = useAuth()
-  
-  const mobileMenuOpen = ref(false)
-  
-  // 导航菜单
-  const navigation = [
-    { name: '首页', href: '/welcome', icon: 'House' },
+const { user, logout } = useAuth()
+
+const mobileMenuOpen = ref(false)
+
+// 导航菜单 - 根据角色显示不同菜单
+const navigation = computed(() => {
+  const baseMenu = [
+    { name: '首页', href: '/admin/home', icon: 'House' },
     { name: '会员管理', href: '/admin/member', icon: 'User' },
     { name: '课程预约', href: '/admin/classes', icon: 'Calendar' },
     { name: '排班管理', href: '/admin/schedules', icon: 'Clock' },
-    { name: '数据报表', href: '/admin/reports', icon: 'DataAnalysis' },
-    { name: '教练工作台', href: '/coach/workbench', icon: 'UserFilled' }
+    { name: '数据报表', href: '/admin/reports', icon: 'DataAnalysis' }
   ]
+  
+  return baseMenu
+})
   
   // 退出登录
   const handleLogout = async () => {

@@ -235,13 +235,23 @@ import { useAuth } from '../composables/useAuth'
 import { checkinService } from '@/services/checkinService'
 
 const router = useRouter()
-const { user, logout, getCurrentUser } = useAuth()
+const { user, logout, getCurrentUser, isCoach } = useAuth()
 
 const mobileMenuOpen = ref(false)
 const checkinStatus = ref(false)
 
 // 导航菜单 - 会员专用菜单
 const navigation = computed(() => {
+  if(isCoach()) {
+    return [
+      { name: '教练工作台', href: '/coach/workbench', icon: 'UserFilled' },
+      { name: '我的课表', href: '/coach/schedule', icon: 'Calendar' },
+      { name: '课堂管理', href: '/coach/classes', icon: 'UserFilled' },
+      { name: '学员管理', href: '/coach/members', icon: 'User' },
+      { name: '可用时间', href: '/coach/availability', icon: 'Clock' },
+      { name: '全局课表', href: '/coach/global', icon: 'DataAnalysis' }
+    ]
+  }
   return [
     { name: '会员中心', href: '/member/center', icon: 'User' },
     { name: '签到', href: '/member/checkin', icon: 'Check' },

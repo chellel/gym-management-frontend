@@ -6,12 +6,45 @@ import Swal from 'sweetalert2'
 const authService = {
   // 模拟登录
   async login(email, password) {
-    // 简单的admin验证
+    // 管理员验证
     if (email === 'admin' && password === 'admin') {
-      const user = { id: 1, email: 'admin', name: '管理员' }
+      const user = { 
+        id: 1, 
+        email: 'admin', 
+        name: '管理员',
+        role: 'admin',
+        avatar: null
+      }
       localStorage.setItem('user', JSON.stringify(user))
       return { user, error: null }
-    } else {
+    }
+    // 教练验证
+    else if (email === 'coach' && password === 'coach') {
+      const user = { 
+        id: 2, 
+        email: 'coach', 
+        name: '李教练',
+        role: 'coach',
+        specialty: '瑜伽/普拉提/冥想',
+        avatar: null
+      }
+      localStorage.setItem('user', JSON.stringify(user))
+      return { user, error: null }
+    }
+    // 会员验证
+    else if (email === 'member' && password === 'member') {
+      const user = { 
+        id: 3, 
+        email: 'member', 
+        name: '张三',
+        role: 'member',
+        membership_type: 'VIP',
+        avatar: null
+      }
+      localStorage.setItem('user', JSON.stringify(user))
+      return { user, error: null }
+    }
+    else {
       return { user: null, error: '用户名或密码错误' }
     }
   },
@@ -28,6 +61,28 @@ const authService = {
   
   isAuthenticated() {
     return !!this.getCurrentUser()
+  },
+
+  // 角色相关方法
+  getUserRole() {
+    const user = this.getCurrentUser()
+    return user ? user.role : null
+  },
+
+  isAdmin() {
+    return this.getUserRole() === 'admin'
+  },
+
+  isCoach() {
+    return this.getUserRole() === 'coach'
+  },
+
+  isMember() {
+    return this.getUserRole() === 'member'
+  },
+
+  hasRole(role) {
+    return this.getUserRole() === role
   }
 }
 
@@ -77,7 +132,17 @@ export const useAuth = () => {
           timer: 2000,
           showConfirmButton: false
         })
-        await router.push('/welcome')
+        
+        // 根据角色跳转到不同页面
+        if (loggedInUser.role === 'admin') {
+          await router.push('/admin/home')
+        } else if (loggedInUser.role === 'coach') {
+          await router.push('/coach/workbench')
+        } else if (loggedInUser.role === 'member') {
+          await router.push('/member/center')
+        } else {
+          await router.push('/welcome')
+        }
       }
     } catch (err) {
       console.error('Login error:', err)
@@ -155,6 +220,12 @@ export const useAuth = () => {
     isAuthenticated,
     getCurrentUser,
     clearError,
-    resetForm
+    resetForm,
+    // 角色相关方法
+    getUserRole: () => authService.getUserRole(),
+    isAdmin: () => authService.isAdmin(),
+    isCoach: () => authService.isCoach(),
+    isMember: () => authService.isMember(),
+    hasRole: (role) => authService.hasRole(role)
   }
 }
