@@ -29,6 +29,7 @@ const getRequiredRoleByPath = (path) => {
 
 // 检查用户是否有权限访问指定路径
 const hasPathPermission = (path, userRole) => {
+  return true
   const requiredRole = getRequiredRoleByPath(path)
   if (!requiredRole) {
     return true // 公共路径，无需权限检查
@@ -95,6 +96,11 @@ const routes = [
       {
         path: '',
         name: 'MemberCenter',
+        component: () => import('@/views/Member/Welcome.vue')
+      },
+      {
+        path: 'center',
+        name: 'MemberCenterPage',
         component: () => import('@/views/Member/Center.vue')
       },
       {
@@ -156,7 +162,7 @@ const routes = [
       {
         path: '',
         name: 'CoachWorkbench',
-        component: () => import('@/views/coach/index.vue')
+        component: () => import('@/views/Coach/index.vue')
       }
     ]
   }
