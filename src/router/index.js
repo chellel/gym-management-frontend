@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Layout from '@/layout/index.vue'
 import AdminLayout from '@/layout/admin.vue'
-import CoachLayout from '@/layout/coach.vue'
 import Login from '@/views/Login/index.vue'
 
 // 认证和角色检查函数
@@ -15,8 +14,24 @@ const getUserRole = () => {
   return user ? JSON.parse(user).role : null
 }
 
-const hasRole = (requiredRole) => {
-  const userRole = getUserRole()
+// 根据路径前缀获取所需角色
+const getRequiredRoleByPath = (path) => {
+  if (path.startsWith('/admin')) {
+    return 'admin'
+  } else if (path.startsWith('/coach')) {
+    return 'coach'
+  } else if (path.startsWith('/member')) {
+    return 'member'
+  }
+  return null // 公共路径不需要特定角色
+}
+
+// 检查用户是否有权限访问指定路径
+const hasPathPermission = (path, userRole) => {
+  const requiredRole = getRequiredRoleByPath(path)
+  if (!requiredRole) {
+    return true // 公共路径，无需权限检查
+  }
   return userRole === requiredRole
 }
 
@@ -69,29 +84,24 @@ const routes = [
       {
         path: 'checkin',
         name: 'MemberCheckin',
-        component: () => import('@/views/Member/Checkin.vue'),
-        meta: { requiresAuth: true }
+        component: () => import('@/views/Member/Checkin.vue')
       },
       {
         path: 'center',
         name: 'MemberCenter',
-        component: () => import('@/views/Member/Center.vue'),
-        meta: { requiresAuth: true }
+        component: () => import('@/views/Member/Center.vue')
       },
       {
         path: 'booking',
         name: 'MemberBooking',
-        component: () => import('@/views/Member/Booking.vue'),
-        meta: { requiresAuth: true }
+        component: () => import('@/views/Member/Booking.vue')
       },
       {
         path: 'courses',
         name: 'MemberCourses',
-        component: () => import('@/views/Member/Courses.vue'),
-        meta: { requiresAuth: true }
+        component: () => import('@/views/Member/Courses.vue')
       }
-    ],
-    meta: { requiresAuth: true }
+    ]
   },
   // 后台管理功能
   {
@@ -102,8 +112,7 @@ const routes = [
       {
         path: 'home',
         name: 'AdminHome',
-        component: () => import('@/admin/Home/index.vue'),
-        meta: { requiresAuth: true }
+        component: () => import('@/admin/Home/index.vue')
       },
       {
         path: 'member',
@@ -125,23 +134,20 @@ const routes = [
         name: 'Reports',
         component: () => import('@/views/Reports.vue')
       }
-    ],
-    meta: { requiresAuth: true }
+    ]
   },
   // 教练工作台
   {
     path: '/coach',
     name: 'coach',
-    component: CoachLayout,
+    component: Layout,
     children: [
       {
         path: 'workbench',
         name: 'CoachWorkbench',
-        component: () => import('@/views/CoachWorkbench.vue'),
-        meta: { requiresAuth: true, role: 'coach' }
+        component: () => import('@/views/CoachWorkbench.vue')
       }
-    ],
-    meta: { requiresAuth: true, role: 'coach' }
+    ]
   }
 ]
 
@@ -152,24 +158,31 @@ const router = createRouter({
 
 // 导航守卫
 router.beforeEach((to, from, next) => {
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
-  const requiredRole = to.meta.role
   const userIsAuthenticated = isAuthenticated()
   const userRole = getUserRole()
+  const targetPath = to.path
 
-  // 检查是否需要认证
-  if (requiresAuth && !userIsAuthenticated) {
+  // 公共路径（登录、注册等）无需权限检查
+  const publicPaths = ['/login', '/register']
+  if (publicPaths.includes(targetPath)) {
+    // 如果已登录用户访问登录页面，重定向到合适的首页
+    if (targetPath === '/login' && userIsAuthenticated) {
+      redirectToHomeByRole(next, userRole)
+      return
+    }
+    next()
+    return
+  }
+
+  // 检查是否需要认证（非公共路径都需要认证）
+  if (!userIsAuthenticated) {
     next('/login')
     return
   }
+
   // 检查角色权限
-  if (requiredRole && !hasRole(requiredRole)) {
+  if (!hasPathPermission(targetPath, userRole)) {
     // 根据用户角色重定向到合适的页面
-    redirectToHomeByRole(next, userRole)
-    return
-  }
-  // 如果已登录用户访问登录页面，重定向到合适的首页
-  if (to.path === '/login' && userIsAuthenticated) {
     redirectToHomeByRole(next, userRole)
     return
   }
