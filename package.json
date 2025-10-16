@@ -12,10 +12,12 @@
     "@element-plus/icons-vue": "^2.3.2",
     "axios": "^1.12.2",
     "dayjs": "^1.11.18",
+    "echarts": "^6.0.0",
     "element-plus": "^2.11.1",
     "pinia": "^3.0.3",
     "sweetalert2": "^11.22.4",
     "vue": "^3.4.0",
+    "vue-echarts": "^8.0.1",
     "vue-router": "^4.2.5"
   },
   "devDependencies": {
