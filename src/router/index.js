@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Layout from '@/layout/index.vue'
 import AdminLayout from '@/layout/admin.vue'
 import Login from '@/views/Login/index.vue'
+import AdminLogin from '@/admin/Login/index.vue'
 
 // 认证和角色检查函数
 const isAuthenticated = () => {
@@ -45,7 +46,7 @@ const getHomePathByRole = (userRole) => {
     case 'member':
       return '/member'
     default:
-      return '/login'
+      return '/welcome'
   }
 }
 
@@ -66,9 +67,19 @@ const routes = [
     }
   },
   {
+    path: '/welcome',
+    name: 'Welcome',
+    component: () => import('@/views/Welcome/index.vue')
+  },
+  {
     path: '/login',
     name: 'Login',
     component: Login
+  },
+  {
+    path: '/admin/login',
+    name: 'AdminLogin',
+    component: AdminLogin
   },
   {
     path: '/register',
@@ -163,10 +174,10 @@ router.beforeEach((to, from, next) => {
   const targetPath = to.path
 
   // 公共路径（登录、注册等）无需权限检查
-  const publicPaths = ['/login', '/register']
+  const publicPaths = ['/login', '/register', '/admin/login']
   if (publicPaths.includes(targetPath)) {
     // 如果已登录用户访问登录页面，重定向到合适的首页
-    if (targetPath === '/login' && userIsAuthenticated) {
+    if ((targetPath === '/login' || targetPath === '/admin/login') && userIsAuthenticated) {
       redirectToHomeByRole(next, userRole)
       return
     }

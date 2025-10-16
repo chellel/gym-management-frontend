@@ -73,6 +73,17 @@
 
             <!-- 用户操作按钮 -->
             <div v-if="userRole === 'member'" class="flex items-center space-x-2">
+              <!-- 管理后台入口 -->
+              <router-link
+                to="/admin/login"
+                class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors duration-200"
+              >
+                <el-icon class="w-4 h-4 mr-1">
+                  <Setting />
+                </el-icon>
+                管理后台
+              </router-link>
+              
               <!-- 会员下拉菜单 -->
               <el-dropdown @command="handleUserCommand" trigger="click">
                 <el-button type="text" class="p-1">
@@ -283,7 +294,6 @@ const navigation = computed(() => {
   if (userRole.value === 'coach') {
     return [
       { name: '工作台', href: '/coach', icon: 'House' },
-      { name: '我的课表', href: '/coach/schedules', icon: 'Calendar' },
     ]
   }
   
