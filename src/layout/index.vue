@@ -21,6 +21,7 @@
 
             <!-- 桌面端导航菜单 -->
             <div class="hidden md:ml-10 md:flex md:space-x-8">
+              
               <router-link
                 v-for="item in navigation"
                 :key="item.name"
@@ -305,14 +306,14 @@ const userRole = computed(() => {
   return currentUser?.role || "member";
 });
 
-// 导航菜单 - 根据角色显示不同菜单
 const navigation = computed(() => {
   if (userRole.value === "coach") {
     return [{ name: "工作台", href: "/coach", icon: "House" }];
   }
 
   return [
-    { name: "会员中心", href: "/member", icon: "User" },
+    { name: "首页", href: "/member", icon: "HomeFilled" },
+    { name: "会员中心", href: "/member/center", icon: "User" },
     { name: "签到", href: "/member/checkin", icon: "Check" },
     { name: "课程预约", href: "/member/booking", icon: "Calendar" },
     { name: "课程查询", href: "/member/courses", icon: "Search" },
@@ -386,7 +387,7 @@ onMounted(() => {
 
 <style scoped>
 /* 自定义样式 */
-.router-link-active {
+.router-link-exact-active {
   @apply border-blue-500 text-blue-600 bg-blue-50;
 }
 
