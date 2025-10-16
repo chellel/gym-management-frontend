@@ -445,51 +445,13 @@
         </div>
       </div>
 
-      <!-- 全局课表视图 -->
-      <div v-if="activeTab === 'global'" class="p-6">
+      <!-- 排班管理 -->
+      <div v-if="activeTab === 'schedule-management'" class="p-6">
         <div class="flex items-center justify-between mb-6">
-          <h2 class="text-xl font-semibold text-gray-900">全局课表视图</h2>
-          <div class="flex items-center space-x-4">
-            <el-date-picker
-              v-model="globalScheduleDate"
-              type="date"
-              placeholder="选择日期"
-              size="small"
-            />
-            <el-button @click="refreshGlobalSchedule" type="default" size="small">
-              <el-icon class="w-4 h-4 mr-1">
-                <Refresh />
-              </el-icon>
-              刷新
-            </el-button>
-          </div>
+          <h2 class="text-xl font-semibold text-gray-900">排班管理</h2>
         </div>
-
-        <div class="space-y-4">
-          <div 
-            v-for="schedule in globalSchedules" 
-            :key="schedule.id"
-            class="border rounded-lg p-4"
-          >
-            <div class="flex items-center justify-between">
-              <div class="flex-1">
-                <div class="flex items-center space-x-4">
-                  <div>
-                    <h3 class="text-lg font-medium text-gray-900">{{ schedule.activity }}</h3>
-                    <p class="text-sm text-gray-500">{{ schedule.location }}</p>
-                  </div>
-                  <div class="text-right">
-                    <div class="text-sm font-medium text-gray-900">{{ schedule.trainer_name }}</div>
-                    <div class="text-sm text-gray-500">{{ schedule.start_time }} - {{ schedule.end_time }}</div>
-                  </div>
-                </div>
-              </div>
-              <el-tag :type="schedule.trainer_id === coachInfo.id ? 'primary' : 'default'">
-                {{ schedule.trainer_id === coachInfo.id ? '我的课程' : '其他教练' }}
-              </el-tag>
-            </div>
-          </div>
-        </div>
+        <Schedule />
+       
       </div>
     </div>
 
@@ -775,11 +737,13 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { useAuth } from '../composables/useAuth'
-import { useCoachService } from '../composables/useCoachService'
+import { useRouter } from 'vue-router'
+import { useAuth } from '@/composables/useAuth'
+import { useCoachService } from '@/composables/useCoachService'
 import Swal from 'sweetalert2'
-
+import Schedule from '@/components/schedule/index.vue'
 const { user } = useAuth()
+const router = useRouter()
 const {
   coachInfo,
   coachClasses,
@@ -854,9 +818,9 @@ const features = [
     icon: 'Clock'
   },
   {
-    key: 'global',
-    name: '全局课表视图',
-    description: '查看全健身房课程',
+    key: 'schedule-management',
+    name: '排班管理',
+    description: '管理个人排班安排',
     icon: 'DataAnalysis'
   }
 ]
@@ -996,6 +960,11 @@ const monthDays = computed(() => {
 onMounted(async () => {
   await initializeData()
 })
+
+// 跳转到排班管理页面
+const goToScheduleManagement = () => {
+  router.push('/coach/schedules')
+}
 
 // 初始化数据
 const initializeData = async () => {

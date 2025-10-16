@@ -150,7 +150,7 @@ const mobileMenuOpen = ref(false)
 // 导航菜单 - 根据角色显示不同菜单
 const navigation = computed(() => {
   const baseMenu = [
-    { name: '首页', href: '/admin/home', icon: 'House' },
+    { name: '首页', href: '/admin', icon: 'House' },
     { name: '会员管理', href: '/admin/member', icon: 'User' },
     { name: '课程预约', href: '/admin/classes', icon: 'Calendar' },
     { name: '排班管理', href: '/admin/schedules', icon: 'Clock' },

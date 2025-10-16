@@ -39,11 +39,11 @@ const hasPathPermission = (path, userRole) => {
 const getHomePathByRole = (userRole) => {
   switch (userRole) {
     case 'admin':
-      return '/admin/home'
+      return '/admin'
     case 'coach':
-      return '/coach/workbench'
+      return '/coach'
     case 'member':
-      return '/member/center'
+      return '/member'
     default:
       return '/login'
   }
@@ -82,14 +82,14 @@ const routes = [
     component: Layout,
     children: [
       {
+        path: '',
+        name: 'MemberCenter',
+        component: () => import('@/views/Member/Center.vue')
+      },
+      {
         path: 'checkin',
         name: 'MemberCheckin',
         component: () => import('@/views/Member/Checkin.vue')
-      },
-      {
-        path: 'center',
-        name: 'MemberCenter',
-        component: () => import('@/views/Member/Center.vue')
       },
       {
         path: 'booking',
@@ -110,7 +110,7 @@ const routes = [
     component: AdminLayout,
     children: [
       {
-        path: 'home',
+        path: '',
         name: 'AdminHome',
         component: () => import('@/admin/Home/index.vue')
       },
@@ -143,9 +143,9 @@ const routes = [
     component: Layout,
     children: [
       {
-        path: 'workbench',
+        path: '',
         name: 'CoachWorkbench',
-        component: () => import('@/views/CoachWorkbench.vue')
+        component: () => import('@/views/coach/index.vue')
       }
     ]
   }

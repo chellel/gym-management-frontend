@@ -282,17 +282,13 @@ const userRole = computed(() => {
 const navigation = computed(() => {
   if (userRole.value === 'coach') {
     return [
-      { name: '工作台', href: '/coach/workbench', icon: 'House' },
-      { name: '我的课表', href: '/coach/schedule', icon: 'Calendar' },
-      { name: '课堂管理', href: '/coach/classes', icon: 'UserFilled' },
-      { name: '学员管理', href: '/coach/members', icon: 'User' },
-      { name: '可用时间', href: '/coach/availability', icon: 'Clock' },
-      { name: '全局课表', href: '/coach/global', icon: 'DataAnalysis' }
+      { name: '工作台', href: '/coach', icon: 'House' },
+      { name: '我的课表', href: '/coach/schedules', icon: 'Calendar' },
     ]
   }
   
   return [
-    { name: '会员中心', href: '/member/center', icon: 'User' },
+    { name: '会员中心', href: '/member', icon: 'User' },
     { name: '签到', href: '/member/checkin', icon: 'Check' },
     { name: '课程预约', href: '/member/booking', icon: 'Calendar' },
     { name: '课程查询', href: '/member/courses', icon: 'Search' }
