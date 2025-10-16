@@ -188,12 +188,23 @@ export const useCoachService = () => {
   // 获取教练的所有学员
   const getCoachMembers = async (coachId) => {
     try {
+      if (!coachId) {
+        throw new Error('教练ID不能为空')
+      }
+      
       // 模拟API调用
       const mockMembers = generateMockCoachMembers(coachId)
+      
+      if (!mockMembers || !Array.isArray(mockMembers)) {
+        throw new Error('返回的学员数据格式错误')
+      }
+      
       allMembers.value = mockMembers
       return mockMembers
     } catch (error) {
       console.error('获取教练学员失败:', error)
+      // 设置空数组作为默认值
+      allMembers.value = []
       throw error
     }
   }
@@ -378,6 +389,85 @@ export const useCoachService = () => {
         date: dateStr,
         max_capacity: 15,
         current_bookings: 10
+      }
+    ]
+  }
+
+  // 生成模拟课程学员数据
+  const generateMockClassMembers = (classId) => {
+    const today = new Date()
+    const bookingTime = new Date(today.getTime() - Math.random() * 7 * 24 * 60 * 60 * 1000)
+    
+    return [
+      {
+        id: 1,
+        class_id: classId,
+        name: '张三',
+        phone: '13800138001',
+        email: 'zhangsan@example.com',
+        membership_type: 'VIP',
+        attendance_status: 'present',
+        attendance_time: new Date().toISOString(),
+        booking_time: bookingTime.toISOString(),
+        emergency_contact: '13800138011',
+        medical_notes: '无',
+        notes: 'VIP会员，上课积极'
+      },
+      {
+        id: 2,
+        class_id: classId,
+        name: '李四',
+        phone: '13800138002',
+        email: 'lisi@example.com',
+        membership_type: '普通',
+        attendance_status: 'present',
+        attendance_time: new Date().toISOString(),
+        booking_time: bookingTime.toISOString(),
+        emergency_contact: '13800138012',
+        medical_notes: '无',
+        notes: '普通会员'
+      },
+      {
+        id: 3,
+        class_id: classId,
+        name: '王五',
+        phone: '13800138003',
+        email: 'wangwu@example.com',
+        membership_type: 'VIP',
+        attendance_status: 'absent',
+        attendance_time: null,
+        booking_time: bookingTime.toISOString(),
+        emergency_contact: '13800138013',
+        medical_notes: '无',
+        notes: 'VIP会员，今天请假'
+      },
+      {
+        id: 4,
+        class_id: classId,
+        name: '赵六',
+        phone: '13800138004',
+        email: 'zhaoliu@example.com',
+        membership_type: '普通',
+        attendance_status: 'present',
+        attendance_time: new Date().toISOString(),
+        booking_time: bookingTime.toISOString(),
+        emergency_contact: '13800138014',
+        medical_notes: '无',
+        notes: '普通会员'
+      },
+      {
+        id: 5,
+        class_id: classId,
+        name: '孙七',
+        phone: '13800138005',
+        email: 'sunqi@example.com',
+        membership_type: 'VIP',
+        attendance_status: 'present',
+        attendance_time: new Date().toISOString(),
+        booking_time: bookingTime.toISOString(),
+        emergency_contact: '13800138015',
+        medical_notes: '无',
+        notes: 'VIP会员'
       }
     ]
   }
