@@ -2,7 +2,7 @@
   <div class="space-y-6">
     <!-- 页面标题 -->
     <div>
-      <h1 class="text-2xl font-bold text-gray-900">数据报表</h1>
+      <h1 class="text-2xl font-bold text-gray-900">数据看板</h1>
       <p class="mt-1 text-sm text-gray-600">
         查看健身房运营数据和业务分析报告。
       </p>
@@ -15,29 +15,19 @@
       >
         <div class="flex-1">
           <label
-            for="start-date"
+            for="date-range"
             class="block text-sm font-medium text-gray-700 mb-2"
           >
-            开始日期
+            选择日期范围
           </label>
           <el-date-picker
-            v-model="dateRange.start"
-            type="date"
-            placeholder="选择开始日期"
-            class="w-full"
-          />
-        </div>
-        <div class="flex-1">
-          <label
-            for="end-date"
-            class="block text-sm font-medium text-gray-700 mb-2"
-          >
-            结束日期
-          </label>
-          <el-date-picker
-            v-model="dateRange.end"
-            type="date"
-            placeholder="选择结束日期"
+            v-model="dateRange"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            format="YYYY-MM-DD"
+            value-format="YYYY-MM-DD"
             class="w-full"
           />
         </div>
@@ -200,16 +190,8 @@
           </h3>
         </div>
         <div class="p-6">
-          <div
-            class="h-64 flex items-center justify-center bg-gray-50 rounded-lg"
-          >
-            <div class="text-center">
-              <el-icon class="mx-auto h-12 w-12 text-gray-400">
-                <DataAnalysis />
-              </el-icon>
-              <p class="mt-2 text-sm text-gray-500">图表功能开发中</p>
-              <p class="text-xs text-gray-400">可集成 Chart.js 或 ECharts</p>
-            </div>
+          <div class="h-64 sm:h-80">
+            <MemberGrowthChart :data="memberGrowthData" />
           </div>
         </div>
       </div>
@@ -220,16 +202,37 @@
           <h3 class="text-lg leading-6 font-medium text-gray-900">收入分析</h3>
         </div>
         <div class="p-6">
-          <div
-            class="h-64 flex items-center justify-center bg-gray-50 rounded-lg"
-          >
-            <div class="text-center">
-              <el-icon class="mx-auto h-12 w-12 text-gray-400">
-                <PieChart />
-              </el-icon>
-              <p class="mt-2 text-sm text-gray-500">图表功能开发中</p>
-              <p class="text-xs text-gray-400">可集成 Chart.js 或 ECharts</p>
-            </div>
+          <div class="h-64 sm:h-80">
+            <RevenueChart :data="revenueChartData" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 第二行图表 -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- 课程预约 Top 5 -->
+      <div class="bg-white shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg leading-6 font-medium text-gray-900">
+            课程预约 Top 5
+          </h3>
+        </div>
+        <div class="p-6">
+          <div class="h-64 sm:h-80">
+            <ClassBookingChart :data="classBookingData" />
+          </div>
+        </div>
+      </div>
+
+      <!-- 训练高峰期 -->
+      <div class="bg-white shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg leading-6 font-medium text-gray-900">训练高峰期</h3>
+        </div>
+        <div class="p-6">
+          <div class="h-72 sm:h-80">
+            <PeakHoursChart :data="peakHoursData" />
           </div>
         </div>
       </div>
@@ -463,16 +466,22 @@
 <script setup>
 import { ref, reactive, onMounted } from "vue";
 import Swal from "sweetalert2";
+import {
+  MemberGrowthChart,
+  ClassBookingChart,
+  RevenueChart,
+  PeakHoursChart
+} from "@/components/charts";
 // Element Plus 图标已全局注册，无需导入
 
 // 响应式数据
 const currentTab = ref("members");
-const dateRange = reactive({
-  start: new Date(new Date().setDate(new Date().getDate() - 30))
+const dateRange = ref([
+  new Date(new Date().setDate(new Date().getDate() - 30))
     .toISOString()
     .split("T")[0],
-  end: new Date().toISOString().split("T")[0],
-});
+  new Date().toISOString().split("T")[0]
+]);
 
 // KPI数据
 const kpis = reactive({
@@ -517,6 +526,95 @@ const financeData = ref([
   { source: "其他收入", amount: 4300, percentage: 2.7, growth: 15.6 },
 ]);
 
+// 图表数据
+// 会员增长趋势数据
+const memberGrowthData = ref([
+  { date: "1月", newMembers: 45, totalMembers: 1200 },
+  { date: "2月", newMembers: 52, totalMembers: 1252 },
+  { date: "3月", newMembers: 38, totalMembers: 1290 },
+  { date: "4月", newMembers: 67, totalMembers: 1357 },
+  { date: "5月", newMembers: 43, totalMembers: 1400 },
+  { date: "6月", newMembers: 56, totalMembers: 1456 },
+  { date: "7月", newMembers: 48, totalMembers: 1504 },
+  { date: "8月", newMembers: 61, totalMembers: 1565 },
+  { date: "9月", newMembers: 39, totalMembers: 1604 },
+  { date: "10月", newMembers: 52, totalMembers: 1656 },
+  { date: "11月", newMembers: 44, totalMembers: 1700 },
+  { date: "12月", newMembers: 58, totalMembers: 1758 }
+]);
+
+// 课程预约 Top 5 数据
+const classBookingData = ref([
+  { name: "瑜伽课程", bookings: 456 },
+  { name: "动感单车", bookings: 378 },
+  { name: "力量训练", bookings: 234 },
+  { name: "有氧运动", bookings: 189 },
+  { name: "普拉提", bookings: 156 }
+]);
+
+// 收入统计图表数据
+const revenueChartData = ref([
+  { name: "会员费", value: 126800, color: "#3b82f6" },
+  { name: "私教费", value: 18600, color: "#10b981" },
+  { name: "商品销售", value: 8900, color: "#f59e0b" },
+  { name: "其他收入", value: 4300, color: "#8b5cf6" }
+]);
+
+// 训练高峰期数据 - 按不同时段分类
+const peakHoursData = ref({
+  weekday: [
+    { time: "06:00", activeUsers: 25 },
+    { time: "07:00", activeUsers: 45 },
+    { time: "08:00", activeUsers: 35 },
+    { time: "09:00", activeUsers: 20 },
+    { time: "10:00", activeUsers: 15 },
+    { time: "11:00", activeUsers: 18 },
+    { time: "12:00", activeUsers: 30 },
+    { time: "13:00", activeUsers: 25 },
+    { time: "14:00", activeUsers: 20 },
+    { time: "15:00", activeUsers: 22 },
+    { time: "16:00", activeUsers: 28 },
+    { time: "17:00", activeUsers: 55 },
+    { time: "18:00", activeUsers: 85 },
+    { time: "19:00", activeUsers: 95 },
+    { time: "20:00", activeUsers: 78 },
+    { time: "21:00", activeUsers: 45 },
+    { time: "22:00", activeUsers: 25 }
+  ],
+  weekend: [
+    { time: "08:00", activeUsers: 15 },
+    { time: "09:00", activeUsers: 25 },
+    { time: "10:00", activeUsers: 35 },
+    { time: "11:00", activeUsers: 45 },
+    { time: "12:00", activeUsers: 40 },
+    { time: "13:00", activeUsers: 30 },
+    { time: "14:00", activeUsers: 35 },
+    { time: "15:00", activeUsers: 50 },
+    { time: "16:00", activeUsers: 65 },
+    { time: "17:00", activeUsers: 70 },
+    { time: "18:00", activeUsers: 60 },
+    { time: "19:00", activeUsers: 45 },
+    { time: "20:00", activeUsers: 30 },
+    { time: "21:00", activeUsers: 20 }
+  ],
+  morning: [
+    { time: "06:00", activeUsers: 25 },
+    { time: "07:00", activeUsers: 45 },
+    { time: "08:00", activeUsers: 35 },
+    { time: "09:00", activeUsers: 20 },
+    { time: "10:00", activeUsers: 15 },
+    { time: "11:00", activeUsers: 18 }
+  ],
+  evening: [
+    { time: "17:00", activeUsers: 55 },
+    { time: "18:00", activeUsers: 85 },
+    { time: "19:00", activeUsers: 95 },
+    { time: "20:00", activeUsers: 78 },
+    { time: "21:00", activeUsers: 45 },
+    { time: "22:00", activeUsers: 25 }
+  ]
+});
+
 // 初始化
 onMounted(() => {
   refreshData();
@@ -538,8 +636,10 @@ const setQuickRange = (range) => {
       start.setDate(today.getDate() - 30);
   }
 
-  dateRange.start = start.toISOString().split("T")[0];
-  dateRange.end = today.toISOString().split("T")[0];
+  dateRange.value = [
+    start.toISOString().split("T")[0],
+    today.toISOString().split("T")[0]
+  ];
 
   refreshData();
 };
@@ -547,10 +647,13 @@ const setQuickRange = (range) => {
 // 刷新数据
 const refreshData = async () => {
   try {
+    // 模拟数据加载
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
     // 这里可以调用API获取实际数据
     await Swal.fire({
       title: "数据已更新",
-      text: `已加载 ${dateRange.start} 至 ${dateRange.end} 的数据`,
+      text: `已加载 ${dateRange.value[0]} 至 ${dateRange.value[1]} 的数据`,
       icon: "success",
       timer: 2000,
       showConfirmButton: false,

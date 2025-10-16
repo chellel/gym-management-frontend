@@ -83,7 +83,7 @@
               </div>
             </div>
             <div class="ml-4">
-              <h3 class="text-lg font-semibold text-gray-900">数据报表</h3>
+              <h3 class="text-lg font-semibold text-gray-900">数据看板</h3>
               <p class="text-gray-600 text-sm">查看业务数据</p>
             </div>
           </div>
