@@ -7,16 +7,18 @@
           <!-- 左侧Logo和导航 -->
           <div class="flex items-center">
             <div class="flex-shrink-0 flex items-center">
-              <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+              <div
+                class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center"
+              >
                 <el-icon class="h-6 w-6 text-white" size="24">
                   <Lightning />
                 </el-icon>
               </div>
               <h1 class="ml-3 text-xl font-bold text-gray-900">
-                {{ userRole === 'coach' ? 'GymSys' : '健身俱乐部' }}
+                {{ userRole === "coach" ? "GymSys" : "健身俱乐部" }}
               </h1>
             </div>
-            
+
             <!-- 桌面端导航菜单 -->
             <div class="hidden md:ml-10 md:flex md:space-x-8">
               <router-link
@@ -25,7 +27,8 @@
                 :to="item.href"
                 class="border-transparent text-gray-600 hover:border-blue-300 hover:text-blue-700 inline-flex items-center px-3 py-2 border-b-2 text-sm font-medium transition-colors duration-200 rounded-t-lg"
                 :class="{
-                  'border-blue-500 text-blue-600 bg-blue-50': $route.path === item.href
+                  'border-blue-500 text-blue-600 bg-blue-50':
+                    $route.path === item.href,
                 }"
               >
                 <el-icon class="w-4 h-4 mr-2">
@@ -39,7 +42,10 @@
           <!-- 右侧用户信息和操作 -->
           <div class="flex items-center space-x-4">
             <!-- 签到状态指示器 (仅会员显示) -->
-            <div v-if="checkinStatus && userRole === 'member'" class="hidden md:flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+            <div
+              v-if="checkinStatus && userRole === 'member'"
+              class="hidden md:flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm"
+            >
               <el-icon class="w-4 h-4 mr-1">
                 <Check />
               </el-icon>
@@ -56,59 +62,48 @@
               </el-icon>
             </el-button>
 
-            <!-- 用户信息显示 -->
-            <div class="flex items-center space-x-3">
-              <div class="flex-shrink-0">
-                <div class="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-                  <span class="text-sm font-medium text-white">
-                    {{ getUserInitial() }}
-                  </span>
+            <el-dropdown @command="handleUserCommand" trigger="hover">
+              <el-button type="text" class="p-1">
+                <div class="flex items-center space-x-3">
+                  <div class="flex-shrink-0">
+                    <div
+                      class="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center"
+                    >
+                      <span class="text-sm font-medium text-white">
+                        {{ getUserInitial() }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="hidden md:block">
+                    <div class="text-sm font-medium text-gray-900">
+                      {{ getUserDisplayName() }}
+                    </div>
+                    <div class="text-xs text-gray-500">
+                      {{ getUserSubtitle() }}
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div class="hidden md:block">
-                <div class="text-sm font-medium text-gray-900">{{ getUserDisplayName() }}</div>
-                <div class="text-xs text-gray-500">{{ getUserSubtitle() }}</div>
-              </div>
-            </div>
-
-            <!-- 用户操作按钮 -->
-            <div v-if="userRole === 'member'" class="flex items-center space-x-2">
-              <!-- 管理后台入口 -->
-              <router-link
-                to="/admin/login"
-                class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors duration-200"
-              >
-                <el-icon class="w-4 h-4 mr-1">
-                  <Setting />
+                <el-icon class="w-4 h-4 text-gray-400">
+                  <ArrowDown />
                 </el-icon>
-                管理后台
-              </router-link>
-              
-              <!-- 会员下拉菜单 -->
-              <el-dropdown @command="handleUserCommand" trigger="click">
-                <el-button type="text" class="p-1">
-                  <el-icon class="w-4 h-4 text-gray-400">
-                    <ArrowDown />
-                  </el-icon>
-                </el-button>
-                <template #dropdown>
-                  <el-dropdown-menu>
-                    <el-dropdown-item command="profile">
-                      <el-icon class="w-4 h-4 mr-2">
-                        <User />
-                      </el-icon>
-                      个人资料
-                    </el-dropdown-item>
-                    <el-dropdown-item divided command="logout">
-                      <el-icon class="w-4 h-4 mr-2">
-                        <SwitchButton />
-                      </el-icon>
-                      退出登录
-                    </el-dropdown-item>
-                  </el-dropdown-menu>
-                </template>
-              </el-dropdown>
-            </div>
+              </el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="profile">
+                    <el-icon class="w-4 h-4 mr-2">
+                      <User />
+                    </el-icon>
+                    个人资料
+                  </el-dropdown-item>
+                  <el-dropdown-item divided command="logout">
+                    <el-icon class="w-4 h-4 mr-2">
+                      <SwitchButton />
+                    </el-icon>
+                    退出登录
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
 
             <!-- 教练直接退出按钮 -->
             <el-button
@@ -145,7 +140,9 @@
 
       <!-- 移动端菜单 -->
       <div v-show="mobileMenuOpen" class="md:hidden">
-        <div class="pt-2 pb-3 space-y-1 bg-white border-t border-gray-200 shadow-lg">
+        <div
+          class="pt-2 pb-3 space-y-1 bg-white border-t border-gray-200 shadow-lg"
+        >
           <router-link
             v-for="item in navigation"
             :key="item.name"
@@ -153,7 +150,8 @@
             @click="mobileMenuOpen = false"
             class="border-transparent text-gray-600 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-800 block pl-4 pr-4 py-3 border-l-4 text-base font-medium transition-colors duration-200"
             :class="{
-              'bg-blue-50 border-blue-500 text-blue-700': $route.path === item.href
+              'bg-blue-50 border-blue-500 text-blue-700':
+                $route.path === item.href,
             }"
           >
             <div class="flex items-center">
@@ -163,9 +161,12 @@
               {{ item.name }}
             </div>
           </router-link>
-          
+
           <!-- 移动端签到状态 (仅会员显示) -->
-          <div v-if="checkinStatus && userRole === 'member'" class="px-4 py-2 bg-green-50 border-l-4 border-green-500">
+          <div
+            v-if="checkinStatus && userRole === 'member'"
+            class="px-4 py-2 bg-green-50 border-l-4 border-green-500"
+          >
             <div class="flex items-center text-green-800 text-sm">
               <el-icon class="w-4 h-4 mr-2">
                 <Check />
@@ -185,11 +186,16 @@
     <!-- 页脚 -->
     <footer class="bg-white border-t border-gray-200 mt-auto">
       <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <div v-if="userRole === 'member'" class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div
+          v-if="userRole === 'member'"
+          class="grid grid-cols-1 md:grid-cols-4 gap-8"
+        >
           <!-- 公司信息 -->
           <div class="col-span-1 md:col-span-2">
             <div class="flex items-center mb-4">
-              <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
+              <div
+                class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mr-3"
+              >
                 <el-icon class="h-5 w-5 text-white">
                   <Lightning />
                 </el-icon>
@@ -209,22 +215,34 @@
             <h4 class="text-sm font-semibold text-gray-900 mb-4">快速链接</h4>
             <ul class="space-y-2">
               <li>
-                <router-link to="/member/checkin" class="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                <router-link
+                  to="/member/checkin"
+                  class="text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                >
                   每日签到
                 </router-link>
               </li>
               <li>
-                <router-link to="/member/booking" class="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                <router-link
+                  to="/member/booking"
+                  class="text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                >
                   课程预约
                 </router-link>
               </li>
               <li>
-                <router-link to="/member/courses" class="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                <router-link
+                  to="/member/courses"
+                  class="text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                >
                   课程查询
                 </router-link>
               </li>
               <li>
-                <router-link to="/member/center" class="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                <router-link
+                  to="/member/center"
+                  class="text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                >
                   会员中心
                 </router-link>
               </li>
@@ -262,9 +280,7 @@
           <div class="text-sm text-gray-500">
             © 2024 GymSys 健身房管理系统. 保留所有权利.
           </div>
-          <div class="text-sm text-gray-500">
-            教练工作台 v1.0.0
-          </div>
+          <div class="text-sm text-gray-500">教练工作台 v1.0.0</div>
         </div>
       </div>
     </footer>
@@ -272,102 +288,100 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuth } from '../composables/useAuth'
-import { checkinService } from '@/services/checkinService'
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { useAuth } from "../composables/useAuth";
+import { checkinService } from "@/services/checkinService";
 
-const router = useRouter()
-const { user, logout, getCurrentUser, isCoach } = useAuth()
+const router = useRouter();
+const { user, logout, getCurrentUser, isCoach } = useAuth();
 
-const mobileMenuOpen = ref(false)
-const checkinStatus = ref(false)
+const mobileMenuOpen = ref(false);
+const checkinStatus = ref(false);
 
 // 获取用户角色
 const userRole = computed(() => {
-  const currentUser = getCurrentUser()
-  return currentUser?.role || 'member'
-})
+  const currentUser = getCurrentUser();
+  return currentUser?.role || "member";
+});
 
 // 导航菜单 - 根据角色显示不同菜单
 const navigation = computed(() => {
-  if (userRole.value === 'coach') {
-    return [
-      { name: '工作台', href: '/coach', icon: 'House' },
-    ]
+  if (userRole.value === "coach") {
+    return [{ name: "工作台", href: "/coach", icon: "House" }];
   }
-  
+
   return [
-    { name: '会员中心', href: '/member', icon: 'User' },
-    { name: '签到', href: '/member/checkin', icon: 'Check' },
-    { name: '课程预约', href: '/member/booking', icon: 'Calendar' },
-    { name: '课程查询', href: '/member/courses', icon: 'Search' }
-  ]
-})
+    { name: "会员中心", href: "/member", icon: "User" },
+    { name: "签到", href: "/member/checkin", icon: "Check" },
+    { name: "课程预约", href: "/member/booking", icon: "Calendar" },
+    { name: "课程查询", href: "/member/courses", icon: "Search" },
+  ];
+});
 
 // 获取用户首字母
 const getUserInitial = () => {
-  if (userRole.value === 'coach') {
-    return user?.name?.charAt(0) || 'C'
+  if (userRole.value === "coach") {
+    return user?.name?.charAt(0) || "C";
   }
-  return user?.name?.charAt(0) || 'M'
-}
+  return user?.name?.charAt(0) || "M";
+};
 
 // 获取用户显示名称
 const getUserDisplayName = () => {
-  if (userRole.value === 'coach') {
-    return user?.name || '教练'
+  if (userRole.value === "coach") {
+    return user?.name || "教练";
   }
-  return user?.name || '会员'
-}
+  return user?.name || "会员";
+};
 
 // 获取用户副标题
 const getUserSubtitle = () => {
-  if (userRole.value === 'coach') {
-    return user?.specialty || '专业教练'
+  if (userRole.value === "coach") {
+    return user?.specialty || "专业教练";
   }
-  return user?.email || 'member@gym.com'
-}
+  return user?.email || "member@gym.com";
+};
 
 // 检查签到状态 (仅会员)
 const checkCheckinStatus = async () => {
-  if (userRole.value !== 'member') return
-  
+  if (userRole.value !== "member") return;
+
   try {
-    const currentUser = getCurrentUser()
+    const currentUser = getCurrentUser();
     if (currentUser) {
-      const isCheckedIn = await checkinService.isCheckedInToday(currentUser.id)
-      checkinStatus.value = isCheckedIn
+      const isCheckedIn = await checkinService.isCheckedInToday(currentUser.id);
+      checkinStatus.value = isCheckedIn;
     }
   } catch (error) {
-    console.error('Error checking checkin status:', error)
+    console.error("Error checking checkin status:", error);
   }
-}
+};
 
 // 处理用户下拉菜单命令 (仅会员)
 const handleUserCommand = async (command) => {
   switch (command) {
-    case 'profile':
-      router.push('/member/center')
-      break
-    case 'settings':
-      console.log('跳转到设置页面')
-      break
-    case 'logout':
-      await logout()
-      break
+    case "profile":
+      router.push("/member/center");
+      break;
+    case "settings":
+      console.log("跳转到设置页面");
+      break;
+    case "logout":
+      await logout();
+      break;
   }
-}
+};
 
 // 退出登录
 const handleLogout = async () => {
-  await logout()
-}
+  await logout();
+};
 
 // 初始化
 onMounted(() => {
-  checkCheckinStatus()
-})
+  checkCheckinStatus();
+});
 </script>
 
 <style scoped>
