@@ -70,7 +70,7 @@
       </div>
 
       <!-- 课程列表 -->
-      <div class="space-y-6">
+      <div class="space-y-6 bg-white rounded-xl shadow-lg p-6">
         <div v-if="loading" class="text-center py-12">
           <el-icon class="w-12 h-12 text-gray-400 animate-spin">
             <Loading />
