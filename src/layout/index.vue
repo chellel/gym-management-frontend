@@ -12,7 +12,9 @@
                   <Lightning />
                 </el-icon>
               </div>
-              <h1 class="ml-3 text-xl font-bold text-gray-900">健身俱乐部</h1>
+              <h1 class="ml-3 text-xl font-bold text-gray-900">
+                {{ userRole === 'coach' ? 'GymSys' : '健身俱乐部' }}
+              </h1>
             </div>
             
             <!-- 桌面端导航菜单 -->
@@ -36,8 +38,8 @@
 
           <!-- 右侧用户信息和操作 -->
           <div class="flex items-center space-x-4">
-            <!-- 签到状态指示器 -->
-            <div v-if="checkinStatus" class="hidden md:flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+            <!-- 签到状态指示器 (仅会员显示) -->
+            <div v-if="checkinStatus && userRole === 'member'" class="hidden md:flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
               <el-icon class="w-4 h-4 mr-1">
                 <Check />
               </el-icon>
@@ -54,41 +56,61 @@
               </el-icon>
             </el-button>
 
-            <!-- 用户信息下拉菜单 -->
-            <el-dropdown @command="handleUserCommand" trigger="click">
-              <div class="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 rounded-lg p-2 transition-colors">
-                <div class="flex-shrink-0">
-                  <div class="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-                    <span class="text-sm font-medium text-white">
-                      {{ user?.name?.charAt(0) || 'M' }}
-                    </span>
-                  </div>
+            <!-- 用户信息显示 -->
+            <div class="flex items-center space-x-3">
+              <div class="flex-shrink-0">
+                <div class="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                  <span class="text-sm font-medium text-white">
+                    {{ getUserInitial() }}
+                  </span>
                 </div>
-                <div class="hidden md:block">
-                  <div class="text-sm font-medium text-gray-900">{{ user?.name || '会员' }}</div>
-                  <div class="text-xs text-gray-500">{{ user?.email || 'member@gym.com' }}</div>
-                </div>
-                <el-icon class="w-4 h-4 text-gray-400">
-                  <ArrowDown />
-                </el-icon>
               </div>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item command="profile">
-                    <el-icon class="w-4 h-4 mr-2">
-                      <User />
-                    </el-icon>
-                    个人资料
-                  </el-dropdown-item>
-                  <el-dropdown-item divided command="logout">
-                    <el-icon class="w-4 h-4 mr-2">
-                      <SwitchButton />
-                    </el-icon>
-                    退出登录
-                  </el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
+              <div class="hidden md:block">
+                <div class="text-sm font-medium text-gray-900">{{ getUserDisplayName() }}</div>
+                <div class="text-xs text-gray-500">{{ getUserSubtitle() }}</div>
+              </div>
+            </div>
+
+            <!-- 用户操作按钮 -->
+            <div v-if="userRole === 'member'" class="flex items-center space-x-2">
+              <!-- 会员下拉菜单 -->
+              <el-dropdown @command="handleUserCommand" trigger="click">
+                <el-button type="text" class="p-1">
+                  <el-icon class="w-4 h-4 text-gray-400">
+                    <ArrowDown />
+                  </el-icon>
+                </el-button>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item command="profile">
+                      <el-icon class="w-4 h-4 mr-2">
+                        <User />
+                      </el-icon>
+                      个人资料
+                    </el-dropdown-item>
+                    <el-dropdown-item divided command="logout">
+                      <el-icon class="w-4 h-4 mr-2">
+                        <SwitchButton />
+                      </el-icon>
+                      退出登录
+                    </el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </div>
+
+            <!-- 教练直接退出按钮 -->
+            <el-button
+              v-if="userRole === 'coach'"
+              @click="handleLogout"
+              type="danger"
+              class="inline-flex items-center px-3 py-2 text-sm leading-4 font-medium rounded-md transition-colors duration-200"
+            >
+              <el-icon class="w-4 h-4 mr-1">
+                <SwitchButton />
+              </el-icon>
+              退出
+            </el-button>
 
             <!-- 移动端菜单按钮 -->
             <div class="md:hidden">
@@ -131,8 +153,8 @@
             </div>
           </router-link>
           
-          <!-- 移动端签到状态 -->
-          <div v-if="checkinStatus" class="px-4 py-2 bg-green-50 border-l-4 border-green-500">
+          <!-- 移动端签到状态 (仅会员显示) -->
+          <div v-if="checkinStatus && userRole === 'member'" class="px-4 py-2 bg-green-50 border-l-4 border-green-500">
             <div class="flex items-center text-green-800 text-sm">
               <el-icon class="w-4 h-4 mr-2">
                 <Check />
@@ -152,7 +174,7 @@
     <!-- 页脚 -->
     <footer class="bg-white border-t border-gray-200 mt-auto">
       <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div v-if="userRole === 'member'" class="grid grid-cols-1 md:grid-cols-4 gap-8">
           <!-- 公司信息 -->
           <div class="col-span-1 md:col-span-2">
             <div class="flex items-center mb-4">
@@ -206,7 +228,7 @@
                 <el-icon class="w-4 h-4 mr-2 text-gray-400">
                   <Phone />
                 </el-icon>
-              888-888-8888
+                888-888-8888
               </li>
               <li class="flex items-center">
                 <el-icon class="w-4 h-4 mr-2 text-gray-400">
@@ -221,6 +243,16 @@
                 营业时间：6:00-22:00
               </li>
             </ul>
+          </div>
+        </div>
+
+        <!-- 教练简化页脚 -->
+        <div v-else class="flex justify-between items-center">
+          <div class="text-sm text-gray-500">
+            © 2024 GymSys 健身房管理系统. 保留所有权利.
+          </div>
+          <div class="text-sm text-gray-500">
+            教练工作台 v1.0.0
           </div>
         </div>
       </div>
@@ -240,11 +272,17 @@ const { user, logout, getCurrentUser, isCoach } = useAuth()
 const mobileMenuOpen = ref(false)
 const checkinStatus = ref(false)
 
-// 导航菜单 - 会员专用菜单
+// 获取用户角色
+const userRole = computed(() => {
+  const currentUser = getCurrentUser()
+  return currentUser?.role || 'member'
+})
+
+// 导航菜单 - 根据角色显示不同菜单
 const navigation = computed(() => {
-  if(isCoach()) {
+  if (userRole.value === 'coach') {
     return [
-      { name: '教练工作台', href: '/coach/workbench', icon: 'UserFilled' },
+      { name: '工作台', href: '/coach/workbench', icon: 'House' },
       { name: '我的课表', href: '/coach/schedule', icon: 'Calendar' },
       { name: '课堂管理', href: '/coach/classes', icon: 'UserFilled' },
       { name: '学员管理', href: '/coach/members', icon: 'User' },
@@ -252,6 +290,7 @@ const navigation = computed(() => {
       { name: '全局课表', href: '/coach/global', icon: 'DataAnalysis' }
     ]
   }
+  
   return [
     { name: '会员中心', href: '/member/center', icon: 'User' },
     { name: '签到', href: '/member/checkin', icon: 'Check' },
@@ -260,8 +299,34 @@ const navigation = computed(() => {
   ]
 })
 
-// 检查签到状态
+// 获取用户首字母
+const getUserInitial = () => {
+  if (userRole.value === 'coach') {
+    return user?.name?.charAt(0) || 'C'
+  }
+  return user?.name?.charAt(0) || 'M'
+}
+
+// 获取用户显示名称
+const getUserDisplayName = () => {
+  if (userRole.value === 'coach') {
+    return user?.name || '教练'
+  }
+  return user?.name || '会员'
+}
+
+// 获取用户副标题
+const getUserSubtitle = () => {
+  if (userRole.value === 'coach') {
+    return user?.specialty || '专业教练'
+  }
+  return user?.email || 'member@gym.com'
+}
+
+// 检查签到状态 (仅会员)
 const checkCheckinStatus = async () => {
+  if (userRole.value !== 'member') return
+  
   try {
     const currentUser = getCurrentUser()
     if (currentUser) {
@@ -273,14 +338,13 @@ const checkCheckinStatus = async () => {
   }
 }
 
-// 处理用户下拉菜单命令
+// 处理用户下拉菜单命令 (仅会员)
 const handleUserCommand = async (command) => {
   switch (command) {
     case 'profile':
       router.push('/member/center')
       break
     case 'settings':
-      // 可以跳转到设置页面
       console.log('跳转到设置页面')
       break
     case 'logout':
