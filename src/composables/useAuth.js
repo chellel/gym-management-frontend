@@ -20,7 +20,7 @@ const memberAuthService = {
         avatar: null,
         login_time: new Date().toISOString()
       }
-      return { user, error: null }
+      return { user, message: '', success: true }
     }
     // 会员验证 - 从member表查询，role为member
     else if (email === 'member' && password === 'member') {
@@ -36,10 +36,10 @@ const memberAuthService = {
         avatar: null,
         login_time: new Date().toISOString()
       }
-      return { user, error: null }
+      return { user, success: true }
     }
     else {
-      return { user: null, error: '用户名或密码错误' }
+      return { user: null, message: '用户名或密码错误', success: false }
     }
   }
 }
@@ -51,13 +51,17 @@ export const useAuth = () => {
   const loading = ref(false)
   const error = ref('')
 
-  const loginForm = reactive({
-    username: '',
-    password: ''
-  })
+
 
   // 登录
-  const login = async () => {
+  const login = async (params) => {
+    const loginForm = reactive({
+      username: '',
+      password: ''
+    })
+    loginForm.username = params.username
+    loginForm.password = params.password
+
     if (!loginForm.username || !loginForm.password) {
       error.value = '请填写用户名和密码'
       return
@@ -140,18 +144,6 @@ export const useAuth = () => {
     }
   }
 
-  // 清除错误信息
-  const clearError = () => {
-    error.value = ''
-  }
-
-  // 重置登录表单
-  const resetForm = () => {
-    loginForm.username = ''
-    loginForm.password = ''
-    error.value = ''
-  }
-
   return {
     // 从store获取的状态
     user: computed(() => userinfoStore.userinfo),
@@ -169,12 +161,8 @@ export const useAuth = () => {
     
     // 本地状态和方法
     loading,
-    error,
-    loginForm,
     login,
     logout,
-    clearError,
-    resetForm,
     
     // 便捷方法
     getCurrentUser: () => userinfoStore.userinfo,

@@ -49,14 +49,15 @@ import { useAuth } from "@/composables/useAuth";
 import { useUserinfoStore } from "@/stores/userinfo";
 const router = useRouter();
 const { login } = useAuth();
+const userinfoStore = useUserinfoStore();
 const handleLogin = async (loginForm) => {
   try {
     const params = {
       username: loginForm.username,
       password: loginForm.password,
     };
-    await login(params);
-    const isCoach = userinfoStore.userinfo.role === "coach";
+    const res = await login(params);
+    const isCoach = userinfoStore.userRole === "coach";
     if (isCoach) {
       router.push("/coach");
     } else {
