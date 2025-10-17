@@ -78,7 +78,6 @@ import ClassManagement from '@/components/coach/ClassManagement.vue'
 import MemberManagement from '@/components/coach/MemberManagement.vue'
 
 const { user } = useAuth()
-const router = useRouter()
 const {
   coachInfo,
   coachClasses,

@@ -138,11 +138,6 @@ const routes = [
         component: () => import("@/admin/member/index.vue"),
       },
       {
-        path: "classes",
-        name: "ClassBooking",
-        component: () => import("@/views/ClassBooking.vue"),
-      },
-      {
         path: "schedules",
         name: "ScheduleManagement",
         component: () => import("@/views/ScheduleManagement.vue"),
