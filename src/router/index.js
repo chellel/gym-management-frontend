@@ -138,6 +138,11 @@ const routes = [
         component: () => import("@/admin/views/Member/index.vue"),
       },
       {
+        path: "coach",
+        name: "CoachManagement",
+        component: () => import("@/admin/views/Coach/index.vue"),
+      },
+      {
         path: "schedules",
         name: "ScheduleManagement",
         component: () => import("@/views/ScheduleManagement.vue"),

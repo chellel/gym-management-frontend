@@ -1,4 +1,4 @@
-import { request } from '@/composables/request'
+import { get, post, put, del } from "@/composables/request";
 
 // 教练信息接口
 export interface Coach {
@@ -7,13 +7,9 @@ export interface Coach {
   email: string
   phone: string
   avatar?: string
-  specialty: string[]
   experience: string
-  certifications: string[]
   status: 'active' | 'inactive' | 'suspended'
   hire_date: string
-  salary?: number
-  commission_rate?: number
   bio?: string
   emergency_contact?: string
   emergency_phone?: string
@@ -28,10 +24,6 @@ export interface CoachStats {
   total_members: number
   monthly_classes: number
   monthly_members: number
-  average_rating: number
-  total_rating_count: number
-  revenue_generated: number
-  monthly_revenue: number
 }
 
 // 教练排班接口
@@ -55,7 +47,6 @@ export interface CoachQueryParams {
   limit?: number
   search?: string
   status?: string
-  specialty?: string
   sort_by?: string
   sort_order?: 'asc' | 'desc'
 }
@@ -65,14 +56,10 @@ export interface CreateCoachParams {
   name: string
   email: string
   phone: string
-  specialty: string[]
   experience: string
-  certifications: string[]
   bio?: string
   emergency_contact?: string
   emergency_phone?: string
-  salary?: number
-  commission_rate?: number
 }
 
 // 更新教练参数接口
@@ -80,14 +67,10 @@ export interface UpdateCoachParams {
   name?: string
   email?: string
   phone?: string
-  specialty?: string[]
   experience?: string
-  certifications?: string[]
   bio?: string
   emergency_contact?: string
   emergency_phone?: string
-  salary?: number
-  commission_rate?: number
   status?: 'active' | 'inactive' | 'suspended'
 }
 
@@ -95,81 +78,71 @@ export interface UpdateCoachParams {
 export const coachApi = {
   // 获取教练列表
   getCoaches: (params?: CoachQueryParams) => {
-    return request.get('/api/admin/coaches', { params })
+    return get('/api/admin/coaches', { params })
   },
 
   // 获取单个教练信息
   getCoach: (id: number) => {
-    return request.get(`/api/admin/coaches/${id}`)
+    return get(`/api/admin/coaches/${id}`)
   },
 
   // 创建教练
   createCoach: (data: CreateCoachParams) => {
-    return request.post('/api/admin/coaches', data)
+    return post('/api/admin/coaches', data)
   },
 
   // 更新教练信息
   updateCoach: (id: number, data: UpdateCoachParams) => {
-    return request.put(`/api/admin/coaches/${id}`, data)
+    return put(`/api/admin/coaches/${id}`, data)
   },
 
   // 删除教练
   deleteCoach: (id: number) => {
-    return request.delete(`/api/admin/coaches/${id}`)
-  },
-
-  // 批量删除教练
-  batchDeleteCoaches: (ids: number[]) => {
-    return request.delete('/api/admin/coaches/batch', { data: { ids } })
-  },
-
-  // 更新教练状态
-  updateCoachStatus: (id: number, status: 'active' | 'inactive' | 'suspended') => {
-    return request.patch(`/api/admin/coaches/${id}/status`, { status })
+    return del(`/api/admin/coaches/${id}`, { data: { id } })
   },
 
   // 获取教练统计信息
   getCoachStats: (id: number, dateRange?: { start: string; end: string }) => {
-    return request.get(`/api/admin/coaches/${id}/stats`, { 
+    return get(`/api/admin/coaches/${id}/stats`, { 
       params: dateRange 
     })
   },
 
   // 获取教练排班
   getCoachSchedule: (id: number, dateRange?: { start: string; end: string }) => {
-    return request.get(`/api/admin/coaches/${id}/schedule`, { 
+    return get(`/api/admin/coaches/${id}/schedule`, { 
       params: dateRange 
     })
   },
 
   // 更新教练排班
   updateCoachSchedule: (id: number, scheduleId: number, data: Partial<CoachSchedule>) => {
-    return request.put(`/api/admin/coaches/${id}/schedule/${scheduleId}`, data)
+    return put(`/api/admin/coaches/${id}/schedule/${scheduleId}`, data)
   },
 
   // 添加教练排班
   addCoachSchedule: (id: number, data: Omit<CoachSchedule, 'id' | 'coach_id'>) => {
-    return request.post(`/api/admin/coaches/${id}/schedule`, data)
+    return post(`/api/admin/coaches/${id}/schedule`, data)
   },
 
   // 删除教练排班
   deleteCoachSchedule: (id: number, scheduleId: number) => {
-    return request.delete(`/api/admin/coaches/${id}/schedule/${scheduleId}`)
+    return del(`/api/admin/coaches/${id}/schedule/${scheduleId}`, { data: { id: scheduleId, coach_id: id   } })
   },
 
   // 获取教练学员列表
   getCoachMembers: (id: number, params?: { page?: number; limit?: number; search?: string }) => {
-    return request.get(`/api/admin/coaches/${id}/members`, { params })
+    return get(`/api/admin/coaches/${id}/members`, { params })
   },
 
   // 获取教练课程评价
   getCoachReviews: (id: number, params?: { page?: number; limit?: number; date_range?: string }) => {
-    return request.get(`/api/admin/coaches/${id}/reviews`, { params })
+    return get(`/api/admin/coaches/${id}/reviews`, { params })
   },
 
   // 导出教练数据
   exportCoaches: (params?: CoachQueryParams) => {
-    return request.get('/api/admin/coaches/export', { 
+    return get('/api/admin/coaches/export', { 
       params,
       responseType: 'blob'
     })
@@ -179,21 +152,7 @@ export const coachApi = {
   uploadCoachAvatar: (id: number, file: File) => {
     const formData = new FormData()
     formData.append('avatar', file)
-    return request.post(`/api/admin/coaches/${id}/avatar`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    })
-  },
-
-  // 获取教练专业领域选项
-  getSpecialtyOptions: () => {
-    return request.get('/api/admin/coaches/specialty-options')
-  },
-
-  // 获取教练认证选项
-  getCertificationOptions: () => {
-    return request.get('/api/admin/coaches/certification-options')
+    return post(`/api/admin/coaches/${id}/avatar`, formData)
   }
 }
 
@@ -260,11 +219,7 @@ export const generateMockCoachStats = (coachId: number): CoachStats => {
     total_classes: Math.floor(Math.random() * 500) + 100,
     total_members: Math.floor(Math.random() * 200) + 50,
     monthly_classes: Math.floor(Math.random() * 50) + 10,
-    monthly_members: Math.floor(Math.random() * 30) + 10,
-    average_rating: Math.round((Math.random() * 2 + 3) * 10) / 10, // 3.0-5.0
-    total_rating_count: Math.floor(Math.random() * 200) + 50,
-    revenue_generated: Math.floor(Math.random() * 100000) + 50000,
-    monthly_revenue: Math.floor(Math.random() * 15000) + 5000
+    monthly_members: Math.floor(Math.random() * 30) + 10
   }
 }
 
