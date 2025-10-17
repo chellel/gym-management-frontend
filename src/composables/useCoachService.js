@@ -17,8 +17,6 @@ export const useCoachService = () => {
   // 教练课程数据
   const coachClasses = ref([])
   
-  // 教练可用时间
-  const coachAvailability = ref([])
   
   // 全局课程数据
   const globalSchedules = ref([])
@@ -45,71 +43,6 @@ export const useCoachService = () => {
     }
   }
 
-  // 获取教练可用时间
-  const getCoachAvailability = async (coachId) => {
-    try {
-      // 模拟API调用
-      const mockAvailability = generateMockAvailability(coachId)
-      coachAvailability.value = mockAvailability
-      return mockAvailability
-    } catch (error) {
-      console.error('获取教练可用时间失败:', error)
-      throw error
-    }
-  }
-
-  // 添加可用时间
-  const addAvailability = async (availabilityData) => {
-    try {
-      const newAvailability = {
-        id: Date.now(),
-        coach_id: coachInfo.value.id,
-        ...availabilityData,
-        status: 'available',
-        created_at: new Date().toISOString()
-      }
-      
-      coachAvailability.value.push(newAvailability)
-      return newAvailability
-    } catch (error) {
-      console.error('添加可用时间失败:', error)
-      throw error
-    }
-  }
-
-  // 更新可用时间
-  const updateAvailability = async (id, updateData) => {
-    try {
-      const index = coachAvailability.value.findIndex(a => a.id === id)
-      if (index > -1) {
-        coachAvailability.value[index] = {
-          ...coachAvailability.value[index],
-          ...updateData,
-          updated_at: new Date().toISOString()
-        }
-        return coachAvailability.value[index]
-      }
-      throw new Error('可用时间不存在')
-    } catch (error) {
-      console.error('更新可用时间失败:', error)
-      throw error
-    }
-  }
-
-  // 删除可用时间
-  const deleteAvailability = async (id) => {
-    try {
-      const index = coachAvailability.value.findIndex(a => a.id === id)
-      if (index > -1) {
-        coachAvailability.value.splice(index, 1)
-        return true
-      }
-      throw new Error('可用时间不存在')
-    } catch (error) {
-      console.error('删除可用时间失败:', error)
-      throw error
-    }
-  }
 
   // 获取全局课程
   const getGlobalSchedules = async (date = null) => {
@@ -297,44 +230,6 @@ export const useCoachService = () => {
     ]
   }
 
-  // 生成模拟可用时间数据
-  const generateMockAvailability = (coachId) => {
-    const today = new Date()
-    const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
-    
-    return [
-      {
-        id: 1,
-        coach_id: coachId,
-        date: new Date(nextWeek).toISOString().split('T')[0],
-        start_time: '09:00',
-        end_time: '12:00',
-        notes: '上午时间段',
-        status: 'available',
-        created_at: new Date().toISOString()
-      },
-      {
-        id: 2,
-        coach_id: coachId,
-        date: new Date(nextWeek.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        start_time: '14:00',
-        end_time: '18:00',
-        notes: '下午时间段',
-        status: 'available',
-        created_at: new Date().toISOString()
-      },
-      {
-        id: 3,
-        coach_id: coachId,
-        date: new Date(nextWeek.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        start_time: '19:00',
-        end_time: '22:00',
-        notes: '晚间时间段',
-        status: 'available',
-        created_at: new Date().toISOString()
-      }
-    ]
-  }
 
   // 生成模拟全局课程数据
   const generateMockGlobalSchedules = (date) => {
@@ -685,7 +580,6 @@ export const useCoachService = () => {
     // 数据
     coachInfo,
     coachClasses,
-    coachAvailability,
     globalSchedules,
     classMembers,
     allMembers,
@@ -693,10 +587,6 @@ export const useCoachService = () => {
     
     // 方法
     getCoachClasses,
-    getCoachAvailability,
-    addAvailability,
-    updateAvailability,
-    deleteAvailability,
     getGlobalSchedules,
     getClassMembers,
     markAttendance,

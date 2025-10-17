@@ -52,8 +52,6 @@
       <!-- 学员管理 -->
       <MemberManagement v-if="activeTab === 'members'" />
 
-      <!-- 可用时间管理 -->
-      <AvailabilityManagement v-if="activeTab === 'availability'" />
 
       <!-- 排班管理 -->
       <div v-if="activeTab === 'schedule-management'" class="p-6">
@@ -78,7 +76,6 @@ import Schedule from '@/components/schedule/index.vue'
 import MySchedule from '@/components/coach/MySchedule.vue'
 import ClassManagement from '@/components/coach/ClassManagement.vue'
 import MemberManagement from '@/components/coach/MemberManagement.vue'
-import AvailabilityManagement from '@/components/coach/AvailabilityManagement.vue'
 
 const { user } = useAuth()
 const router = useRouter()
@@ -110,12 +107,6 @@ const features = [
     name: '学员管理',
     description: '管理学员信息和状态',
     icon: 'User'
-  },
-  {
-    key: 'availability',
-    name: '可用时间管理',
-    description: '标记可授课时间',
-    icon: 'Clock'
   },
   {
     key: 'schedule-management',
