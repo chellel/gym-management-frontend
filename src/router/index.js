@@ -147,6 +147,11 @@ const routes = [
         name: "Reports",
         component: () => import("@/views/Reports.vue"),
       },
+      {
+        path: "finance",
+        name: "Finance",
+        component: () => import("@/admin/Finance/index.vue"),
+      },
     ],
   },
   // 教练工作台
