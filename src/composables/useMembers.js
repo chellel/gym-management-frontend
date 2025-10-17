@@ -1,5 +1,5 @@
 import { ref, reactive, onMounted } from 'vue'
-import { memberService, mockMembers } from '../services/memberService'
+import { memberService } from '@/services/memberService'
 import Swal from 'sweetalert2'
 
 export const useMembers = () => {
@@ -23,7 +23,7 @@ export const useMembers = () => {
 
   const filters = reactive({
     search: '',
-    status: 'all' // all, active, expired
+    status: 'all'
   })
 
   // 获取会员列表
@@ -47,13 +47,20 @@ export const useMembers = () => {
         error.value = '暂无会员数据'
       }
     } catch (err) {
-      console.error('Failed to fetch members:', err)
       members.value = []
       pagination.total = 0
       error.value = err.message || '获取会员数据失败，请检查网络连接'
     } finally {
       loading.value = false
     }
+  }
+
+  const resetList = () => {
+    pagination.total = 0
+    pagination.currentPage = 1
+    pagination.start = 0
+    pagination.end = pagination.pageSize - 1
+    fetchMembers()
   }
 
   // 获取统计信息
@@ -87,7 +94,6 @@ export const useMembers = () => {
       await fetchMembers()
       await fetchStats()
     } catch (err) {
-      console.error('Failed to add member:', err)
       await Swal.fire({
         title: '错误',
         text: '添加会员失败，请重试',
@@ -109,7 +115,6 @@ export const useMembers = () => {
       })
       await fetchMembers()
     } catch (err) {
-      console.error('Failed to update member:', err)
       await Swal.fire({
         title: '错误',
         text: '更新会员信息失败，请重试',
@@ -144,7 +149,6 @@ export const useMembers = () => {
         await fetchMembers()
         await fetchStats()
       } catch (err) {
-        console.error('Failed to delete member:', err)
         await Swal.fire({
           title: '错误',
           text: '删除会员失败，请重试',
@@ -187,10 +191,27 @@ export const useMembers = () => {
   }
 
   // 检查会员状态
-  const getMemberStatus = (expireDate) => {
-    if (!expireDate) return 'unknown'
+  const getMemberStatus = (member) => {
+    // 优先使用API返回的状态
+    if (member.userStatus) {
+      return member.userStatus
+    }
+    
+    // 如果有剩余天数信息，使用剩余天数判断
+    if (member.remainingDays !== undefined) {
+      if (member.remainingDays > 30) {
+        return 'active'
+      } else if (member.remainingDays > 0) {
+        return 'expiring'
+      } else {
+        return 'expired'
+      }
+    }
+    
+    // 回退到使用到期日期计算
+    if (!member.membershipExpireDate) return 'unknown'
     const now = new Date()
-    const expire = new Date(expireDate)
+    const expire = new Date(member.membershipExpireDate)
     
     if (expire >= now) {
       // 检查是否即将过期（30天内）
@@ -209,6 +230,8 @@ export const useMembers = () => {
       active: '正常',
       expired: '已过期',
       expiring: '即将过期',
+      leave: '请假中',
+      inactive: '停用',
       unknown: '未知'
     }
     return statusMap[status] || '未知'
@@ -220,6 +243,8 @@ export const useMembers = () => {
       active: 'bg-green-100 text-green-800',
       expired: 'bg-red-100 text-red-800',
       expiring: 'bg-yellow-100 text-yellow-800',
+      leave: 'bg-blue-100 text-blue-800',
+      inactive: 'bg-gray-100 text-gray-800',
       unknown: 'bg-gray-100 text-gray-800'
     }
     return classMap[status] || 'bg-gray-100 text-gray-800'

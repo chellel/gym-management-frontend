@@ -7,7 +7,7 @@ export const getMemberList = (params: {
   search?: string;
   status?: string;
 }) => {
-  return post(`/system/user/list`, params);
+  return post(`/system/gymmember/list`, params);
 };
 
 // 获取会员详情
@@ -24,6 +24,9 @@ export const createMember = (data: {
   membership_type: string;
   expire_date: string;
   join_date?: string;
+  status?: string;
+  gender?: number;
+  birth_date?: string;
 }) => {
   return post(`/users`, data);
 };
@@ -36,6 +39,13 @@ export const updateMember = (id: number, data: {
   email?: string;
   membership_type?: string;
   expire_date?: string;
+  status?: string;
+  gender?: number;
+  birth_date?: string;
+  leaveType?: string;
+  leaveReason?: string;
+  leaveStartDate?: string;
+  leaveEndDate?: string;
 }) => {
   return put(`/users/${id}`, data);
 };

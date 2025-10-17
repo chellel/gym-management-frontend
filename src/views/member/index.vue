@@ -403,7 +403,6 @@
   
   <script setup>
   import { ref, reactive, computed } from 'vue'
-//   import Layout from '../components/.vue'
   import { useMembers } from '@/composables/useMembers'
   import { getPlanList } from '@/api/member'
   
@@ -495,6 +494,7 @@
   const editMember = (member) => {
     editingMember.value = member
     Object.assign(memberForm, {
+      ...member,
       name: member.name,
       member_id: member.member_id,
       phone: member.phone,

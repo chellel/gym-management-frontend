@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import Layout from "@/layout/index.vue";
 import AdminLayout from "@/layout/admin.vue";
 import Login from "@/views/Login/index.vue";
-import AdminLogin from "@/admin/Login/index.vue";
+import AdminLogin from "@/admin/views/Login/index.vue";
 import { useUserinfoStore } from "@/stores/userinfo";
 
 // 认证和角色检查函数
@@ -130,12 +130,12 @@ const routes = [
       {
         path: "",
         name: "AdminHome",
-        component: () => import("@/admin/Home/index.vue"),
+        component: () => import("@/admin/views/Home/index.vue"),
       },
       {
         path: "member",
         name: "MemberManagement",
-        component: () => import("@/admin/member/index.vue"),
+        component: () => import("@/admin/views/Member/index.vue"),
       },
       {
         path: "schedules",
@@ -150,7 +150,7 @@ const routes = [
       {
         path: "finance",
         name: "Finance",
-        component: () => import("@/admin/Finance/index.vue"),
+        component: () => import("@/admin/views/Finance/index.vue"),
       },
     ],
   },
