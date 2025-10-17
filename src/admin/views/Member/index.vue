@@ -258,74 +258,12 @@
       </div>
 
       <!-- 分页 -->
-      <div v-if="pagination.total > pagination.pageSize" class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 rounded-lg shadow">
-        <div class="flex-1 flex justify-between sm:hidden">
-          <el-button
-            @click="goToPage(pagination.currentPage - 1)"
-            :disabled="pagination.currentPage === 1"
-            type="default"
-            size="small"
-          >
-            上一页
-          </el-button>
-          <el-button
-            @click="goToPage(pagination.currentPage + 1)"
-            :disabled="pagination.currentPage === totalPages"
-            type="default"
-            size="small"
-          >
-            下一页
-          </el-button>
-        </div>
-        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-          <div>
-            <p class="text-sm text-gray-700">
-              显示
-              <span class="font-medium">{{ pagination.start + 1 }}</span>
-              到
-              <span class="font-medium">{{ Math.min(pagination.end + 1, pagination.total) }}</span>
-              条，共
-              <span class="font-medium">{{ pagination.total }}</span>
-              条记录
-            </p>
-          </div>
-          <div>
-            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-              <el-button
-                @click="goToPage(pagination.currentPage - 1)"
-                :disabled="pagination.currentPage === 1"
-                type="default"
-                size="small"
-                circle
-              >
-                <el-icon class="h-5 w-5">
-                  <ArrowLeft />
-                </el-icon>
-              </el-button>
-              <el-button
-                v-for="page in visiblePages"
-                :key="page"
-                @click="goToPage(page)"
-                :type="page === pagination.currentPage ? 'primary' : 'default'"
-                size="small"
-              >
-                {{ page }}
-              </el-button>
-              <el-button
-                @click="goToPage(pagination.currentPage + 1)"
-                :disabled="pagination.currentPage === totalPages"
-                type="default"
-                size="small"
-                circle
-              >
-                <el-icon class="h-5 w-5">
-                  <ArrowRight />
-                </el-icon>
-              </el-button>
-            </nav>
-          </div>
-        </div>
-      </div>
+      <Pagination
+        :total="pagination.total"
+        :current-page="pagination.currentPage"
+        :page-size="pagination.pageSize"
+        @page-change="goToPage"
+      />
     </div>
 
     <!-- 新增/编辑会员模态框 -->
@@ -475,6 +413,7 @@ import { ref, reactive, computed } from 'vue'
 import { useMembers } from '@/composables/useMembers'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import MemberLeaveModal from '@/admin/components/MemberLeaveModal.vue'
+import Pagination from '@/admin/components/Pagination.vue'
 
 const {
   members,
@@ -520,20 +459,6 @@ const memberForm = reactive({
   birth_date: ''
 })
 
-// 计算属性
-const totalPages = computed(() => Math.ceil(pagination.total / pagination.pageSize))
-
-const visiblePages = computed(() => {
-  const pages = []
-  const start = Math.max(1, pagination.currentPage - 2)
-  const end = Math.min(totalPages.value, pagination.currentPage + 2)
-  
-  for (let i = start; i <= end; i++) {
-    pages.push(i)
-  }
-  
-  return pages
-})
 
 // 搜索处理
 const handleSearch = () => {
