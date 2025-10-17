@@ -15,7 +15,7 @@
             </el-avatar>
             <div>
               <h3 class="text-xl font-bold">{{ coach.name }}</h3>
-              <p class="text-blue-100">{{ coach.specialty.join('、') }}</p>
+              <p class="text-blue-100">{{ coach.experience }}</p>
             </div>
           </div>
           <div class="text-right">
@@ -54,67 +54,6 @@
         @date-change="handleDateChange"
       />
 
-      <!-- 排班列表 -->
-      <div class="bg-white rounded-lg border">
-        <div class="p-4 border-b">
-          <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-900">排班列表</h3>
-            <div class="flex items-center space-x-2">
-              <el-select v-model="statusFilter" placeholder="筛选状态" clearable @change="filterSchedule">
-                <el-option label="全部" value="" />
-                <el-option label="已确认" value="confirmed" />
-                <el-option label="已取消" value="cancelled" />
-                <el-option label="已完成" value="completed" />
-              </el-select>
-            </div>
-          </div>
-        </div>
-        <div class="overflow-x-auto">
-          <el-table :data="filteredSchedules" v-loading="loading">
-            <el-table-column label="日期" width="120">
-              <template #default="{ row }">
-                {{ formatDate(row.date) }}
-              </template>
-            </el-table-column>
-            <el-table-column label="时间" width="150">
-              <template #default="{ row }">
-                {{ row.start_time }} - {{ row.end_time }}
-              </template>
-            </el-table-column>
-            <el-table-column label="课程" prop="activity" min-width="120" />
-            <el-table-column label="地点" prop="location" min-width="120" />
-            <el-table-column label="容量" width="100">
-              <template #default="{ row }">
-                {{ row.current_bookings }}/{{ row.max_capacity }}
-              </template>
-            </el-table-column>
-            <el-table-column label="状态" width="100">
-              <template #default="{ row }">
-                <el-tag :type="getScheduleStatusType(row.status)" size="small">
-                  {{ getScheduleStatusText(row.status) }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column label="备注" prop="notes" min-width="150" />
-            <el-table-column label="操作" width="200" fixed="right">
-              <template #default="{ row }">
-                <div class="flex space-x-2">
-                  <el-button size="small" @click="editSchedule(row)">
-                    <el-icon><Edit /></el-icon>
-                  </el-button>
-                  <el-button size="small" @click="viewScheduleDetails(row)">
-                    <el-icon><View /></el-icon>
-                  </el-button>
-                  <el-button size="small" type="danger" @click="deleteSchedule(row)">
-                    <el-icon><Delete /></el-icon>
-                  </el-button>
-                </div>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-      </div>
-
       <!-- 统计信息 -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div class="bg-white rounded-lg border p-4 text-center">
@@ -144,12 +83,6 @@
       @success="handleScheduleSuccess"
     />
 
-    <!-- 排班详情对话框 -->
-    <ScheduleDetailDialog
-      v-model:visible="showDetailDialog"
-      :schedule="viewingSchedule"
-    />
-
     <template #footer>
       <div class="flex justify-end space-x-3">
         <el-button @click="dialogVisible = false">关闭</el-button>
@@ -163,7 +96,6 @@ import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { coachApi, type Coach, type CoachSchedule } from '@/api/coach'
 import ScheduleFormDialog from './ScheduleFormDialog.vue'
-import ScheduleDetailDialog from './ScheduleDetailDialog.vue'
 import ScheduleCalendar from '@/admin/components/ScheduleCalendar.vue'
 
 // Props
@@ -181,11 +113,8 @@ const emit = defineEmits<{
 const loading = ref(false)
 const schedules = ref<CoachSchedule[]>([])
 const selectedDate = ref(new Date())
-const statusFilter = ref('')
 const editingSchedule = ref<CoachSchedule | null>(null)
-const viewingSchedule = ref<CoachSchedule | null>(null)
 const showAddScheduleDialog = ref(false)
-const showDetailDialog = ref(false)
 
 // 统计数据
 const scheduleStats = reactive({
@@ -204,11 +133,6 @@ const dialogVisible = computed({
 const todaySchedule = computed(() => {
   const today = new Date().toISOString().split('T')[0]
   return schedules.value.filter(schedule => schedule.date === today)
-})
-
-const filteredSchedules = computed(() => {
-  if (!statusFilter.value) return schedules.value
-  return schedules.value.filter(schedule => schedule.status === statusFilter.value)
 })
 
 // 监听教练变化
@@ -252,11 +176,6 @@ const updateStats = () => {
   scheduleStats.cancelledClasses = schedules.value.filter(s => s.status === 'cancelled').length
 }
 
-// 筛选排班
-const filterSchedule = () => {
-  // 筛选逻辑在计算属性中处理
-}
-
 // 处理日期变化
 const handleDateChange = (date: Date) => {
   selectedDate.value = date
@@ -266,42 +185,6 @@ const handleDateChange = (date: Date) => {
 const editSchedule = (schedule: CoachSchedule) => {
   editingSchedule.value = schedule
   showAddScheduleDialog.value = true
-}
-
-// 查看排班详情
-const viewScheduleDetails = (schedule: CoachSchedule) => {
-  viewingSchedule.value = schedule
-  showDetailDialog.value = true
-}
-
-// 删除排班
-const deleteSchedule = async (schedule: CoachSchedule) => {
-  try {
-    await ElMessageBox.confirm(
-      `确定要删除 "${schedule.activity}" 课程吗？`,
-      '确认删除',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
-    )
-
-    // 模拟API调用
-    schedules.value = schedules.value.filter(s => s.id !== schedule.id)
-    updateStats()
-    ElMessage.success('删除成功')
-
-    // 实际API调用
-    // await coachApi.deleteCoachSchedule(props.coach!.id, schedule.id)
-    // ElMessage.success('删除成功')
-    // loadSchedule()
-  } catch (error) {
-    if (error !== 'cancel') {
-      console.error('删除排班失败:', error)
-      ElMessage.error('删除失败')
-    }
-  }
 }
 
 
@@ -358,25 +241,6 @@ const generateMockSchedules = (coachId: number): CoachSchedule[] => {
   }
   
   return schedules
-}
-
-// 工具函数
-const getScheduleStatusType = (status: string) => {
-  const statusMap = {
-    confirmed: 'primary',
-    completed: 'success',
-    cancelled: 'danger'
-  }
-  return statusMap[status] || 'info'
-}
-
-const getScheduleStatusText = (status: string) => {
-  const statusMap = {
-    confirmed: '已确认',
-    completed: '已完成',
-    cancelled: '已取消'
-  }
-  return statusMap[status] || '未知'
 }
 
 const formatDate = (date: string) => {

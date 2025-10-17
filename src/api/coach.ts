@@ -6,13 +6,10 @@ export interface Coach {
   name: string
   email: string
   phone: string
-  avatar?: string
   experience: string
   status: 'active' | 'inactive' | 'suspended'
   hire_date: string
   bio?: string
-  emergency_contact?: string
-  emergency_phone?: string
   created_at: string
   updated_at: string
 }
@@ -58,8 +55,6 @@ export interface CreateCoachParams {
   phone: string
   experience: string
   bio?: string
-  emergency_contact?: string
-  emergency_phone?: string
 }
 
 // 更新教练参数接口
@@ -69,8 +64,6 @@ export interface UpdateCoachParams {
   phone?: string
   experience?: string
   bio?: string
-  emergency_contact?: string
-  emergency_phone?: string
   status?: 'active' | 'inactive' | 'suspended'
 }
 
@@ -146,48 +139,15 @@ export const coachApi = {
       params,
       responseType: 'blob'
     })
-  },
-
-  // 上传教练头像
-  uploadCoachAvatar: (id: number, file: File) => {
-    const formData = new FormData()
-    formData.append('avatar', file)
-    return post(`/api/admin/coaches/${id}/avatar`, formData)
   }
 }
 
 // 模拟数据生成函数（用于开发测试）
 export const generateMockCoaches = (count: number = 10): Coach[] => {
-  const specialties = [
-    ['瑜伽', '普拉提'],
-    ['力量训练', '功能性训练'],
-    ['有氧运动', 'HIIT'],
-    ['游泳', '水中健身'],
-    ['拳击', '格斗'],
-    ['舞蹈', '有氧舞蹈'],
-    ['康复训练', '物理治疗'],
-    ['营养指导', '体重管理']
-  ]
-
-  const certifications = [
-    '瑜伽教练证',
-    '普拉提教练证',
-    '力量训练教练证',
-    '有氧运动教练证',
-    '游泳教练证',
-    '拳击教练证',
-    '舞蹈教练证',
-    '康复训练师证',
-    '营养师证',
-    '急救证'
-  ]
-
   const statuses: ('active' | 'inactive' | 'suspended')[] = ['active', 'inactive', 'suspended']
 
   return Array.from({ length: count }, (_, index) => {
     const id = index + 1
-    const specialty = specialties[index % specialties.length]
-    const certification = certifications.slice(0, Math.floor(Math.random() * 4) + 2)
     const status = statuses[Math.floor(Math.random() * statuses.length)]
     const hireDate = new Date(2023, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1)
 
@@ -196,17 +156,10 @@ export const generateMockCoaches = (count: number = 10): Coach[] => {
       name: `教练${id}`,
       email: `coach${id}@gym.com`,
       phone: `138${String(id).padStart(8, '0')}`,
-      avatar: null,
-      specialty,
       experience: `${Math.floor(Math.random() * 10) + 1}年`,
-      certifications: certification,
       status,
       hire_date: hireDate.toISOString().split('T')[0],
-      salary: Math.floor(Math.random() * 10000) + 5000,
-      commission_rate: Math.floor(Math.random() * 20) + 5,
-      bio: `专业${specialty.join('、')}教练，拥有丰富的教学经验。`,
-      emergency_contact: `紧急联系人${id}`,
-      emergency_phone: `139${String(id).padStart(8, '0')}`,
+      bio: `专业教练，拥有丰富的教学经验。`,
       created_at: hireDate.toISOString(),
       updated_at: new Date().toISOString()
     }
