@@ -1,7 +1,13 @@
 <template>
     <div class="min-h-screen bg-gray-50">
       <!-- 顶部导航栏 -->
-      <nav class="bg-white shadow-lg border-b border-gray-200">
+      <nav 
+        class="bg-white border-b border-gray-200 sticky top-0 z-50 transition-all duration-300 backdrop-blur-sm"
+        :class="{ 
+          'shadow-xl bg-white/95': isScrolled,
+          'shadow-lg': !isScrolled
+        }"
+      >
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex justify-between h-16">
             <!-- 左侧Logo和导航 -->
@@ -95,7 +101,7 @@
   
         <!-- 移动端菜单 -->
         <div v-show="mobileMenuOpen" class="md:hidden">
-          <div class="pt-2 pb-3 space-y-1 bg-gray-50 border-t border-gray-200">
+          <div class="pt-2 pb-3 space-y-1 bg-gray-50 border-t border-gray-200 shadow-lg">
             <router-link
               v-for="item in navigation"
               :key="item.name"
@@ -139,7 +145,7 @@
   </template>
   
   <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserinfoStore } from '@/stores/userinfo'
   
@@ -147,6 +153,27 @@ const router = useRouter()
 const userinfoStore = useUserinfoStore()
 
 const mobileMenuOpen = ref(false)
+const isScrolled = ref(false)
+
+// 滚动监听 - 添加节流优化
+let scrollTimer = null
+const handleScroll = () => {
+  if (scrollTimer) return
+  
+  scrollTimer = setTimeout(() => {
+    isScrolled.value = window.scrollY > 10
+    scrollTimer = null
+  }, 10)
+}
+
+// 生命周期
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
 
 // 获取用户信息
 const user = computed(() => userinfoStore.userinfo)
