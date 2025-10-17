@@ -108,9 +108,8 @@ export const useAuth = () => {
     user: computed(() => userinfoStore.userinfo),
     isAuthenticated: computed(() => userinfoStore.isAuthenticated),
     getUserRole: () => userinfoStore.userRole,
-    isCoach: () => userinfoStore.isCoach,
-    isMember: () => userinfoStore.isMember,
-    hasRole: (role) => userinfoStore.hasRole(role),
+    isCoach: computed(() => userinfoStore.isCoach),
+    isMember: computed(() => userinfoStore.isMember),
 
     // 会员相关方法
     getMembershipType: () => userinfoStore.membershipType,

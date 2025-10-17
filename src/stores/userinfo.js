@@ -70,10 +70,7 @@ export const useUserinfoStore = defineStore('userinfo', () => {
     error.value = ''
   }
 
-  // 角色检查方法
-  const hasRole = (role) => {
-    return userRole.value === role
-  }
+ 
 
 
   // 会员相关方法
@@ -132,8 +129,6 @@ export const useUserinfoStore = defineStore('userinfo', () => {
     setError,
     clearError,
     
-    // 方法
-    hasRole,
     getMembershipInfo,
     getCoachInfo
   }

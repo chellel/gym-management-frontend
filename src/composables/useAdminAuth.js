@@ -88,8 +88,7 @@ export const useAdminAuth = () => {
     user: computed(() => userinfoStore.userinfo),
     isAuthenticated: computed(() => userinfoStore.isAuthenticated),
     getUserRole: () => userinfoStore.userRole,
-    isAdmin: () => userinfoStore.isAdmin,
-
+    isAdmin: computed(() => userinfoStore.isAdmin),
     loading,
     login,
     logout,
