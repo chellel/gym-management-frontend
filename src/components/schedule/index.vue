@@ -106,7 +106,13 @@ import CoachSchedule from "./CoachSchedule.vue";
 import LocationSchedule from "./LocationSchedule.vue";
 import CourseManagement from "./CourseManagement.vue";
 import ScheduleFormDialog from "./ScheduleFormDialog.vue";
-
+import { 
+  getScheduleList, 
+  createSchedule, 
+  updateSchedule, 
+  deleteSchedules
+} from "@/api/schedule";
+import { getCoachList } from "@/api/coach";
 // 认证相关
 const { isCoach, currentUser } = useAuth();
 const { isAdmin } = useAdminAuth();
@@ -132,7 +138,7 @@ const canEditSchedule = computed(() => {
   return (schedule) => {
     if (isAdmin.value) return true;
     if (isCoach.value) {
-      return schedule.coach_id === currentUser.value?.id;
+      return schedule.coachId === currentUser.value?.id;
     }
     return false;
   };
@@ -142,7 +148,7 @@ const canDeleteSchedule = computed(() => {
   return (schedule) => {
     if (isAdmin.value) return true;
     if (isCoach.value) {
-      return schedule.coach_id === currentUser.value?.id;
+      return schedule.coachId === currentUser.value?.id;
     }
     return false;
   };
@@ -190,24 +196,61 @@ onMounted(() => {
   initializeData();
 });
 
+// 初始化数据
+const initializeData = async () => {
+  try {
+    await Promise.all([
+      loadSchedules(),
+      getCoachData(),
+      loadLocations()
+    ]);
+  } catch (error) {
+    console.error("Failed to initialize data:", error);
+    Swal.fire({
+      title: "初始化失败",
+      text: "加载数据失败，请刷新页面重试",
+      icon: "error",
+    });
+  }
+};
 
-// 初始化模拟数据
-const initializeData = () => {
+// 加载排班数据
+const loadSchedules = async () => {
+  try {
+    const startOfWeek = new Date(currentWeek.value);
+    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+    
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    
+    const response = await getScheduleList({
+      startDate: startOfWeek.toISOString().split('T')[0],
+      endDate: endOfWeek.toISOString().split('T')[0],
+      page: 1,
+      pageSize: 100,
+      isDeleted: 0
+    });
+    schedules.value = response.rows || [];
+  } catch (error) {
+    console.error("Failed to load schedules:", error);
+    // 如果API失败，使用模拟数据作为后备
+    loadMockSchedules();
+  }
+};
 
-  // 模拟教练数据
-  coachs.value = [
-    { id: 1, name: "李教练", specialty: "瑜伽/普拉提/冥想" },
-    { id: 2, name: "王教练", specialty: "动感单车/杠铃操" },
-    { id: 3, name: "张教练", specialty: "力量训练/HIIT/CrossFit" },
-    { id: 4, name: "陈教练", specialty: "普拉提/拉伸放松" },
-    { id: 5, name: "刘教练", specialty: "跑步/有氧运动" },
-    { id: 6, name: "赵教练", specialty: "拳击/泰拳" },
-    { id: 7, name: "孙教练", specialty: "舞蹈/Zumba" },
-    { id: 8, name: "周教练", specialty: "游泳/水中健身" },
-    { id: 9, name: "吴教练", specialty: "太极/传统武术" },
-  ];
+// 加载教练数据
+const getCoachData = async () => {
+  const response = await getCoachList({
+    page: 1,
+    pageSize: 100,
+  });
+  coachs.value = response.rows || [];
+};
 
-  // 模拟场地数据
+// 加载场地数据
+const loadLocations = async () => {
+  // TODO: 实现场地API调用
+  // 暂时使用模拟数据
   locations.value = [
     { id: 1, name: "瑜伽室A" },
     { id: 2, name: "瑜伽室B" },
@@ -225,292 +268,392 @@ const initializeData = () => {
     { id: 14, name: "太极练习区" },
     { id: 15, name: "户外跑道" },
   ];
+};
 
+// 加载模拟排班数据（作为后备）
+const loadMockSchedules = () => {
   // 模拟排班数据 - 本周的排班安排
   const today = new Date();
   const weekStart = new Date(today);
   weekStart.setDate(today.getDate() - today.getDay());
 
-  // 模拟排班数据 - 本周的排班安排
   schedules.value = [
     // 周一
     {
       id: 1,
-      course_id: 1,
-      coach_id: 1,
-      coach_name: "李教练",
-      start_time: new Date(weekStart.getTime() + 7 * 60 * 60 * 1000)
+      courseId: 1,
+      coachId: 1,
+      coachName: "李教练",
+      courseName: "瑜伽基础",
+      startTime: new Date(weekStart.getTime() + 7 * 60 * 60 * 1000)
         .toISOString()
         .slice(0, 16),
-      end_time: new Date(weekStart.getTime() + 8 * 60 * 60 * 1000)
+      endTime: new Date(weekStart.getTime() + 8 * 60 * 60 * 1000)
         .toISOString()
         .slice(0, 16),
       location: "瑜伽室A",
-      max_capacity: 20,
+      maxCapacity: 20,
       status: "waiting",
       remark: "适合初学者",
+      createBy: "admin",
+      createTime: "2025-10-19 15:55:57",
+      updateBy: "admin",
+      updateTime: "2025-10-19 15:55:57",
+      isDeleted: 0,
+      deleteTime: null,
     },
     {
       id: 2,
-      course_id: 2,
-      coach_id: 2,
-      coach_name: "王教练",
-      start_time: new Date(weekStart.getTime() + 19 * 60 * 60 * 1000)
+      courseId: 2,
+      coachId: 2,
+      coachName: "王教练",
+      courseName: "动感单车",
+      startTime: new Date(weekStart.getTime() + 19 * 60 * 60 * 1000)
         .toISOString()
         .slice(0, 16),
-      end_time: new Date(weekStart.getTime() + 20 * 60 * 60 * 1000)
+      endTime: new Date(weekStart.getTime() + 20 * 60 * 60 * 1000)
         .toISOString()
         .slice(0, 16),
       location: "单车房",
-      max_capacity: 25,
+      maxCapacity: 25,
       status: "waiting",
       remark: "高强度训练",
+      createBy: "admin",
+      createTime: "2025-10-19 15:55:57",
+      updateBy: "admin",
+      updateTime: "2025-10-19 15:55:57",
+      isDeleted: 0,
+      deleteTime: null,
     },
     // 周二
     {
       id: 3,
-      course_id: 3,
-      coach_id: 3,
-      coach_name: "张教练",
-      start_time: new Date(
+      courseId: 3,
+      coachId: 3,
+      coachName: "张教练",
+      courseName: "力量训练",
+      startTime: new Date(
         weekStart.getTime() + 24 * 60 * 60 * 1000 + 18 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
-      end_time: new Date(
+      endTime: new Date(
         weekStart.getTime() + 24 * 60 * 60 * 1000 + 19 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
       location: "器械区",
-      max_capacity: 15,
+      maxCapacity: 15,
       status: "waiting",
       remark: "专业指导",
+      createBy: "admin",
+      createTime: "2025-10-19 15:55:57",
+      updateBy: "admin",
+      updateTime: "2025-10-19 15:55:57",
+      isDeleted: 0,
+      deleteTime: null,
     },
     {
       id: 4,
-      course_id: 4,
-      coach_id: 4,
-      coach_name: "陈教练",
-      start_time: new Date(
+      courseId: 4,
+      coachId: 4,
+      coachName: "陈教练",
+      courseName: "普拉提",
+      startTime: new Date(
         weekStart.getTime() + 24 * 60 * 60 * 1000 + 20 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
-      end_time: new Date(
+      endTime: new Date(
         weekStart.getTime() + 24 * 60 * 60 * 1000 + 21 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
       location: "瑜伽室B",
-      max_capacity: 20,
+      maxCapacity: 20,
       status: "waiting",
       remark: "核心训练",
+      createBy: "admin",
+      createTime: "2025-10-19 15:55:57",
+      updateBy: "admin",
+      updateTime: "2025-10-19 15:55:57",
+      isDeleted: 0,
+      deleteTime: null,
     },
     // 周三
     {
       id: 5,
-      course_id: 5,
-      coach_id: 5,
-      coach_name: "刘教练",
-      start_time: new Date(
+      courseId: 5,
+      coachId: 5,
+      coachName: "刘教练",
+      courseName: "跑步训练",
+      startTime: new Date(
         weekStart.getTime() + 48 * 60 * 60 * 1000 + 6.5 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
-      end_time: new Date(
+      endTime: new Date(
         weekStart.getTime() + 48 * 60 * 60 * 1000 + 7.5 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
       location: "户外跑道",
-      max_capacity: 30,
+      maxCapacity: 30,
       status: "waiting",
       remark: "户外运动",
+      createBy: "admin",
+      createTime: "2025-10-19 15:55:57",
+      updateBy: "admin",
+      updateTime: "2025-10-19 15:55:57",
+      isDeleted: 0,
+      deleteTime: null,
     },
     {
       id: 6,
-      course_id: 6,
-      coach_id: 6,
-      coach_name: "赵教练",
-      start_time: new Date(
+      courseId: 6,
+      coachId: 6,
+      coachName: "赵教练",
+      courseName: "拳击训练",
+      startTime: new Date(
         weekStart.getTime() + 48 * 60 * 60 * 1000 + 19 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
-      end_time: new Date(
+      endTime: new Date(
         weekStart.getTime() + 48 * 60 * 60 * 1000 + 20 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
       location: "拳击台",
-      max_capacity: 12,
+      maxCapacity: 12,
       status: "waiting",
       remark: "拳击基础训练",
+      createBy: "admin",
+      createTime: "2025-10-19 15:55:57",
+      updateBy: "admin",
+      updateTime: "2025-10-19 15:55:57",
+      isDeleted: 0,
+      deleteTime: null,
     },
     // 周四
     {
       id: 7,
-      course_id: 7,
-      coach_id: 7,
-      coach_name: "孙教练",
-      start_time: new Date(
+      courseId: 7,
+      coachId: 7,
+      coachName: "孙教练",
+      courseName: "Zumba舞蹈",
+      startTime: new Date(
         weekStart.getTime() + 72 * 60 * 60 * 1000 + 9 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
-      end_time: new Date(
+      endTime: new Date(
         weekStart.getTime() + 72 * 60 * 60 * 1000 + 10 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
       location: "舞蹈室",
-      max_capacity: 25,
+      maxCapacity: 25,
       status: "waiting",
       remark: "Zumba舞蹈",
+      createBy: "admin",
+      createTime: "2025-10-19 15:55:57",
+      updateBy: "admin",
+      updateTime: "2025-10-19 15:55:57",
+      isDeleted: 0,
+      deleteTime: null,
     },
     {
       id: 8,
-      course_id: 8,
-      coach_id: 8,
-      coach_name: "周教练",
-      start_time: new Date(
+      courseId: 8,
+      coachId: 8,
+      coachName: "周教练",
+      courseName: "游泳训练",
+      startTime: new Date(
         weekStart.getTime() + 72 * 60 * 60 * 1000 + 16 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
-      end_time: new Date(
+      endTime: new Date(
         weekStart.getTime() + 72 * 60 * 60 * 1000 + 17 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
       location: "游泳池",
-      max_capacity: 20,
+      maxCapacity: 20,
       status: "waiting",
       remark: "游泳技巧指导",
+      createBy: "admin",
+      createTime: "2025-10-19 15:55:57",
+      updateBy: "admin",
+      updateTime: "2025-10-19 15:55:57",
+      isDeleted: 0,
+      deleteTime: null,
     },
     // 周五
     {
       id: 9,
-      course_id: 9,
-      coach_id: 9,
-      coach_name: "吴教练",
-      start_time: new Date(
+      courseId: 9,
+      coachId: 9,
+      coachName: "吴教练",
+      courseName: "太极晨练",
+      startTime: new Date(
         weekStart.getTime() + 96 * 60 * 60 * 1000 + 7 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
-      end_time: new Date(
+      endTime: new Date(
         weekStart.getTime() + 96 * 60 * 60 * 1000 + 8 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
       location: "太极练习区",
-      max_capacity: 15,
+      maxCapacity: 15,
       status: "waiting",
       remark: "太极晨练",
+      createBy: "admin",
+      createTime: "2025-10-19 15:55:57",
+      updateBy: "admin",
+      updateTime: "2025-10-19 15:55:57",
+      isDeleted: 0,
+      deleteTime: null,
     },
     {
       id: 10,
-      course_id: 1,
-      coach_id: 1,
-      coach_name: "李教练",
-      start_time: new Date(
+      courseId: 1,
+      coachId: 1,
+      coachName: "李教练",
+      courseName: "瑜伽基础",
+      startTime: new Date(
         weekStart.getTime() + 96 * 60 * 60 * 1000 + 18 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
-      end_time: new Date(
+      endTime: new Date(
         weekStart.getTime() + 96 * 60 * 60 * 1000 + 19 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
       location: "瑜伽室A",
-      max_capacity: 20,
+      maxCapacity: 20,
       status: "completed",
       remark: "瑜伽放松",
+      createBy: "admin",
+      createTime: "2025-10-19 15:55:57",
+      updateBy: "admin",
+      updateTime: "2025-10-19 15:55:57",
+      isDeleted: 0,
+      deleteTime: null,
     },
     // 周六
     {
       id: 11,
-      course_id: 2,
-      coach_id: 2,
-      coach_name: "王教练",
-      start_time: new Date(
+      courseId: 2,
+      coachId: 2,
+      coachName: "王教练",
+      courseName: "动感单车",
+      startTime: new Date(
         weekStart.getTime() + 120 * 60 * 60 * 1000 + 9 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
-      end_time: new Date(
+      endTime: new Date(
         weekStart.getTime() + 120 * 60 * 60 * 1000 + 10 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
       location: "单车房",
-      max_capacity: 25,
+      maxCapacity: 25,
       status: "waiting",
       remark: "周末动感单车",
+      createBy: "admin",
+      createTime: "2025-10-19 15:55:57",
+      updateBy: "admin",
+      updateTime: "2025-10-19 15:55:57",
+      isDeleted: 0,
+      deleteTime: null,
     },
     {
       id: 12,
-      course_id: 3,
-      coach_id: 3,
-      coach_name: "张教练",
-      start_time: new Date(
+      courseId: 3,
+      coachId: 3,
+      coachName: "张教练",
+      courseName: "力量训练",
+      startTime: new Date(
         weekStart.getTime() + 120 * 60 * 60 * 1000 + 14 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
-      end_time: new Date(
+      endTime: new Date(
         weekStart.getTime() + 120 * 60 * 60 * 1000 + 15 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
       location: "CrossFit训练区",
-      max_capacity: 18,
+      maxCapacity: 18,
       status: "waiting",
       remark: "CrossFit训练",
+      createBy: "admin",
+      createTime: "2025-10-19 15:55:57",
+      updateBy: "admin",
+      updateTime: "2025-10-19 15:55:57",
+      isDeleted: 0,
+      deleteTime: null,
     },
     // 周日
     {
       id: 13,
-      course_id: 4,
-      coach_id: 4,
-      coach_name: "陈教练",
-      start_time: new Date(
+      courseId: 4,
+      coachId: 4,
+      coachName: "陈教练",
+      courseName: "普拉提",
+      startTime: new Date(
         weekStart.getTime() + 144 * 60 * 60 * 1000 + 10 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
-      end_time: new Date(
+      endTime: new Date(
         weekStart.getTime() + 144 * 60 * 60 * 1000 + 11 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
       location: "瑜伽室B",
-      max_capacity: 20,
+      maxCapacity: 20,
       status: "waiting",
       remark: "普拉提训练",
+      createBy: "admin",
+      createTime: "2025-10-19 15:55:57",
+      updateBy: "admin",
+      updateTime: "2025-10-19 15:55:57",
+      isDeleted: 0,
+      deleteTime: null,
     },
     {
       id: 14,
-      course_id: 5,
-      coach_id: 5,
-      coach_name: "刘教练",
-      start_time: new Date(
+      courseId: 5,
+      coachId: 5,
+      coachName: "刘教练",
+      courseName: "跑步训练",
+      startTime: new Date(
         weekStart.getTime() + 144 * 60 * 60 * 1000 + 16 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
-      end_time: new Date(
+      endTime: new Date(
         weekStart.getTime() + 144 * 60 * 60 * 1000 + 17 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
       location: "有氧区",
-      max_capacity: 30,
+      maxCapacity: 30,
       status: "cancelled",
       remark: "有氧运动（已取消）",
+      createBy: "admin",
+      createTime: "2025-10-19 15:55:57",
+      updateBy: "admin",
+      updateTime: "2025-10-19 15:55:57",
+      isDeleted: 0,
+      deleteTime: null,
     },
   ];
 };
@@ -520,16 +663,19 @@ const previousWeek = () => {
   const newWeek = new Date(currentWeek.value);
   newWeek.setDate(newWeek.getDate() - 7);
   currentWeek.value = newWeek;
+  loadSchedules(); // 重新加载排班数据
 };
 
 const nextWeek = () => {
   const newWeek = new Date(currentWeek.value);
   newWeek.setDate(newWeek.getDate() + 7);
   currentWeek.value = newWeek;
+  loadSchedules(); // 重新加载排班数据
 };
 
 const goToCurrentWeek = () => {
   currentWeek.value = new Date();
+  loadSchedules(); // 重新加载排班数据
 };
 
 // 格式化周范围
@@ -589,6 +735,12 @@ const handleScheduleSubmit = async (formData) => {
   try {
     if (isEditMode.value) {
       // 更新排班
+      await updateSchedule({
+        id: editingSchedule.value.id,
+        ...formData
+      });
+
+      // 更新本地数据
       const index = schedules.value.findIndex(
         (s) => s.id === editingSchedule.value.id
       );
@@ -596,7 +748,7 @@ const handleScheduleSubmit = async (formData) => {
         schedules.value[index] = {
           ...editingSchedule.value,
           ...formData,
-          coach_name: coachs.value.find((t) => t.id == formData.coach_id)?.name,
+          coachName: coachs.value.find((t) => t.id == formData.coachId)?.name,
         };
       }
 
@@ -609,10 +761,19 @@ const handleScheduleSubmit = async (formData) => {
       });
     } else {
       // 添加排班
+      const response = await createSchedule(formData);
+      
       const newSchedule = {
-        id: Date.now(),
+        id: response.id || Date.now(),
         ...formData,
-        coach_name: coachs.value.find((t) => t.id == formData.coach_id)?.name,
+        coachName: coachs.value.find((t) => t.id == formData.coachId)?.name,
+        courseName: "", // TODO: 从课程API获取课程名称
+        createBy: currentUser.value?.username || "admin",
+        createTime: new Date().toISOString().slice(0, 19).replace('T', ' '),
+        updateBy: currentUser.value?.username || "admin",
+        updateTime: new Date().toISOString().slice(0, 19).replace('T', ' '),
+        isDeleted: 0,
+        deleteTime: null,
       };
 
       schedules.value.push(newSchedule);
@@ -643,7 +804,7 @@ const handleScheduleSubmit = async (formData) => {
 const deleteSchedule = async (schedule) => {
   const result = await Swal.fire({
     title: "确认删除",
-    text: `确定要删除 ${schedule.coach_name} 在 ${schedule.start_time} 的排班吗？`,
+    text: `确定要删除 ${schedule.coachName} 在 ${schedule.startTime} 的排班吗？`,
     icon: "warning",
     showCancelButton: true,
     confirmButtonColor: "#ef4444",
@@ -654,6 +815,8 @@ const deleteSchedule = async (schedule) => {
 
   if (result.isConfirmed) {
     try {
+      await deleteSchedules([schedule.id]);
+      
       const index = schedules.value.findIndex((s) => s.id === schedule.id);
       if (index !== -1) {
         schedules.value.splice(index, 1);

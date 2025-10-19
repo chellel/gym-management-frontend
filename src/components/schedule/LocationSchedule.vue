@@ -39,7 +39,7 @@
                 class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs cursor-pointer hover:bg-green-200"
                 @click="$emit('edit-schedule', schedule)"
               >
-                {{ schedule.coach_name }}
+                {{ schedule.coachName }}
                 <br />
                 {{ schedule.location }}
               </div>

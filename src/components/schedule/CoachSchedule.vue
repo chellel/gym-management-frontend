@@ -42,7 +42,7 @@
                     {{ coach.name }}
                   </div>
                   <div class="text-sm text-gray-500">
-                    {{ coach.specialty }}
+                    {{ coach.remark }}
                   </div>
                 </div>
               </div>
@@ -59,8 +59,8 @@
                   class="bg-primary-100 text-primary-800 px-2 py-1 rounded text-xs cursor-pointer hover:bg-primary-200 relative group"
                   @click="$emit('edit-schedule', schedule)"
                 >
-                  {{ formatTime(schedule.start_time) }} -
-                  {{ formatTime(schedule.end_time) }}
+                  {{ formatTime(schedule.startTime) }} -
+                  {{ formatTime(schedule.endTime) }}
                   <br />
                   {{ schedule.location }}
                   <div
@@ -82,6 +82,7 @@
 
 <script setup>
 import { computed } from "vue";
+import dayjs from "dayjs";
 
 // Props
 const props = defineProps({
@@ -110,10 +111,10 @@ const emit = defineEmits(["edit-schedule", "delete-schedule"]);
 const getCoachSchedules = (coachId, date) => {
   return props.schedules.filter((schedule) => {
     // 检查教练ID匹配
-    if (schedule.coach_id !== coachId) return false;
+    if (schedule.coachId !== coachId) return false;
 
-    // 检查日期匹配 - 从start_time中提取日期
-    const scheduleDate = schedule.start_time.split("T")[0];
+    // 检查日期匹配 - 从startTime中提取日期
+    const scheduleDate = dayjs(schedule.startTime).format("YYYY-MM-DD");
     return scheduleDate === date;
   });
 };

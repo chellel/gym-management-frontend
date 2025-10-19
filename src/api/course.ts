@@ -5,14 +5,14 @@ export interface Course {
   id: number
   name: string
   description?: string
-  duration_minutes: number
-  create_by: string
-  create_time: string
-  update_by: string
-  update_time: string
+  durationMinutes: number
+  createBy: string
+  createTime: string
+  updateBy: string
+  updateTime: string
   remark?: string
-  is_deleted: number
-  delete_time?: string
+  isDeleted: number
+  deleteTime?: string
 }
 
 // 课程分页响应接口
@@ -29,7 +29,7 @@ export interface CourseListResponse extends PageResult<Course> {}
 export interface CourseFormData {
   name: string
   description?: string
-  duration_minutes: number
+  durationMinutes: number
   remark?: string
 }
 
@@ -38,7 +38,7 @@ export const getCourseList = (params: {
   page?: number;
   pageSize?: number;
   search?: string;
-  is_deleted?: number;
+  isDeleted?: number;
 }) => {
   return post(`/system/gymcourse/list`, params) as unknown as Promise<CourseListResponse>;
 };

@@ -13,9 +13,9 @@
       class="space-y-4"
     >
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <el-form-item label="课程" prop="course_id">
+        <el-form-item label="课程" prop="courseId">
           <el-select
-            v-model="form.course_id"
+            v-model="form.courseId"
             placeholder="选择课程"
             class="w-full"
             @change="onCourseChange"
@@ -36,9 +36,9 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="教练" prop="coach_id">
+        <el-form-item label="教练" prop="coachId">
           <el-select
-            v-model="form.coach_id"
+            v-model="form.coachId"
             placeholder="选择教练"
             class="w-full"
             :disabled="isCoach"
@@ -52,9 +52,9 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="开始时间" prop="start_time">
+        <el-form-item label="开始时间" prop="startTime">
           <el-date-picker
-            v-model="form.start_time"
+            v-model="form.startTime"
             type="datetime"
             placeholder="选择开始时间"
             class="w-full"
@@ -64,7 +64,7 @@
           />
         </el-form-item>
 
-        <el-form-item label="结束时间" prop="end_time">
+        <el-form-item label="结束时间" prop="endTime">
           <template #label>
             <el-tooltip
               content="结束时间将根据开始时间和课程时长自动计算"
@@ -77,7 +77,7 @@
             </el-tooltip>
           </template>
           <el-date-picker
-            v-model="form.end_time"
+            v-model="form.endTime"
             type="datetime"
             placeholder="自动计算"
             class="w-full"
@@ -95,9 +95,9 @@
           />
         </el-form-item>
 
-        <el-form-item label="最大容量" prop="max_capacity">
+        <el-form-item label="最大容量" prop="maxCapacity">
           <el-input-number
-            v-model="form.max_capacity"
+            v-model="form.maxCapacity"
             :min="1"
             :max="50"
             placeholder="最大容量"
@@ -183,25 +183,25 @@ const formRef = ref();
 
 // 表单数据
 const form = reactive({
-  course_id: "",
-  coach_id: "",
-  start_time: "",
-  end_time: "",
+  courseId: "",
+  coachId: "",
+  startTime: "",
+  endTime: "",
   location: "",
-  max_capacity: 20,
+  maxCapacity: 20,
   status: "waiting",
   remark: "",
 });
 
 // 表单验证规则
 const rules = {
-  course_id: [{ required: true, message: "请选择课程", trigger: "change" }],
-  coach_id: [{ required: true, message: "请选择教练", trigger: "change" }],
-  start_time: [
+  courseId: [{ required: true, message: "请选择课程", trigger: "change" }],
+  coachId: [{ required: true, message: "请选择教练", trigger: "change" }],
+  startTime: [
     { required: true, message: "请选择开始时间", trigger: "change" },
   ],
   location: [{ required: true, message: "请输入上课地点", trigger: "blur" }],
-  max_capacity: [
+  maxCapacity: [
     { required: true, message: "请输入最大容量", trigger: "blur" },
     {
       type: "number",
@@ -249,29 +249,29 @@ watch(visible, (newVal) => {
 // 课程选择变化处理
 const onCourseChange = (courseId) => {
   const selectedCourse = courses.value.find((course) => course.id === courseId);
-  if (selectedCourse && form.start_time) {
+  if (selectedCourse && form.startTime) {
     // 根据课程时长自动设置结束时间
-    const startDate = new Date(form.start_time);
+    const startDate = new Date(form.startTime);
     const endDate = new Date(
       startDate.getTime() + selectedCourse.durationMinutes * 60000
     );
-    form.end_time = endDate.toISOString().slice(0, 16);
+    form.endTime = endDate.toISOString().slice(0, 16);
   }
 };
 
 // 开始时间变化处理
 const onStartTimeChange = () => {
-  if (form.course_id && form.start_time) {
+  if (form.courseId && form.startTime) {
     const selectedCourse = courses.value.find(
-      (course) => course.id === form.course_id
+      (course) => course.id === form.courseId
     );
     if (selectedCourse) {
       // 根据课程时长自动设置结束时间
-      const startDate = new Date(form.start_time);
+      const startDate = new Date(form.startTime);
       const endDate = new Date(
           startDate.getTime() + selectedCourse.durationMinutes * 60000
       );
-      form.end_time = endDate.toISOString().slice(0, 16);
+      form.endTime = endDate.toISOString().slice(0, 16);
     }
   }
 };
@@ -281,12 +281,12 @@ const initForm = () => {
   if (props.isEdit && props.scheduleData) {
     // 编辑模式：填充现有数据
     Object.assign(form, {
-      course_id: props.scheduleData.course_id || "",
-      coach_id: props.scheduleData.coach_id || "",
-      start_time: props.scheduleData.start_time || "",
-      end_time: props.scheduleData.end_time || "",
+      courseId: props.scheduleData.courseId || "",
+      coachId: props.scheduleData.coachId || "",
+      startTime: props.scheduleData.startTime || "",
+      endTime: props.scheduleData.endTime || "",
       location: props.scheduleData.location || "",
-      max_capacity: props.scheduleData.max_capacity || 20,
+      maxCapacity: props.scheduleData.maxCapacity || 20,
       status: props.scheduleData.status || "waiting",
       remark: props.scheduleData.remark || "",
     });
@@ -299,12 +299,12 @@ const initForm = () => {
 // 重置表单
 const resetForm = () => {
   Object.assign(form, {
-    course_id: "",
-    coach_id: isCoach.value && props.currentUser ? props.currentUser.id : "",
-    start_time: "",
-    end_time: "",
+    courseId: "",
+    coachId: isCoach.value && props.currentUser ? props.currentUser.id : "",
+    startTime: "",
+    endTime: "",
     location: "",
-    max_capacity: 20,
+    maxCapacity: 20,
     status: "waiting",
     remark: "",
   });
