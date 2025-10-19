@@ -114,7 +114,7 @@
 <script lang="ts" setup>
 import { ref, reactive, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { coachApi, type Coach, type CoachSchedule } from '@/api/coach'
+import { addCoachSchedule, updateCoachSchedule, type Coach, type CoachSchedule } from '@/api/coach'
 
 // Props
 const props = defineProps<{
@@ -251,12 +251,12 @@ const handleSubmit = async () => {
     if (isEdit.value && props.schedule && props.coach) {
       // 更新排班
       const updateData = { ...form }
-      await coachApi.updateCoachSchedule(props.coach.id, props.schedule.id, updateData)
+      await updateCoachSchedule(props.coach.id, props.schedule.id, updateData)
       ElMessage.success('更新成功')
     } else if (props.coach) {
       // 创建排班
       const createData = { ...form }
-      await coachApi.addCoachSchedule(props.coach.id, createData)
+      await addCoachSchedule(props.coach.id, createData)
       ElMessage.success('创建成功')
     }
 

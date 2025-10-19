@@ -7,11 +7,7 @@
         <p class="mt-1 text-sm text-gray-500">管理健身房的所有教练信息和排班安排</p>
       </div>
       <div class="flex space-x-3">
-        <el-button @click="exportCoaches" :loading="exportLoading">
-          <el-icon class="mr-2"><Download /></el-icon>
-          导出数据
-        </el-button>
-        <el-button type="primary" @click="showAddDialog = true">
+        <el-button type="primary" @click="addCoach">
           <el-icon class="mr-2"><Plus /></el-icon>
           添加教练
         </el-button>
@@ -188,8 +184,8 @@
 
     <!-- 添加/编辑教练对话框 -->
     <CoachFormDialog
-      v-model:visible="showAddDialog"
-      :coach="editingCoach"
+      v-model:visible="showEditDialog"
+      :id="editingCoachId"
       @success="handleFormSuccess"
     />
 
@@ -210,15 +206,15 @@
 <script lang="ts" setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { coachApi, generateMockCoaches } from '@/api/coach'
+import { getCoachList, getCoachStats, deleteCoach as deleteCoachApi, type Coach } from '@/api/coach'
 import CoachFormDialog from '@/admin/views/Coach/components/CoachFormDialog.vue'
 import CoachDetailDialog from '@/admin/views/Coach/components/CoachDetailDialog.vue'
 import CoachScheduleDialog from '@/admin/views/Coach/components/CoachScheduleDialog.vue'
 import Pagination from '@/admin/components/Pagination.vue'
+import Swal from 'sweetalert2'
 
 // 响应式数据
 const loading = ref(false)
-const exportLoading = ref(false)
 const coaches = ref([])
 
 // 分页数据
@@ -231,10 +227,10 @@ const searchQuery = ref('')
 const statusFilter = ref('')
 
 // 对话框状态
-const showAddDialog = ref(false)
+const showEditDialog = ref(false)
 const showDetailDialog = ref(false)
 const showScheduleDialog = ref(false)
-const editingCoach = ref(null)
+const editingCoachId = ref(null)
 const viewingCoach = ref(null)
 const scheduleCoach = ref(null)
 
@@ -268,15 +264,18 @@ watch(queryParams, () => {
 const loadCoaches = async () => {
   try {
     loading.value = true
-    // 模拟API调用
-    const mockCoaches = generateMockCoaches(50)
-    coaches.value = mockCoaches
-    total.value = mockCoaches.length
-    
     // 实际API调用
-    // const response = await coachApi.getCoaches(queryParams.value)
-    // coaches.value = response.data.coaches
-    // total.value = response.data.total
+    const res = await getCoachList(queryParams.value)
+    if(res.code !== 0) {
+      Swal.fire({
+        title: '错误',
+        text: res.msg,
+        icon: 'error'
+      })
+      return
+    }
+    coaches.value = res.rows
+    total.value = res.total
   } catch (error) {
     console.error('加载教练列表失败:', error)
     ElMessage.error('加载教练列表失败')
@@ -294,7 +293,7 @@ const loadStats = async () => {
     stats.todayClasses = 15
     
     // 实际API调用
-    // const response = await coachApi.getStats()
+    // const response = await getCoachStats()
     // Object.assign(stats, response.data)
   } catch (error) {
     console.error('加载统计数据失败:', error)
@@ -330,6 +329,12 @@ const refreshData = () => {
 }
 
 
+// 添加教练
+const addCoach = () => {
+  editingCoachId.value = null
+  showEditDialog.value = true
+}
+
 // 查看教练
 const viewCoach = (coach) => {
   viewingCoach.value = coach
@@ -338,8 +343,8 @@ const viewCoach = (coach) => {
 
 // 编辑教练
 const editCoach = (coach) => {
-  editingCoach.value = coach
-  showAddDialog.value = true
+  editingCoachId.value = coach.id
+  showEditDialog.value = true
 }
 
 // 管理排班
@@ -366,7 +371,7 @@ const deleteCoach = async (coach) => {
     loadCoaches()
     
     // 实际API调用
-    // await coachApi.deleteCoach(coach.id)
+    // await deleteCoachApi(coach.id)
     // ElMessage.success('删除成功')
     // loadCoaches()
   } catch (error) {
@@ -378,36 +383,11 @@ const deleteCoach = async (coach) => {
 }
 
 
-// 导出数据
-const exportCoaches = async () => {
-  try {
-    exportLoading.value = true
-    
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    ElMessage.success('导出成功')
-    
-    // 实际API调用
-    // const response = await coachApi.exportCoaches(queryParams.value)
-    // const blob = new Blob([response.data])
-    // const url = window.URL.createObjectURL(blob)
-    // const link = document.createElement('a')
-    // link.href = url
-    // link.download = `教练数据_${new Date().toISOString().split('T')[0]}.xlsx`
-    // link.click()
-    // window.URL.revokeObjectURL(url)
-  } catch (error) {
-    console.error('导出失败:', error)
-    ElMessage.error('导出失败')
-  } finally {
-    exportLoading.value = false
-  }
-}
 
 // 表单成功回调
 const handleFormSuccess = () => {
-  showAddDialog.value = false
-  editingCoach.value = null
+  showEditDialog.value = false
+  editingCoachId.value = null 
   loadCoaches()
   loadStats()
 }
@@ -432,6 +412,7 @@ const getStatusText = (status) => {
 }
 
 const formatDate = (date: string) => {
+  if(!date) return ''
   return new Date(date).toLocaleDateString('zh-CN')
 }
 </script>

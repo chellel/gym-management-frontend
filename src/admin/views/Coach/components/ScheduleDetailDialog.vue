@@ -152,7 +152,7 @@
 <script lang="ts" setup>
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { coachApi, type CoachSchedule } from '@/api/coach'
+import { type CoachSchedule } from '@/api/coach'
 
 // Props
 const props = defineProps<{

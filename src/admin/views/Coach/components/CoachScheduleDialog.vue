@@ -10,7 +10,7 @@
       <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg p-4 text-white">
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-4">
-            <el-avatar :size="60" :src="coach.avatar" :alt="coach.name">
+            <el-avatar :size="60" :alt="coach.name">
               {{ coach.name.charAt(0) }}
             </el-avatar>
             <div>
@@ -94,7 +94,7 @@
 <script lang="ts" setup>
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { coachApi, type Coach, type CoachSchedule } from '@/api/coach'
+import { getCoachSchedule, addCoachSchedule, updateCoachSchedule, type Coach, type CoachSchedule } from '@/api/coach'
 import ScheduleFormDialog from './ScheduleFormDialog.vue'
 import ScheduleCalendar from '@/admin/components/ScheduleCalendar.vue'
 
@@ -154,9 +154,9 @@ const loadSchedule = async () => {
     updateStats()
 
     // 实际API调用
-    // const response = await coachApi.getCoachSchedule(props.coach.id, {
-    //   start: getDateRange().start,
-    //   end: getDateRange().end
+    // const response = await getCoachSchedule(props.coach.id, {
+    //   start_date: getDateRange().start,
+    //   end_date: getDateRange().end
     // })
     // schedules.value = response.data
     // updateStats()

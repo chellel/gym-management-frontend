@@ -24,6 +24,10 @@
             <el-input v-model="form.name" placeholder="请输入教练姓名" />
           </el-form-item>
 
+          <el-form-item label="工号" prop="userId">
+            <el-input v-model="form.userId" placeholder="请输入工号" />
+          </el-form-item>
+
           <el-form-item label="邮箱" prop="email">
             <el-input v-model="form.email" placeholder="请输入邮箱地址" />
           </el-form-item>
@@ -32,9 +36,44 @@
             <el-input v-model="form.phone" placeholder="请输入电话号码" />
           </el-form-item>
 
+          <el-form-item v-if="!isEdit" label="密码" prop="password">
+            <el-input 
+              v-model="form.password" 
+              type="password" 
+              placeholder="请输入密码" 
+              show-password
+            />
+          </el-form-item>
+
+          <el-form-item label="性别" prop="gender">
+            <el-radio-group v-model="form.gender">
+              <el-radio :label="1">男</el-radio>
+              <el-radio :label="0">女</el-radio>
+            </el-radio-group>
+          </el-form-item>
+
+          <el-form-item label="出生日期" prop="birthDate">
+            <el-date-picker
+              v-model="form.birthDate"
+              type="date"
+              placeholder="选择出生日期"
+              class="w-full"
+            />
+          </el-form-item>
+
           <el-form-item label="经验年限" prop="experience">
             <el-input v-model="form.experience" placeholder="如：5年" />
           </el-form-item>
+
+          <el-form-item label="入职日期" prop="hireDate">
+            <el-date-picker
+              v-model="form.hireDate"
+              type="date"
+              placeholder="选择入职日期"
+              class="w-full"
+            />
+          </el-form-item>
+
           <el-form-item label="状态" prop="status">
             <el-radio-group v-model="form.status">
               <el-radio label="active">在职</el-radio>
@@ -50,12 +89,21 @@
           详细信息
         </h3>
 
-        <el-form-item label="个人简介" prop="bio">
+        <el-form-item label="个人简介" prop="description">
           <el-input
-            v-model="form.bio"
+            v-model="form.description"
             type="textarea"
             :rows="4"
             placeholder="请输入个人简介，包括专业领域、认证证书、教学经验等信息"
+          />
+        </el-form-item>
+
+        <el-form-item label="备注" prop="remark">
+          <el-input
+            v-model="form.remark"
+            type="textarea"
+            :rows="2"
+            placeholder="请输入备注信息"
           />
         </el-form-item>
       </div>
@@ -76,16 +124,23 @@
 import { ref, reactive, computed, watch } from "vue";
 import { ElMessage } from "element-plus";
 import {
-  coachApi,
+  createCoach,
+  updateCoach,
+  getCoachDetail,
   type Coach,
-  type CreateCoachParams,
-  type UpdateCoachParams,
 } from "@/api/coach";
+import {cloneDeep} from 'lodash-es';
+
+// 获取当前日期字符串
+const getCurrentDate = () => {
+  const today = new Date();
+  return today.toISOString().split('T')[0];
+};
 
 // Props
 const props = defineProps<{
   visible: boolean;
-  coach?: Coach | null;
+  id?: number | null;
 }>();
 
 // Emits
@@ -97,14 +152,23 @@ const emit = defineEmits<{
 // 响应式数据
 const formRef = ref();
 const loading = ref(false);
-const form = reactive({
+
+const defaultForm = {
   name: "",
+  userId: "",
   email: "",
   phone: "",
+  password: "",
+  gender: 1,
+  birthDate: "",
   experience: "",
-  bio: "",
-  status: "active" as "active" | "inactive" | "suspended",
-});
+  description: "",
+  hireDate: getCurrentDate(),
+  status: "active",
+  remark: "",
+  role: "coach",
+};  
+const form = reactive(cloneDeep(defaultForm));
 
 // 表单验证规则
 const rules = {
@@ -116,6 +180,9 @@ const rules = {
     { required: true, message: "请输入邮箱地址", trigger: "blur" },
     { type: "email", message: "请输入正确的邮箱格式", trigger: "blur" },
   ],
+  userId: [
+    { required: true, message: "请输入教练工号", trigger: "blur" },
+  ],
   phone: [
     { required: true, message: "请输入电话号码", trigger: "blur" },
     {
@@ -123,6 +190,16 @@ const rules = {
       message: "请输入正确的手机号码",
       trigger: "blur",
     },
+  ],
+  password: [
+    { required: true, message: "请输入密码", trigger: "blur" },
+    { min: 6, max: 20, message: "密码长度在 6 到 20 个字符", trigger: "blur" },
+  ],
+  gender: [
+    { required: true, message: "请选择性别", trigger: "change" },
+  ],
+  birthDate: [
+    { required: true, message: "请选择出生日期", trigger: "change" },
   ],
   experience: [{ required: true, message: "请输入经验年限", trigger: "blur" }],
   status: [{ required: true, message: "请选择状态", trigger: "change" }],
@@ -134,33 +211,45 @@ const dialogVisible = computed({
   set: (value) => emit("update:visible", value),
 });
 
-const isEdit = computed(() => !!props.coach);
+const isEdit = computed(() => !!props.id);
 // 重置表单
 const resetForm = () => {
-  Object.assign(form, {
-    name: "",
-    email: "",
-    phone: "",
-    experience: "",
-    bio: "",
-    status: "active",
-  });
+  Object.assign(form, cloneDeep(defaultForm));
   formRef.value?.clearValidate();
 };
-// 监听教练数据变化
+// 监听id变化，加载教练数据
 watch(
-  () => props.coach,
-  (newCoach) => {
-    if (newCoach) {
-      Object.assign(form, {
-        name: newCoach.name,
-        email: newCoach.email,
-        phone: newCoach.phone,
-        experience: newCoach.experience,
-        bio: newCoach.bio || "",
-        status: newCoach.status,
-      });
+  () => props.id,
+  async (newId) => {
+    if (newId) {
+      // 编辑模式：加载教练数据
+      try {
+        loading.value = true;
+        const response = await getCoachDetail(newId);
+        if (response.data) {
+          const coachData = response.data;
+          Object.assign(form, {
+            name: coachData.name || "",
+            userId: coachData.userId || "",
+            email: coachData.email || "",
+            phone: coachData.phone || "",
+            gender: coachData.gender || 1,
+            birthDate: coachData.birthDate || "",
+            experience: coachData.experience || "",
+            description: coachData.description || "",
+            hireDate: coachData.hireDate || "",
+            status: coachData.status || "active",
+            remark: coachData.remark || "",
+          });
+        }
+      } catch (error) {
+        console.error("加载教练数据失败:", error);
+        ElMessage.error("加载教练数据失败");
+      } finally {
+        loading.value = false;
+      }
     } else {
+      // 新增模式：重置表单
       resetForm();
     }
   },
@@ -173,15 +262,18 @@ const handleSubmit = async () => {
     await formRef.value?.validate();
     loading.value = true;
 
-    if (isEdit.value && props.coach) {
+    const params = {
+      ...form,
+      id: props.id,
+    };
+
+    if (isEdit.value && props.id) {
       // 更新教练
-      const updateData: UpdateCoachParams = { ...form };
-      await coachApi.updateCoach(props.coach.id, updateData);
+      await updateCoach(params);
       ElMessage.success("更新成功");
     } else {
       // 创建教练
-      const createData: CreateCoachParams = { ...form };
-      await coachApi.createCoach(createData);
+      await createCoach(params);
       ElMessage.success("创建成功");
     }
 
