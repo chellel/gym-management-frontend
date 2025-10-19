@@ -121,16 +121,7 @@ export const addCoachSchedule = (id: number, data: {
 };
 
 // 更新教练排班
-export const updateCoachSchedule = (id: number, scheduleId: number, data: {
-  activity?: string;
-  location?: string;
-  date?: string;
-  start_time?: string;
-  end_time?: string;
-  max_capacity?: number;
-  status?: string;
-  notes?: string;
-}) => {
+export const updateCoachSchedule = (id: number, scheduleId: number, data: any) => {
   return put(`/coaches/${id}/schedule/${scheduleId}`, data);
 };
 

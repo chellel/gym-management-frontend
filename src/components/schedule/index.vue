@@ -49,7 +49,7 @@
         </div>
         <el-button
           v-if="canAddSchedule"
-          @click="showAddScheduleModal = true"
+          @click="openAddScheduleDialog"
           type="primary"
           class="inline-flex items-center"
         >
@@ -62,334 +62,42 @@
     </div>
 
     <!-- 教练排班视图 -->
-    <div
+    <TrainerSchedule
       v-if="currentView === 'trainers'"
-      class="bg-white shadow overflow-hidden sm:rounded-lg"
-    >
-      <div class="px-6 py-4 border-b border-gray-200">
-        <h3 class="text-lg leading-6 font-medium text-gray-900">教练排班表</h3>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                教练
-              </th>
-              <th
-                v-for="day in weekDays"
-                :key="day.date"
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                <div>{{ day.name }}</div>
-                <div class="text-gray-400 font-normal">
-                  {{ formatDate(day.date) }}
-                </div>
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="trainer in trainers" :key="trainer.id">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center">
-                  <div class="flex-shrink-0 h-10 w-10">
-                    <div
-                      class="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center"
-                    >
-                      <span class="text-sm font-medium text-primary-600">
-                        {{ trainer.name.charAt(0) }}
-                      </span>
-                    </div>
-                  </div>
-                  <div class="ml-4">
-                    <div class="text-sm font-medium text-gray-900">
-                      {{ trainer.name }}
-                    </div>
-                    <div class="text-sm text-gray-500">
-                      {{ trainer.specialty }}
-                    </div>
-                  </div>
-                </div>
-              </td>
-              <td
-                v-for="day in weekDays"
-                :key="day.date"
-                class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
-              >
-                <div class="space-y-1">
-                  <div
-                    v-for="schedule in getTrainerSchedules(
-                      trainer.id,
-                      day.date
-                    )"
-                    :key="schedule.id"
-                    class="bg-primary-100 text-primary-800 px-2 py-1 rounded text-xs cursor-pointer hover:bg-primary-200 relative group"
-                    @click="editSchedule(schedule)"
-                  >
-                    {{ schedule.start_time }} - {{ schedule.end_time }}
-                    <br />
-                    {{ schedule.location }}
-                    <div
-                      v-if="canDeleteSchedule(schedule)"
-                      class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                      @click.stop="deleteSchedule(schedule)"
-                    >
-                      ×
-                    </div>
-                  </div>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+      :trainers="trainers"
+      :schedules="schedules"
+      :week-days="weekDays"
+      :can-delete-schedule="canDeleteSchedule"
+      @edit-schedule="editSchedule"
+      @delete-schedule="deleteSchedule"
+    />
+
+    <!-- 课程管理视图 -->
+    <CourseManagement
+      v-if="currentView === 'courses'"
+    />
 
     <!-- 场地预约视图 -->
-    <div
+    <LocationSchedule
       v-if="currentView === 'locations'"
-      class="bg-white shadow overflow-hidden sm:rounded-lg"
-    >
-      <div class="px-6 py-4 border-b border-gray-200">
-        <h3 class="text-lg leading-6 font-medium text-gray-900">场地预约表</h3>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                时间
-              </th>
-              <th
-                v-for="location in locations"
-                :key="location.id"
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                {{ location.name }}
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="timeSlot in timeSlots" :key="timeSlot">
-              <td
-                class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
-              >
-                {{ timeSlot }}
-              </td>
-              <td
-                v-for="location in locations"
-                :key="location.id"
-                class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
-              >
-                <div
-                  v-for="schedule in getLocationSchedules(
-                    location.id,
-                    timeSlot
-                  )"
-                  :key="schedule.id"
-                  class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs cursor-pointer hover:bg-green-200"
-                  @click="editSchedule(schedule)"
-                >
-                  {{ schedule.trainer_name }}
-                  <br />
-                  {{ schedule.activity }}
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- 统计信息 -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="bg-white overflow-hidden shadow rounded-lg">
-        <div class="p-5">
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <el-icon class="h-6 w-6 text-gray-400">
-                <UserFilled />
-              </el-icon>
-            </div>
-            <div class="ml-5 w-0 flex-1">
-              <dl>
-                <dt class="text-sm font-medium text-gray-500 truncate">
-                  总教练数
-                </dt>
-                <dd class="text-lg font-medium text-gray-900">
-                  {{ trainers.length }}
-                </dd>
-              </dl>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white overflow-hidden shadow rounded-lg">
-        <div class="p-5">
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <el-icon class="h-6 w-6 text-gray-400">
-                <LocationFilled />
-              </el-icon>
-            </div>
-            <div class="ml-5 w-0 flex-1">
-              <dl>
-                <dt class="text-sm font-medium text-gray-500 truncate">
-                  总场地数
-                </dt>
-                <dd class="text-lg font-medium text-gray-900">
-                  {{ locations.length }}
-                </dd>
-              </dl>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white overflow-hidden shadow rounded-lg">
-        <div class="p-5">
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <el-icon class="h-6 w-6 text-gray-400">
-                <Clock />
-              </el-icon>
-            </div>
-            <div class="ml-5 w-0 flex-1">
-              <dl>
-                <dt class="text-sm font-medium text-gray-500 truncate">
-                  本周排班
-                </dt>
-                <dd class="text-lg font-medium text-gray-900">
-                  {{ weekSchedules.length }}
-                </dd>
-              </dl>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+      :locations="locations"
+      :schedules="schedules"
+      :time-slots="timeSlots"
+      @edit-schedule="editSchedule"
+    />
   </div>
 
-  <!-- 添加/编辑排班模态框 -->
-  <div
-    v-if="showAddScheduleModal || showEditScheduleModal"
-    class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
-  >
-    <div
-      class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white"
-    >
-      <div class="mt-3">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-medium text-gray-900">
-            {{ showAddScheduleModal ? "添加排班" : "编辑排班" }}
-          </h3>
-          <el-button
-            @click="closeModal"
-            type="text"
-            class="text-gray-400 hover:text-gray-600"
-          >
-            <el-icon class="h-6 w-6">
-              <Close />
-            </el-icon>
-          </el-button>
-        </div>
-
-        <el-form
-          @submit.prevent="
-            showAddScheduleModal ? handleAddSchedule() : handleUpdateSchedule()
-          "
-          class="space-y-4"
-        >
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <el-form-item label="教练" required>
-              <el-select
-                v-model="scheduleForm.trainer_id"
-                placeholder="选择教练"
-                class="w-full"
-                :disabled="isCoach"
-              >
-                <el-option
-                  v-for="trainer in availableTrainers"
-                  :key="trainer.id"
-                  :label="trainer.name"
-                  :value="trainer.id"
-                />
-              </el-select>
-            </el-form-item>
-
-            <el-form-item label="场地" required>
-              <el-select
-                v-model="scheduleForm.location_id"
-                placeholder="选择场地"
-                class="w-full"
-              >
-                <el-option
-                  v-for="location in locations"
-                  :key="location.id"
-                  :label="location.name"
-                  :value="location.id"
-                />
-              </el-select>
-            </el-form-item>
-
-            <el-form-item label="日期" required>
-              <el-date-picker
-                v-model="scheduleForm.date"
-                type="date"
-                placeholder="选择日期"
-                class="w-full"
-              />
-            </el-form-item>
-
-            <el-form-item label="活动内容" required>
-              <el-input
-                v-model="scheduleForm.activity"
-                placeholder="请输入活动内容"
-                clearable
-              />
-            </el-form-item>
-
-            <el-form-item label="开始时间" required>
-              <el-time-picker
-                v-model="scheduleForm.start_time"
-                placeholder="选择开始时间"
-                class="w-full"
-              />
-            </el-form-item>
-
-            <el-form-item label="结束时间" required>
-              <el-time-picker
-                v-model="scheduleForm.end_time"
-                placeholder="选择结束时间"
-                class="w-full"
-              />
-            </el-form-item>
-
-            <el-form-item label="备注" class="md:col-span-2">
-              <el-input
-                v-model="scheduleForm.notes"
-                type="textarea"
-                :rows="3"
-                placeholder="请输入备注"
-              />
-            </el-form-item>
-          </div>
-
-          <div class="flex justify-end space-x-3 pt-4">
-            <el-button @click="closeModal" type="default"> 取消 </el-button>
-            <el-button type="primary" native-type="submit">
-              {{ showAddScheduleModal ? "添加" : "保存" }}
-            </el-button>
-          </div>
-        </el-form>
-      </div>
-    </div>
-  </div>
+  <!-- 排班表单对话框 -->
+  <ScheduleFormDialog
+    v-model="showScheduleDialog"
+    :is-edit="isEditMode"
+    :schedule-data="editingSchedule"
+    :courses="courses"
+    :trainers="trainers"
+    :current-user="currentUser"
+    @submit="handleScheduleSubmit"
+    @close="closeScheduleDialog"
+  />
 </template>
 
 <script setup>
@@ -397,9 +105,14 @@ import { ref, reactive, computed, onMounted } from "vue";
 import Swal from "sweetalert2";
 import { useAuth } from "@/composables/useAuth";
 import { useAdminAuth } from "@/composables/useAdminAuth";
+import TrainerSchedule from "./TrainerSchedule.vue";
+import LocationSchedule from "./LocationSchedule.vue";
+import CourseManagement from "./CourseManagement.vue";
+import ScheduleFormDialog from "./ScheduleFormDialog.vue";
+import { generateMockCourses } from "@/api/course";
 
 // 认证相关
-const { isCoach } = useAuth();
+const { isCoach, currentUser } = useAuth();
 const { isAdmin } = useAdminAuth();
 
 // 响应式数据
@@ -407,23 +120,14 @@ const currentView = ref("trainers");
 const currentWeek = ref(new Date());
 const schedules = ref([]);
 const trainers = ref([]);
+const courses = ref([]);
 const locations = ref([]);
 
 // 模态框状态
-const showAddScheduleModal = ref(false);
-const showEditScheduleModal = ref(false);
+const showScheduleDialog = ref(false);
+const isEditMode = ref(false);
 const editingSchedule = ref(null);
 
-// 排班表单
-const scheduleForm = reactive({
-  trainer_id: "",
-  location_id: "",
-  date: "",
-  start_time: "",
-  end_time: "",
-  activity: "",
-  notes: "",
-});
 
 // 权限控制计算属性
 const canAddSchedule = computed(() => {
@@ -434,7 +138,7 @@ const canEditSchedule = computed(() => {
   return (schedule) => {
     if (isAdmin.value) return true;
     if (isCoach.value) {
-      return schedule.trainer_id === currentUser.value?.id;
+      return schedule.coach_id === currentUser.value?.id;
     }
     return false;
   };
@@ -444,26 +148,16 @@ const canDeleteSchedule = computed(() => {
   return (schedule) => {
     if (isAdmin.value) return true;
     if (isCoach.value) {
-      return schedule.trainer_id === currentUser.value?.id;
+      return schedule.coach_id === currentUser.value?.id;
     }
     return false;
   };
 });
 
-// 获取可用的教练列表（教练只能看到自己，管理员可以看到所有）
-const availableTrainers = computed(() => {
-  if (isAdmin.value) {
-    return trainers.value;
-  } else if (isCoach.value) {
-    return trainers.value.filter(
-      (trainer) => trainer.id === currentUser.value?.id
-    );
-  }
-  return [];
-});
 
 // 视图选项
 const views = [
+  { key: "courses", name: "课程管理" },
   { key: "trainers", name: "教练排班" },
   { key: "locations", name: "场地预约" },
 ];
@@ -498,26 +192,17 @@ const weekDays = computed(() => {
   return days;
 });
 
-const weekSchedules = computed(() => {
-  const weekStart = weekDays.value[0].date;
-  const weekEnd = weekDays.value[6].date;
-
-  return schedules.value.filter(
-    (schedule) => schedule.date >= weekStart && schedule.date <= weekEnd
-  );
-});
 
 // 初始化
 onMounted(() => {
   initializeMockData();
-  // 如果是教练，自动设置教练ID
-  if (isCoach.value && currentUser.value) {
-    scheduleForm.trainer_id = currentUser.value.id;
-  }
 });
 
 // 初始化模拟数据
 const initializeMockData = () => {
+  // 模拟课程数据
+  courses.value = generateMockCourses(15);
+
   // 模拟教练数据
   trainers.value = [
     { id: 1, name: "李教练", specialty: "瑜伽/普拉提/冥想" },
@@ -555,311 +240,73 @@ const initializeMockData = () => {
   const weekStart = new Date(today);
   weekStart.setDate(today.getDate() - today.getDay());
 
-  schedules.value = [
-    // 周一
-    {
-      id: 1,
-      trainer_id: 1,
-      trainer_name: "李教练",
-      location_id: 1,
-      location: "瑜伽室A",
-      date: new Date(weekStart).toISOString().split("T")[0],
-      start_time: "07:00",
-      end_time: "08:00",
-      activity: "晨间瑜伽",
-      notes: "适合初学者",
-    },
-    {
-      id: 2,
-      trainer_id: 2,
-      trainer_name: "王教练",
-      location_id: 3,
-      location: "单车房",
-      date: new Date(weekStart).toISOString().split("T")[0],
-      start_time: "19:00",
-      end_time: "20:00",
-      activity: "动感单车",
-      notes: "高强度训练",
-    },
-    {
-      id: 3,
-      trainer_id: 3,
-      trainer_name: "张教练",
-      location_id: 4,
-      location: "器械区",
-      date: new Date(weekStart).toISOString().split("T")[0],
-      start_time: "18:00",
-      end_time: "19:00",
-      activity: "力量训练基础",
-      notes: "专业指导",
-    },
-    {
-      id: 4,
-      trainer_id: 4,
-      trainer_name: "陈教练",
-      location_id: 2,
-      location: "瑜伽室B",
-      date: new Date(weekStart).toISOString().split("T")[0],
-      start_time: "20:00",
-      end_time: "21:00",
-      activity: "普拉提核心",
-      notes: "核心训练",
-    },
+  // 生成示例排班数据
+  const generateScheduleData = () => {
+    const scheduleData = [];
+    let scheduleId = 1;
+    
+    // 为本周的每一天生成排班
+    for (let day = 0; day < 7; day++) {
+      const currentDay = new Date(weekStart.getTime() + day * 24 * 60 * 60 * 1000);
+      
+      // 每天生成3-5个排班
+      const dailySchedules = Math.floor(Math.random() * 3) + 3; // 3-5个排班
+      
+      for (let i = 0; i < dailySchedules; i++) {
+        const course = courses.value[Math.floor(Math.random() * courses.value.length)];
+        const coach = trainers.value[Math.floor(Math.random() * trainers.value.length)];
+        const location = locations.value[Math.floor(Math.random() * locations.value.length)];
+        
+        // 生成不同的时间段
+        const timeSlots = [
+          { hour: 7, minute: 0 },   // 早上7点
+          { hour: 9, minute: 0 },   // 上午9点
+          { hour: 14, minute: 0 },  // 下午2点
+          { hour: 16, minute: 0 },   // 下午4点
+          { hour: 18, minute: 0 },  // 晚上6点
+          { hour: 19, minute: 30 }, // 晚上7:30
+          { hour: 20, minute: 0 },  // 晚上8点
+        ];
+        
+        const timeSlot = timeSlots[i % timeSlots.length];
+        const startTime = new Date(currentDay.getTime() + timeSlot.hour * 60 * 60 * 1000 + timeSlot.minute * 60 * 1000);
+        const endTime = new Date(startTime.getTime() + course.duration_minutes * 60000);
+        
+        // 随机状态
+        const statuses = ["waiting", "waiting", "waiting", "completed", "cancelled"]; // 大部分是等待状态
+        const status = statuses[Math.floor(Math.random() * statuses.length)];
+        
+        scheduleData.push({
+          id: scheduleId++,
+          course_id: course.id,
+          coach_id: coach.id,
+          coach_name: coach.name,
+          start_datetime: startTime.toISOString().slice(0, 16),
+          end_datetime: endTime.toISOString().slice(0, 16),
+          location: location.name,
+          max_capacity: Math.floor(Math.random() * 25) + 10, // 10-35人
+          status: status,
+          remark: `${course.name} - ${getStatusRemark(status)}`,
+        });
+      }
+    }
+    
+    return scheduleData;
+  };
+  
+  // 获取状态备注
+  const getStatusRemark = (status) => {
+    const remarks = {
+      waiting: "等待开始",
+      completed: "已完成",
+      cancelled: "已取消"
+    };
+    return remarks[status] || "正常";
+  };
 
-    // 周二
-    {
-      id: 5,
-      trainer_id: 5,
-      trainer_name: "刘教练",
-      location_id: 15,
-      location: "户外跑道",
-      date: new Date(weekStart.getTime() + 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
-      start_time: "06:30",
-      end_time: "07:30",
-      activity: "晨跑团",
-      notes: "户外运动",
-    },
-    {
-      id: 6,
-      trainer_id: 1,
-      trainer_name: "李教练",
-      location_id: 6,
-      location: "高温瑜伽室",
-      date: new Date(weekStart.getTime() + 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
-      start_time: "09:00",
-      end_time: "10:00",
-      activity: "高温瑜伽",
-      notes: "深度排毒",
-    },
-    {
-      id: 7,
-      trainer_id: 6,
-      trainer_name: "赵教练",
-      location_id: 7,
-      location: "拳击台",
-      date: new Date(weekStart.getTime() + 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
-      start_time: "19:30",
-      end_time: "20:30",
-      activity: "拳击训练",
-      notes: "技巧训练",
-    },
-    {
-      id: 8,
-      trainer_id: 7,
-      trainer_name: "孙教练",
-      location_id: 8,
-      location: "舞蹈室",
-      date: new Date(weekStart.getTime() + 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
-      start_time: "20:00",
-      end_time: "21:00",
-      activity: "有氧舞蹈",
-      notes: "音乐节奏",
-    },
-
-    // 周三
-    {
-      id: 9,
-      trainer_id: 8,
-      trainer_name: "周教练",
-      location_id: 9,
-      location: "游泳池",
-      date: new Date(weekStart.getTime() + 2 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
-      start_time: "07:00",
-      end_time: "08:00",
-      activity: "游泳训练",
-      notes: "技巧指导",
-    },
-    {
-      id: 10,
-      trainer_id: 3,
-      trainer_name: "张教练",
-      location_id: 10,
-      location: "多功能训练区",
-      date: new Date(weekStart.getTime() + 2 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
-      start_time: "18:00",
-      end_time: "19:00",
-      activity: "HIIT高强度训练",
-      notes: "燃脂塑形",
-    },
-    {
-      id: 11,
-      trainer_id: 1,
-      trainer_name: "李教练",
-      location_id: 1,
-      location: "瑜伽室A",
-      date: new Date(weekStart.getTime() + 2 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
-      start_time: "19:00",
-      end_time: "20:00",
-      activity: "瑜伽流",
-      notes: "动作串联",
-    },
-
-    // 周四
-    {
-      id: 12,
-      trainer_id: 6,
-      trainer_name: "赵教练",
-      location_id: 11,
-      location: "泰拳训练区",
-      date: new Date(weekStart.getTime() + 3 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
-      start_time: "19:00",
-      end_time: "20:00",
-      activity: "泰拳训练",
-      notes: "格斗技能",
-    },
-    {
-      id: 13,
-      trainer_id: 4,
-      trainer_name: "陈教练",
-      location_id: 2,
-      location: "瑜伽室B",
-      date: new Date(weekStart.getTime() + 3 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
-      start_time: "21:00",
-      end_time: "21:30",
-      activity: "拉伸放松",
-      notes: "肌肉恢复",
-    },
-
-    // 周五
-    {
-      id: 14,
-      trainer_id: 2,
-      trainer_name: "王教练",
-      location_id: 4,
-      location: "器械区",
-      date: new Date(weekStart.getTime() + 4 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
-      start_time: "18:30",
-      end_time: "19:30",
-      activity: "杠铃操",
-      notes: "全身训练",
-    },
-    {
-      id: 15,
-      trainer_id: 7,
-      trainer_name: "孙教练",
-      location_id: 8,
-      location: "舞蹈室",
-      date: new Date(weekStart.getTime() + 4 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
-      start_time: "20:00",
-      end_time: "21:00",
-      activity: "Zumba舞蹈",
-      notes: "拉丁舞蹈",
-    },
-
-    // 周六
-    {
-      id: 16,
-      trainer_id: 1,
-      trainer_name: "李教练",
-      location_id: 12,
-      location: "冥想室",
-      date: new Date(weekStart.getTime() + 5 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
-      start_time: "08:00",
-      end_time: "09:00",
-      activity: "冥想瑜伽",
-      notes: "心灵净化",
-    },
-    {
-      id: 17,
-      trainer_id: 3,
-      trainer_name: "张教练",
-      location_id: 13,
-      location: "CrossFit训练区",
-      date: new Date(weekStart.getTime() + 5 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
-      start_time: "19:00",
-      end_time: "20:00",
-      activity: "CrossFit训练",
-      notes: "功能性训练",
-    },
-
-    // 周日
-    {
-      id: 18,
-      trainer_id: 8,
-      trainer_name: "周教练",
-      location_id: 9,
-      location: "游泳池",
-      date: new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
-      start_time: "10:00",
-      end_time: "11:00",
-      activity: "水中健身",
-      notes: "关节友好",
-    },
-    {
-      id: 19,
-      trainer_id: 9,
-      trainer_name: "吴教练",
-      location_id: 14,
-      location: "太极练习区",
-      date: new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
-      start_time: "09:00",
-      end_time: "10:00",
-      activity: "太极课程",
-      notes: "修身养性",
-    },
-    {
-      id: 20,
-      trainer_id: 4,
-      trainer_name: "陈教练",
-      location_id: 1,
-      location: "瑜伽室A",
-      date: new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
-      start_time: "21:00",
-      end_time: "22:00",
-      activity: "夜间瑜伽",
-      notes: "改善睡眠",
-    },
-  ];
+  schedules.value = generateScheduleData();
 };
 
-// 获取教练的排班
-const getTrainerSchedules = (trainerId, date) => {
-  return schedules.value.filter(
-    (schedule) => schedule.trainer_id === trainerId && schedule.date === date
-  );
-};
-
-// 获取场地的排班
-const getLocationSchedules = (locationId, timeSlot) => {
-  const [startTime] = timeSlot.split("-");
-  return schedules.value.filter(
-    (schedule) =>
-      schedule.location_id === locationId &&
-      schedule.start_time.startsWith(startTime.slice(0, 2))
-  );
-};
 
 // 周导航
 const previousWeek = () => {
@@ -886,36 +333,29 @@ const formatWeekRange = (date) => {
   const endOfWeek = new Date(startOfWeek);
   endOfWeek.setDate(startOfWeek.getDate() + 6);
 
+  const formatDate = (date) => {
+    if (typeof date === "string") {
+      date = new Date(date);
+    }
+    return date.toLocaleDateString("zh-CN", { month: "2-digit", day: "2-digit" });
+  };
+
   return `${formatDate(startOfWeek)} - ${formatDate(endOfWeek)}`;
 };
 
-// 格式化日期
-const formatDate = (date) => {
-  if (typeof date === "string") {
-    date = new Date(date);
-  }
-  return date.toLocaleDateString("zh-CN", { month: "2-digit", day: "2-digit" });
-};
 
-// 重置表单
-const resetForm = () => {
-  Object.assign(scheduleForm, {
-    trainer_id: isCoach.value && currentUser.value ? currentUser.value.id : "",
-    location_id: "",
-    date: "",
-    start_time: "",
-    end_time: "",
-    activity: "",
-    notes: "",
-  });
-};
-
-// 关闭模态框
-const closeModal = () => {
-  showAddScheduleModal.value = false;
-  showEditScheduleModal.value = false;
+// 打开添加排班对话框
+const openAddScheduleDialog = () => {
+  isEditMode.value = false;
   editingSchedule.value = null;
-  resetForm();
+  showScheduleDialog.value = true;
+};
+
+// 关闭排班对话框
+const closeScheduleDialog = () => {
+  showScheduleDialog.value = false;
+  isEditMode.value = false;
+  editingSchedule.value = null;
 };
 
 // 编辑排班
@@ -930,84 +370,62 @@ const editSchedule = (schedule) => {
     return;
   }
 
+  isEditMode.value = true;
   editingSchedule.value = schedule;
-  Object.assign(scheduleForm, {
-    trainer_id: schedule.trainer_id,
-    location_id: schedule.location_id,
-    date: schedule.date,
-    start_time: schedule.start_time,
-    end_time: schedule.end_time,
-    activity: schedule.activity,
-    notes: schedule.notes || "",
-  });
-  showEditScheduleModal.value = true;
+  showScheduleDialog.value = true;
 };
 
-// 添加排班
-const handleAddSchedule = async () => {
+// 处理排班提交
+const handleScheduleSubmit = async (formData) => {
   try {
-    const newSchedule = {
-      id: Date.now(),
-      ...scheduleForm,
-      trainer_name: trainers.value.find((t) => t.id == scheduleForm.trainer_id)
-        ?.name,
-      location: locations.value.find((l) => l.id == scheduleForm.location_id)
-        ?.name,
-    };
+    if (isEditMode.value) {
+      // 更新排班
+      const index = schedules.value.findIndex(
+        (s) => s.id === editingSchedule.value.id
+      );
+      if (index !== -1) {
+        schedules.value[index] = {
+          ...editingSchedule.value,
+          ...formData,
+          coach_name: trainers.value.find(
+            (t) => t.id == formData.coach_id
+          )?.name,
+        };
+      }
 
-    schedules.value.push(newSchedule);
-
-    await Swal.fire({
-      title: "添加成功",
-      text: "排班添加成功！",
-      icon: "success",
-      timer: 2000,
-      showConfirmButton: false,
-    });
-
-    closeModal();
-  } catch (error) {
-    console.error("Failed to add schedule:", error);
-    await Swal.fire({
-      title: "添加失败",
-      text: "添加排班失败，请重试",
-      icon: "error",
-    });
-  }
-};
-
-// 更新排班
-const handleUpdateSchedule = async () => {
-  try {
-    const index = schedules.value.findIndex(
-      (s) => s.id === editingSchedule.value.id
-    );
-    if (index !== -1) {
-      schedules.value[index] = {
-        ...editingSchedule.value,
-        ...scheduleForm,
-        trainer_name: trainers.value.find(
-          (t) => t.id == scheduleForm.trainer_id
-        )?.name,
-        location: locations.value.find((l) => l.id == scheduleForm.location_id)
+      await Swal.fire({
+        title: "更新成功",
+        text: "排班信息更新成功！",
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } else {
+      // 添加排班
+      const newSchedule = {
+        id: Date.now(),
+        ...formData,
+        coach_name: trainers.value.find((t) => t.id == formData.coach_id)
           ?.name,
       };
+
+      schedules.value.push(newSchedule);
+
+      await Swal.fire({
+        title: "添加成功",
+        text: "排班添加成功！",
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false,
+      });
     }
 
-    await Swal.fire({
-      title: "更新成功",
-      text: "排班信息更新成功！",
-      icon: "success",
-      timer: 2000,
-      showConfirmButton: false,
-    });
-
-    closeModal();
+    closeScheduleDialog();
   } catch (error) {
-    console.error("Failed to update schedule:", error);
+    console.error("Failed to handle schedule:", error);
     await Swal.fire({
-      title: "更新失败",
-      text: "更新排班信息失败，请重试",
+      title: isEditMode.value ? "更新失败" : "添加失败",
+      text: isEditMode.value ? "更新排班信息失败，请重试" : "添加排班失败，请重试",
       icon: "error",
     });
   }
@@ -1017,7 +435,7 @@ const handleUpdateSchedule = async () => {
 const deleteSchedule = async (schedule) => {
   const result = await Swal.fire({
     title: "确认删除",
-    text: `确定要删除 ${schedule.trainer_name} 在 ${schedule.date} ${schedule.start_time}-${schedule.end_time} 的排班吗？`,
+    text: `确定要删除 ${schedule.coach_name} 在 ${schedule.start_datetime} 的排班吗？`,
     icon: "warning",
     showCancelButton: true,
     confirmButtonColor: "#ef4444",
