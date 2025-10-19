@@ -1,5 +1,5 @@
 <template>
-  <div v-if="total > 0" class="flex items-center justify-between bg-white px-4 py-3 border-t border-gray-200 sm:px-6 rounded-lg shadow">
+  <div v-if="total > 0" class="flex items-center justify-between bg-white px-4 py-3 sm:px-6 rounded-lg">
     <!-- 显示总记录数 -->
     <div class="text-sm text-gray-700">
       共 <span class="font-medium">{{ total }}</span> 条记录

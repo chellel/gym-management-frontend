@@ -105,10 +105,6 @@
               <span class="text-2xl font-bold text-blue-600">89</span>
             </div>
             <div class="flex justify-between items-center">
-              <span class="text-gray-600">营业收入</span>
-              <span class="text-2xl font-bold text-primary-600">¥15,680</span>
-            </div>
-            <div class="flex justify-between items-center">
               <span class="text-gray-600">在馆人数</span>
               <span class="text-2xl font-bold text-purple-600">156</span>
             </div>

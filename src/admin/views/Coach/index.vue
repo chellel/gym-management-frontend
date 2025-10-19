@@ -145,7 +145,7 @@
 
           <el-table-column label="入职时间" width="120">
             <template #default="{ row }">
-              <span class="text-sm text-gray-900">{{ formatDate(row.hire_date) }}</span>
+              <span class="text-sm text-gray-900">{{ row.hireDate || '-' }}</span>
             </template>
           </el-table-column>
 
@@ -206,7 +206,7 @@
 <script lang="ts" setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getCoachList, getCoachStats, deleteCoach as deleteCoachApi, type Coach } from '@/api/coach'
+import { getCoachList } from '@/api/coach'
 import CoachFormDialog from '@/admin/views/Coach/components/CoachFormDialog.vue'
 import CoachDetailDialog from '@/admin/views/Coach/components/CoachDetailDialog.vue'
 import CoachScheduleDialog from '@/admin/views/Coach/components/CoachScheduleDialog.vue'
@@ -411,10 +411,6 @@ const getStatusText = (status) => {
   return statusMap[status] || '未知'
 }
 
-const formatDate = (date: string) => {
-  if(!date) return ''
-  return new Date(date).toLocaleDateString('zh-CN')
-}
 </script>
 
 <style scoped>

@@ -32,5 +32,5 @@ export const stopMember = (id: number) => {
 
 // 获取会员统计信息
 export const getMemberStats = () => {
-  return get(`/users/stats`);
+  return get(`/system/gymmember/stats/summary`);
 };

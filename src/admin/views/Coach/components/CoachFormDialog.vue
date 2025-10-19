@@ -14,7 +14,6 @@
       class="space-y-4"
     >
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- 基本信息 -->
         <div class="space-y-4">
           <h3 class="text-lg font-medium text-gray-900 border-b pb-2">
             基本信息
@@ -37,10 +36,10 @@
           </el-form-item>
 
           <el-form-item v-if="!isEdit" label="密码" prop="password">
-            <el-input 
-              v-model="form.password" 
-              type="password" 
-              placeholder="请输入密码" 
+            <el-input
+              v-model="form.password"
+              type="password"
+              placeholder="请输入密码"
               show-password
             />
           </el-form-item>
@@ -123,18 +122,13 @@
 <script lang="ts" setup>
 import { ref, reactive, computed, watch } from "vue";
 import { ElMessage } from "element-plus";
-import {
-  createCoach,
-  updateCoach,
-  getCoachDetail,
-  type Coach,
-} from "@/api/coach";
-import {cloneDeep} from 'lodash-es';
-
+import { createCoach, updateCoach, getCoachDetail } from "@/api/coach";
+import { cloneDeep } from "lodash-es";
+import Swal from "sweetalert2";
 // 获取当前日期字符串
 const getCurrentDate = () => {
   const today = new Date();
-  return today.toISOString().split('T')[0];
+  return today.toISOString().split("T")[0];
 };
 
 // Props
@@ -167,7 +161,7 @@ const defaultForm = {
   status: "active",
   remark: "",
   role: "coach",
-};  
+};
 const form = reactive(cloneDeep(defaultForm));
 
 // 表单验证规则
@@ -180,9 +174,7 @@ const rules = {
     { required: true, message: "请输入邮箱地址", trigger: "blur" },
     { type: "email", message: "请输入正确的邮箱格式", trigger: "blur" },
   ],
-  userId: [
-    { required: true, message: "请输入教练工号", trigger: "blur" },
-  ],
+  userId: [{ required: true, message: "请输入教练工号", trigger: "blur" }],
   phone: [
     { required: true, message: "请输入电话号码", trigger: "blur" },
     {
@@ -195,12 +187,8 @@ const rules = {
     { required: true, message: "请输入密码", trigger: "blur" },
     { min: 6, max: 20, message: "密码长度在 6 到 20 个字符", trigger: "blur" },
   ],
-  gender: [
-    { required: true, message: "请选择性别", trigger: "change" },
-  ],
-  birthDate: [
-    { required: true, message: "请选择出生日期", trigger: "change" },
-  ],
+  gender: [{ required: true, message: "请选择性别", trigger: "change" }],
+  birthDate: [{ required: true, message: "请选择出生日期", trigger: "change" }],
   experience: [{ required: true, message: "请输入经验年限", trigger: "blur" }],
   status: [{ required: true, message: "请选择状态", trigger: "change" }],
 };
@@ -258,33 +246,31 @@ watch(
 
 // 提交表单
 const handleSubmit = async () => {
-  try {
-    await formRef.value?.validate();
-    loading.value = true;
+  formRef.value
+    .validate()
+    .then(async () => {
+      const params = {
+        ...form,
+        id: props.id,
+      };
 
-    const params = {
-      ...form,
-      id: props.id,
-    };
+      if (isEdit.value && props.id) {
+        // 更新教练
+        await updateCoach(params);
+        ElMessage.success("更新成功");
+      } else {
+        // 创建教练
+        await createCoach(params);
+        ElMessage.success("创建成功");
+      }
 
-    if (isEdit.value && props.id) {
-      // 更新教练
-      await updateCoach(params);
-      ElMessage.success("更新成功");
-    } else {
-      // 创建教练
-      await createCoach(params);
-      ElMessage.success("创建成功");
-    }
-
-    emit("success");
-    handleClose();
-  } catch (error) {
-    console.error("提交失败:", error);
-    ElMessage.error("操作失败");
-  } finally {
-    loading.value = false;
-  }
+      emit("success");
+      handleClose();
+      return true;
+    })
+    .catch(() => {
+      return false;
+    });
 };
 
 // 关闭对话框
