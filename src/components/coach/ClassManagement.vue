@@ -202,7 +202,7 @@ const startAttendance = (classItem) => {
         title: "签到已开始",
         text: "学员可以开始签到了",
         icon: "success",
-        timer: 2000,
+        timer: 1500,
         showConfirmButton: false,
       });
     }
@@ -243,7 +243,7 @@ const exportMembers = async () => {
       title: "导出成功",
       text: "学员名单已导出",
       icon: "success",
-      timer: 2000,
+      timer: 1500,
       showConfirmButton: false,
     });
   } catch (error) {

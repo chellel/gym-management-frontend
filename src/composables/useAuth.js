@@ -88,7 +88,7 @@ export const useAuth = () => {
           title: "已退出",
           text: "您已成功退出登录",
           icon: "success",
-          timer: 2000,
+          timer: 1500,
           showConfirmButton: false,
         });
         await router.push("/login");

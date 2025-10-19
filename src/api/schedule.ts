@@ -76,9 +76,8 @@ export const updateSchedule = (data: ScheduleFormData & { id: number }) => {
   return post(`/system/gymschedule/edit`, data);
 };
 
-// 批量删除排班（软删除）
-export const deleteSchedules = (ids: number[]) => {
-  return post(`/system/gymschedule/remove`, { ids: ids.join(',') });
+export const deleteSchedule = (id: number) => {
+  return post(`/system/gymschedule/remove`, { id });
 };
 
 // 恢复已删除的排班

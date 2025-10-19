@@ -95,7 +95,7 @@
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getCoachSchedule, addCoachSchedule, updateCoachSchedule, type Coach, type CoachSchedule } from '@/api/coach'
-import ScheduleFormDialog from './ScheduleFormDialog.vue'
+import ScheduleFormDialog from '@/components/schedule/ScheduleFormDialog.vue'
 import ScheduleCalendar from '@/admin/components/ScheduleCalendar.vue'
 
 // Props

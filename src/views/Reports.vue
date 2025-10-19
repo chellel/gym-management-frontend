@@ -673,7 +673,7 @@ const exportData = async (format) => {
       title: "导出中",
       text: `正在生成 ${format.toUpperCase()} 文件...`,
       icon: "info",
-      timer: 2000,
+      timer: 1500,
       showConfirmButton: false,
     });
 

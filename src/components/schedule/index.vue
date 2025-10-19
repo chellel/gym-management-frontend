@@ -47,17 +47,6 @@
             </el-button>
           </div>
         </div>
-        <el-button
-          v-if="canAddSchedule"
-          @click="openAddScheduleDialog"
-          type="primary"
-          class="inline-flex items-center"
-        >
-          <el-icon class="w-5 h-5 mr-2">
-            <Plus />
-          </el-icon>
-          添加排班
-        </el-button>
       </div>
     </div>
 
@@ -68,8 +57,9 @@
       :schedules="schedules"
       :week-days="weekDays"
       :can-delete-schedule="canDeleteSchedule"
-      @edit-schedule="editSchedule"
-      @delete-schedule="deleteSchedule"
+      @schedule-added="handleScheduleAdded"
+      @schedule-updated="handleScheduleUpdated"
+      @schedule-deleted="handleScheduleDeleted"
     />
 
     <!-- 课程管理视图 -->
@@ -84,17 +74,6 @@
       @edit-schedule="editSchedule"
     />
   </div>
-
-  <!-- 排班表单对话框 -->
-  <ScheduleFormDialog
-    v-model="showScheduleDialog"
-    :is-edit="isEditMode"
-    :schedule-data="editingSchedule"
-    :coachs="coachs"
-    :current-user="currentUser"
-    @submit="handleScheduleSubmit"
-    @close="closeScheduleDialog"
-  />
 </template>
 
 <script setup>
@@ -105,12 +84,8 @@ import { useAdminAuth } from "@/composables/useAdminAuth";
 import CoachSchedule from "./CoachSchedule.vue";
 import LocationSchedule from "./LocationSchedule.vue";
 import CourseManagement from "./CourseManagement.vue";
-import ScheduleFormDialog from "./ScheduleFormDialog.vue";
 import { 
   getScheduleList, 
-  createSchedule, 
-  updateSchedule, 
-  deleteSchedules
 } from "@/api/schedule";
 import { getCoachList } from "@/api/coach";
 // 认证相关
@@ -124,16 +99,7 @@ const schedules = ref([]);
 const coachs = ref([]);
 const locations = ref([]);
 
-// 模态框状态
-const showScheduleDialog = ref(false);
-const isEditMode = ref(false);
-const editingSchedule = ref(null);
-
 // 权限控制计算属性
-const canAddSchedule = computed(() => {
-  return isAdmin.value || isCoach.value;
-});
-
 const canEditSchedule = computed(() => {
   return (schedule) => {
     if (isAdmin.value) return true;
@@ -200,7 +166,7 @@ onMounted(() => {
 const initializeData = async () => {
   try {
     await Promise.all([
-      loadSchedules(),
+      getData(),
       getCoachData(),
       loadLocations()
     ]);
@@ -215,7 +181,7 @@ const initializeData = async () => {
 };
 
 // 加载排班数据
-const loadSchedules = async () => {
+const getData = async () => {
   try {
     const startOfWeek = new Date(currentWeek.value);
     startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
@@ -663,19 +629,19 @@ const previousWeek = () => {
   const newWeek = new Date(currentWeek.value);
   newWeek.setDate(newWeek.getDate() - 7);
   currentWeek.value = newWeek;
-  loadSchedules(); // 重新加载排班数据
+  getData(); // 重新加载排班数据
 };
 
 const nextWeek = () => {
   const newWeek = new Date(currentWeek.value);
   newWeek.setDate(newWeek.getDate() + 7);
   currentWeek.value = newWeek;
-  loadSchedules(); // 重新加载排班数据
+  getData(); // 重新加载排班数据
 };
 
 const goToCurrentWeek = () => {
   currentWeek.value = new Date();
-  loadSchedules(); // 重新加载排班数据
+  getData(); // 重新加载排班数据
 };
 
 // 格式化周范围
@@ -699,144 +665,25 @@ const formatWeekRange = (date) => {
   return `${formatDate(startOfWeek)} - ${formatDate(endOfWeek)}`;
 };
 
-// 打开添加排班对话框
-const openAddScheduleDialog = () => {
-  isEditMode.value = false;
-  editingSchedule.value = null;
-  showScheduleDialog.value = true;
+// 处理排班添加事件
+const handleScheduleAdded = () => {
+  getData(); // 重新加载排班数据
 };
 
-// 关闭排班对话框
-const closeScheduleDialog = () => {
-  showScheduleDialog.value = false;
-  isEditMode.value = false;
-  editingSchedule.value = null;
+// 处理排班更新事件
+const handleScheduleUpdated = () => {
+  getData(); // 重新加载排班数据
 };
 
-// 编辑排班
-const editSchedule = (schedule) => {
-  // 检查权限
-  if (!canEditSchedule.value(schedule)) {
-    Swal.fire({
-      title: "权限不足",
-      text: "您没有权限编辑此排班",
-      icon: "warning",
-    });
-    return;
-  }
-
-  isEditMode.value = true;
-  editingSchedule.value = schedule;
-  showScheduleDialog.value = true;
+// 处理排班删除事件
+const handleScheduleDeleted = () => {
+  getData(); // 重新加载排班数据
 };
 
-// 处理排班提交
-const handleScheduleSubmit = async (formData) => {
-  try {
-    if (isEditMode.value) {
-      // 更新排班
-      await updateSchedule({
-        id: editingSchedule.value.id,
-        ...formData
-      });
-
-      // 更新本地数据
-      const index = schedules.value.findIndex(
-        (s) => s.id === editingSchedule.value.id
-      );
-      if (index !== -1) {
-        schedules.value[index] = {
-          ...editingSchedule.value,
-          ...formData,
-          coachName: coachs.value.find((t) => t.id == formData.coachId)?.name,
-        };
-      }
-
-      await Swal.fire({
-        title: "更新成功",
-        text: "排班信息更新成功！",
-        icon: "success",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-    } else {
-      // 添加排班
-      const response = await createSchedule(formData);
-      
-      const newSchedule = {
-        id: response.id || Date.now(),
-        ...formData,
-        coachName: coachs.value.find((t) => t.id == formData.coachId)?.name,
-        courseName: "", // TODO: 从课程API获取课程名称
-        createBy: currentUser.value?.username || "admin",
-        createTime: new Date().toISOString().slice(0, 19).replace('T', ' '),
-        updateBy: currentUser.value?.username || "admin",
-        updateTime: new Date().toISOString().slice(0, 19).replace('T', ' '),
-        isDeleted: 0,
-        deleteTime: null,
-      };
-
-      schedules.value.push(newSchedule);
-
-      await Swal.fire({
-        title: "添加成功",
-        text: "排班添加成功！",
-        icon: "success",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-    }
-
-    closeScheduleDialog();
-  } catch (error) {
-    console.error("Failed to handle schedule:", error);
-    await Swal.fire({
-      title: isEditMode.value ? "更新失败" : "添加失败",
-      text: isEditMode.value
-        ? "更新排班信息失败，请重试"
-        : "添加排班失败，请重试",
-      icon: "error",
-    });
-  }
-};
-
-// 删除排班
-const deleteSchedule = async (schedule) => {
-  const result = await Swal.fire({
-    title: "确认删除",
-    text: `确定要删除 ${schedule.coachName} 在 ${schedule.startTime} 的排班吗？`,
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#ef4444",
-    cancelButtonColor: "#6b7280",
-    confirmButtonText: "删除",
-    cancelButtonText: "取消",
-  });
-
-  if (result.isConfirmed) {
-    try {
-      await deleteSchedules([schedule.id]);
-      
-      const index = schedules.value.findIndex((s) => s.id === schedule.id);
-      if (index !== -1) {
-        schedules.value.splice(index, 1);
-      }
-
-      await Swal.fire({
-        title: "删除成功",
-        text: "排班删除成功！",
-        icon: "success",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-    } catch (error) {
-      console.error("Failed to delete schedule:", error);
-      await Swal.fire({
-        title: "删除失败",
-        text: "删除排班失败，请重试",
-        icon: "error",
-      });
-    }
-  }
-};
+// 初始化数据
+onMounted(() => {
+  getData();
+  getCoachData();
+  loadLocations();
+});
 </script>

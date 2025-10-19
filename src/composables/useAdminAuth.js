@@ -69,7 +69,7 @@ export const useAdminAuth = () => {
           title: "已退出",
           text: "您已成功退出管理后台",
           icon: "success",
-          timer: 2000,
+          timer: 1500,
           showConfirmButton: false,
         });
         await router.push("/admin/login");

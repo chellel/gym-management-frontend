@@ -88,7 +88,7 @@ export const useMembers = () => {
         title: '成功',
         text: '会员添加成功！',
         icon: 'success',
-        timer: 2000,
+        timer: 1500,
         showConfirmButton: false
       })
       await fetchMembers()
@@ -110,7 +110,7 @@ export const useMembers = () => {
         title: '成功',
         text: '会员信息更新成功！',
         icon: 'success',
-        timer: 2000,
+        timer: 1500,
         showConfirmButton: false
       })
       await fetchMembers()
@@ -143,7 +143,7 @@ export const useMembers = () => {
           title: '已禁用',
           text: '会员禁用成功！',
           icon: 'success',
-          timer: 2000,
+          timer: 1500,
           showConfirmButton: false
         })
         await fetchMembers()

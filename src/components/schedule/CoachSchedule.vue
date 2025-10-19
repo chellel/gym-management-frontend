@@ -1,7 +1,18 @@
 <template>
   <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-    <div class="px-6 py-4 border-b border-gray-200">
+    <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200">
       <h3 class="text-lg leading-6 font-medium text-gray-900">教练排班表</h3>
+      <el-button
+        v-if="canAddSchedule"
+        @click="openAddScheduleDialog"
+        type="primary"
+        class="inline-flex items-center"
+      >
+        <el-icon class="w-5 h-5 mr-2">
+          <Plus />
+        </el-icon>
+        添加排班
+      </el-button>
     </div>
     <div class="overflow-x-auto">
       <table class="min-w-full divide-y divide-gray-200">
@@ -57,7 +68,7 @@
                   v-for="schedule in getCoachSchedules(coach.id, day.date)"
                   :key="schedule.id"
                   class="bg-primary-100 text-primary-800 px-2 py-1 rounded text-xs cursor-pointer hover:bg-primary-200 relative group"
-                  @click="$emit('edit-schedule', schedule)"
+                  @click="handleEditSchedule(schedule)"
                 >
                   {{ formatTime(schedule.startTime) }} -
                   {{ formatTime(schedule.endTime) }}
@@ -66,7 +77,7 @@
                   <div
                     v-if="canDeleteSchedule(schedule)"
                     class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                    @click.stop="$emit('delete-schedule', schedule)"
+                    @click.stop="handleDeleteSchedule(schedule)"
                   >
                     ×
                   </div>
@@ -78,11 +89,31 @@
       </table>
     </div>
   </div>
+
+  <!-- 排班表单对话框 -->
+  <ScheduleFormDialog
+    v-model="showScheduleDialog"
+    :is-edit="isEditMode"
+    :schedule-data="editingSchedule"
+    :coachs="coachs"
+    :current-user="currentUser"
+    @submit="handleScheduleSubmit"
+    @close="closeScheduleDialog"
+  />
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { ref, computed } from "vue";
 import dayjs from "dayjs";
+import Swal from "sweetalert2";
+import { useAuth } from "@/composables/useAuth";
+import { useAdminAuth } from "@/composables/useAdminAuth";
+import ScheduleFormDialog from "./ScheduleFormDialog.vue";
+import { 
+  createSchedule, 
+  updateSchedule, 
+  deleteSchedule
+} from "@/api/schedule";
 
 // Props
 const props = defineProps({
@@ -105,7 +136,21 @@ const props = defineProps({
 });
 
 // Emits
-const emit = defineEmits(["edit-schedule", "delete-schedule"]);
+const emit = defineEmits(["edit-schedule", "delete-schedule", "schedule-added", "schedule-updated", "schedule-deleted"]);
+
+// 认证相关
+const { isCoach, currentUser } = useAuth();
+const { isAdmin } = useAdminAuth();
+
+// 权限控制计算属性
+const canAddSchedule = computed(() => {
+  return isAdmin.value || isCoach.value;
+});
+
+// 模态框状态
+const showScheduleDialog = ref(false);
+const isEditMode = ref(false);
+const editingSchedule = ref(null);
 
 // 获取教练的排班
 const getCoachSchedules = (coachId, date) => {
@@ -136,5 +181,126 @@ const formatTime = (datetime) => {
     minute: "2-digit",
     hour12: false,
   });
+};
+
+// 打开添加排班对话框
+const openAddScheduleDialog = () => {
+  isEditMode.value = false;
+  editingSchedule.value = null;
+  showScheduleDialog.value = true;
+};
+
+// 处理编辑排班
+const handleEditSchedule = (schedule) => {
+  // 检查权限
+  if (!canEditSchedule(schedule)) {
+    Swal.fire({
+      title: "权限不足",
+      text: "您没有权限编辑此排班",
+      icon: "warning",
+    });
+    return;
+  }
+
+  isEditMode.value = true;
+  editingSchedule.value = schedule;
+  showScheduleDialog.value = true;
+};
+
+// 处理删除排班
+const handleDeleteSchedule = async (schedule) => {
+  const result = await Swal.fire({
+    title: "确认删除",
+    text: `确定要删除 ${schedule.coachName} 在 ${schedule.startTime} 的排班吗？`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#ef4444",
+    cancelButtonColor: "#6b7280",
+    confirmButtonText: "删除",
+    cancelButtonText: "取消",
+  });
+
+  if (result.isConfirmed) {
+    try {
+      await deleteSchedule(schedule.id);
+      await Swal.fire({
+        title: "删除成功",
+        text: "排班删除成功！",
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      emit("schedule-deleted");
+    } catch (error) {
+      console.error("Failed to delete schedule:", error);
+      await Swal.fire({
+        title: "删除失败",
+        text: "删除排班失败，请重试",
+        icon: "error",
+      });
+    }
+  }
+};
+
+const canEditSchedule = (schedule) => {
+  if (isAdmin.value) return true;
+  if (isCoach.value) {
+    return schedule.coachId === currentUser.value?.id;
+  }
+  return false;
+};
+
+// 关闭排班对话框
+const closeScheduleDialog = () => {
+  showScheduleDialog.value = false;
+  isEditMode.value = false;
+  editingSchedule.value = null;
+};
+
+// 处理排班提交
+const handleScheduleSubmit = async (formData) => {
+  try {
+    if (isEditMode.value) {
+      // 更新排班
+      await updateSchedule({
+        id: editingSchedule.value.id,
+        ...formData
+      });
+
+      await Swal.fire({
+        title: "更新成功",
+        text: "排班信息更新成功！",
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+
+      emit("schedule-updated");
+    } else {
+      // 添加排班
+      const response = await createSchedule(formData);
+      
+      await Swal.fire({
+        title: "添加成功",
+        text: "排班添加成功！",
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+
+      emit("schedule-added");
+    }
+
+    closeScheduleDialog();
+  } catch (error) {
+    console.error("Failed to handle schedule:", error);
+    await Swal.fire({
+      title: isEditMode.value ? "更新失败" : "添加失败",
+      text: isEditMode.value
+        ? "更新排班信息失败，请重试"
+        : "添加排班失败，请重试",
+      icon: "error",
+    });
+  }
 };
 </script>

@@ -25,3 +25,7 @@
     @apply bg-white rounded-lg shadow-md p-6;
   }
 }
+
+div:where(.swal2-container) {
+  z-index: 10000 !important;
+}

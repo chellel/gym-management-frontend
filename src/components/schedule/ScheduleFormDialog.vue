@@ -141,10 +141,9 @@
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted } from "vue";
+import dayjs from "dayjs";
 import { useAuth } from "@/composables/useAuth";
-import {
-  getCourseList,
-} from "@/api/course";
+import { getCourseList } from "@/api/course";
 // Props
 const props = defineProps({
   modelValue: {
@@ -159,7 +158,7 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
- 
+
   coachs: {
     type: Array,
     required: true,
@@ -170,7 +169,6 @@ const props = defineProps({
   },
 });
 
-// Emits
 const emit = defineEmits(["update:modelValue", "submit", "close"]);
 
 // 认证相关
@@ -197,9 +195,7 @@ const form = reactive({
 const rules = {
   courseId: [{ required: true, message: "请选择课程", trigger: "change" }],
   coachId: [{ required: true, message: "请选择教练", trigger: "change" }],
-  startTime: [
-    { required: true, message: "请选择开始时间", trigger: "change" },
-  ],
+  startTime: [{ required: true, message: "请选择开始时间", trigger: "change" }],
   location: [{ required: true, message: "请输入上课地点", trigger: "blur" }],
   maxCapacity: [
     { required: true, message: "请输入最大容量", trigger: "blur" },
@@ -246,34 +242,55 @@ watch(visible, (newVal) => {
   emit("update:modelValue", newVal);
 });
 
-// 课程选择变化处理
-const onCourseChange = (courseId) => {
-  const selectedCourse = courses.value.find((course) => course.id === courseId);
-  if (selectedCourse && form.startTime) {
-    // 根据课程时长自动设置结束时间
-    const startDate = new Date(form.startTime);
-    const endDate = new Date(
-      startDate.getTime() + selectedCourse.durationMinutes * 60000
-    );
-    form.endTime = endDate.toISOString().slice(0, 16);
+// 根据课程时长自动设置结束时间
+const setEndTime = () => {
+  const startTime = form.startTime;
+  const durationMinutes = courses.value.find(
+    (course) => course.id === form.courseId
+  ).durationMinutes;
+
+  if (startTime && durationMinutes) {
+    const endTime = dayjs(startTime)
+      .add(durationMinutes, "minute")
+      .format("YYYY-MM-DD HH:mm");
+    form.endTime = endTime;
+  } else {
+    form.endTime = "";
   }
+};
+
+// 课程选择变化处理
+const onCourseChange = () => {
+  setEndTime();
 };
 
 // 开始时间变化处理
 const onStartTimeChange = () => {
-  if (form.courseId && form.startTime) {
-    const selectedCourse = courses.value.find(
-      (course) => course.id === form.courseId
-    );
-    if (selectedCourse) {
-      // 根据课程时长自动设置结束时间
-      const startDate = new Date(form.startTime);
-      const endDate = new Date(
-          startDate.getTime() + selectedCourse.durationMinutes * 60000
-      );
-      form.endTime = endDate.toISOString().slice(0, 16);
-    }
-  }
+  setEndTime();
+};
+
+// 格式化时间为UI显示格式 (YYYY-MM-DD HH:mm)
+const formatTimeForUI = (date) => {
+  if (!date) return "";
+  return dayjs(date).format("YYYY-MM-DD HH:mm");
+};
+
+// 格式化时间为数据库格式 (YYYY-MM-DD HH:mm:ss)
+const formatTimeForDB = (timeStr) => {
+  if (!timeStr) return "";
+  // 如果已经是 HH:mm:ss 格式，直接返回
+  if (timeStr.length === 19) return timeStr;
+  // 如果是 HH:mm 格式，添加 :00 秒
+  if (timeStr.length === 16) return timeStr + ":00";
+  return timeStr;
+};
+
+// 从数据库格式转换为UI格式
+const formatTimeFromDB = (timeStr) => {
+  if (!timeStr) return "";
+  // 如果是 HH:mm:ss 格式，去掉秒
+  if (timeStr.length === 19) return timeStr.slice(0, 16);
+  return timeStr;
 };
 
 // 初始化表单
@@ -283,8 +300,8 @@ const initForm = () => {
     Object.assign(form, {
       courseId: props.scheduleData.courseId || "",
       coachId: props.scheduleData.coachId || "",
-      startTime: props.scheduleData.startTime || "",
-      endTime: props.scheduleData.endTime || "",
+      startTime: formatTimeFromDB(props.scheduleData.startTime) || "",
+      endTime: formatTimeFromDB(props.scheduleData.endTime) || "",
       location: props.scheduleData.location || "",
       maxCapacity: props.scheduleData.maxCapacity || 20,
       status: props.scheduleData.status || "waiting",
@@ -331,8 +348,15 @@ const handleSubmit = async () => {
 
     loading.value = true;
 
+    // 准备提交数据，转换时间格式为数据库格式
+    const submitData = {
+      ...form,
+      startTime: formatTimeForDB(form.startTime),
+      endTime: formatTimeForDB(form.endTime),
+    };
+
     // 发送提交事件
-    emit("submit", { ...form });
+    emit("submit", submitData);
   } catch (error) {
     console.error("表单验证失败:", error);
   } finally {
