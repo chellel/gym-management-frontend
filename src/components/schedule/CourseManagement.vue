@@ -27,7 +27,6 @@
             刷新
           </el-button>
           <el-button
-            v-if="canAddCourse"
             @click="openAddCourseDialog"
             type="primary"
             class="inline-flex items-center"
@@ -90,7 +89,6 @@
           <template #default="{ row }">
             <div class="flex items-center space-x-2">
               <el-button
-                v-if="canEditCourse(row)"
                 @click="editCourse(row)"
                 type="primary"
                 size="small"
@@ -99,7 +97,6 @@
                 编辑
               </el-button>
               <el-button
-                v-if="canDeleteCourse(row)"
                 @click="deleteCourse(row)"
                 type="danger"
                 size="small"
@@ -122,15 +119,12 @@
       </el-table>
 
       <!-- 分页 -->
-      <div class="p-4 border-t">
-        <el-pagination
-          v-model:current-page="currentPage"
-          v-model:page-size="pageSize"
-          :page-sizes="[10, 20, 50, 100]"
-          :total="totalCourses"
-          layout="total, sizes, prev, pager, next, jumper"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
+      <div class="px-6 py-4">
+        <Pagination
+          :total="pagination.total"
+          :current-page="pagination.currentPage"
+          :page-size="pagination.pageSize"
+          @page-change="handleCurrentChange"
         />
       </div>
     </div>
@@ -140,7 +134,7 @@
       v-model="showCourseDialog"
       :is-edit="isEditMode"
       :course-data="editingCourse"
-      @submit="handleCourseSubmit"
+      @success="handleCourseSuccess"
       @close="closeCourseDialog"
     />
   </div>
@@ -153,22 +147,24 @@ import { useAuth } from "@/composables/useAuth";
 import { useAdminAuth } from "@/composables/useAdminAuth";
 import {
   getCourseList,
-  createCourse,
-  updateCourse,
   deleteCourse as deleteCourseApi,
   restoreCourse as restoreCourseApi,
-  generateMockCourses,
 } from "@/api/course";
 import CourseFormDialog from "./CourseFormDialog.vue";
+import Pagination from "@/admin/components/Pagination.vue";
 
 // 认证相关
-const { isCoach, currentUser } = useAuth();
-const { isAdmin } = useAdminAuth();
+const { currentUser } = useAuth();
 
 // 响应式数据
 const courses = ref([]);
 const loading = ref(false);
 const searchKeyword = ref("");
+const pagination = reactive({
+  total: 0,
+  pageSize: 10,
+  currentPage: 1,
+});
 
 // 分页相关
 const currentPage = ref(1);
@@ -179,33 +175,6 @@ const totalCourses = ref(0);
 const showCourseDialog = ref(false);
 const isEditMode = ref(false);
 const editingCourse = ref(null);
-
-// 权限控制计算属性
-const canAddCourse = computed(() => {
-  return isAdmin.value || isCoach.value;
-});
-
-const canEditCourse = computed(() => {
-  return (course) => {
-    if (isAdmin.value) return true;
-    if (isCoach.value) {
-      // 教练可以编辑自己创建的课程
-      return course.create_by === currentUser.value?.id;
-    }
-    return false;
-  };
-});
-
-const canDeleteCourse = computed(() => {
-  return (course) => {
-    if (isAdmin.value) return true;
-    if (isCoach.value) {
-      // 教练可以删除自己创建的课程
-      return course.create_by === currentUser.value?.id;
-    }
-    return false;
-  };
-});
 
 // 过滤后的课程列表
 const filteredCourses = computed(() => {
@@ -231,21 +200,13 @@ onMounted(() => {
 const loadCourses = async () => {
   try {
     loading.value = true;
-
-    // 使用模拟数据，实际项目中应该调用API
-    const mockCourses = generateMockCourses(50);
-    courses.value = mockCourses;
-    totalCourses.value = mockCourses.length;
-
-    // 实际API调用示例：
-    // const response = await getCourseList({
-    //   page: currentPage.value,
-    //   pageSize: pageSize.value,
-    //   search: searchKeyword.value,
-    //   is_deleted: 0
-    // });
-    // courses.value = response.rows;
-    // totalCourses.value = response.total;
+    const response = await getCourseList({
+      page: pagination.currentPage,
+      pageSize: pagination.pageSize,
+      search: searchKeyword.value,
+    });
+    courses.value = response.rows;
+    totalCourses.value = response.total;
   } catch (error) {
     console.error("Failed to load courses:", error);
     await Swal.fire({
@@ -295,91 +256,15 @@ const closeCourseDialog = () => {
 
 // 编辑课程
 const editCourse = (course) => {
-  // 检查权限
-  if (!canEditCourse.value(course)) {
-    Swal.fire({
-      title: "权限不足",
-      text: "您没有权限编辑此课程",
-      icon: "warning",
-    });
-    return;
-  }
-
   isEditMode.value = true;
   editingCourse.value = course;
   showCourseDialog.value = true;
 };
 
-// 处理课程提交
-const handleCourseSubmit = async (formData) => {
-  try {
-    if (isEditMode.value && editingCourse.value) {
-      // 更新课程
-      const updateData = {
-        ...formData,
-        id: editingCourse.value.id,
-        update_by: currentUser.value?.id || "admin",
-        update_time: new Date().toISOString(),
-      };
-
-      // 实际API调用：
-      // await updateCourse(updateData);
-
-      // 更新本地数据
-      const index = courses.value.findIndex(
-        (c) => c.id === editingCourse.value.id
-      );
-      if (index !== -1) {
-        courses.value[index] = { ...courses.value[index], ...updateData };
-      }
-
-      await Swal.fire({
-        title: "更新成功",
-        text: "课程信息更新成功！",
-        icon: "success",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-    } else {
-      // 添加课程
-      const newCourse = {
-        id: Date.now(),
-        ...formData,
-        create_by: currentUser.value?.id || "admin",
-        create_time: new Date().toISOString(),
-        update_by: currentUser.value?.id || "admin",
-        update_time: new Date().toISOString(),
-        remark: formData.remark || "",
-        is_deleted: 0,
-        delete_time: null,
-      };
-
-      // 实际API调用：
-      // await createCourse(formData);
-
-      courses.value.unshift(newCourse);
-      totalCourses.value++;
-
-      await Swal.fire({
-        title: "添加成功",
-        text: "课程添加成功！",
-        icon: "success",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-    }
-
-    closeCourseDialog();
-  } catch (error) {
-    console.error("Failed to handle course:", error);
-    await Swal.fire({
-      title: isEditMode.value ? "更新失败" : "添加失败",
-      text: isEditMode.value
-        ? "更新课程信息失败，请重试"
-        : "添加课程失败，请重试",
-      icon: "error",
-    });
-  }
+// 处理课程操作成功
+const handleCourseSuccess = () => {
+  // 重新加载课程列表
+  loadCourses();
 };
 
 // 删除课程
@@ -397,18 +282,11 @@ const deleteCourse = async (course) => {
 
   if (result.isConfirmed) {
     try {
-      // 实际API调用：
-      // await deleteCourseApi(course.id);
+      // 调用API删除课程
+      await deleteCourseApi(course.id);
 
-      // 更新本地数据（软删除）
-      const index = courses.value.findIndex((c) => c.id === course.id);
-      if (index !== -1) {
-        courses.value[index] = {
-          ...courses.value[index],
-          is_deleted: 1,
-          delete_time: new Date().toISOString(),
-        };
-      }
+      // 重新加载课程列表
+      await loadCourses();
 
       await Swal.fire({
         title: "删除成功",
@@ -431,18 +309,11 @@ const deleteCourse = async (course) => {
 // 恢复课程
 const restoreCourse = async (course) => {
   try {
-    // 实际API调用：
-    // await restoreCourseApi(course.id);
+    // 调用API恢复课程
+    await restoreCourseApi(course.id);
 
-    // 更新本地数据
-    const index = courses.value.findIndex((c) => c.id === course.id);
-    if (index !== -1) {
-      courses.value[index] = {
-        ...courses.value[index],
-        is_deleted: 0,
-        delete_time: null,
-      };
-    }
+    // 重新加载课程列表
+    await loadCourses();
 
     await Swal.fire({
       title: "恢复成功",
@@ -452,7 +323,6 @@ const restoreCourse = async (course) => {
       showConfirmButton: false,
     });
   } catch (error) {
-    console.error("Failed to restore course:", error);
     await Swal.fire({
       title: "恢复失败",
       text: "恢复课程失败，请重试",

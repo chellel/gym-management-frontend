@@ -59,8 +59,8 @@
                   class="bg-primary-100 text-primary-800 px-2 py-1 rounded text-xs cursor-pointer hover:bg-primary-200 relative group"
                   @click="$emit('edit-schedule', schedule)"
                 >
-                  {{ formatTime(schedule.start_datetime) }} -
-                  {{ formatTime(schedule.end_datetime) }}
+                  {{ formatTime(schedule.start_time) }} -
+                  {{ formatTime(schedule.end_time) }}
                   <br />
                   {{ schedule.location }}
                   <div
@@ -112,8 +112,8 @@ const getCoachSchedules = (coachId, date) => {
     // 检查教练ID匹配
     if (schedule.coach_id !== coachId) return false;
 
-    // 检查日期匹配 - 从start_datetime中提取日期
-    const scheduleDate = schedule.start_datetime.split("T")[0];
+    // 检查日期匹配 - 从start_time中提取日期
+    const scheduleDate = schedule.start_time.split("T")[0];
     return scheduleDate === date;
   });
 };

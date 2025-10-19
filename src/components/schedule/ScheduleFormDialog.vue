@@ -29,7 +29,7 @@
               <div class="flex justify-between items-center">
                 <span>{{ course.name }}</span>
                 <span class="text-xs text-gray-500"
-                  >{{ course.duration_minutes }}分钟</span
+                  >{{ course.durationMinutes }}分钟</span
                 >
               </div>
             </el-option>
@@ -52,9 +52,9 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="开始时间" prop="start_datetime">
+        <el-form-item label="开始时间" prop="start_time">
           <el-date-picker
-            v-model="form.start_datetime"
+            v-model="form.start_time"
             type="datetime"
             placeholder="选择开始时间"
             class="w-full"
@@ -64,7 +64,7 @@
           />
         </el-form-item>
 
-        <el-form-item label="结束时间" prop="end_datetime">
+        <el-form-item label="结束时间" prop="end_time">
           <template #label>
             <el-tooltip
               content="结束时间将根据开始时间和课程时长自动计算"
@@ -77,7 +77,7 @@
             </el-tooltip>
           </template>
           <el-date-picker
-            v-model="form.end_datetime"
+            v-model="form.end_time"
             type="datetime"
             placeholder="自动计算"
             class="w-full"
@@ -140,9 +140,11 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch } from "vue";
+import { ref, reactive, computed, watch, onMounted } from "vue";
 import { useAuth } from "@/composables/useAuth";
-
+import {
+  getCourseList,
+} from "@/api/course";
 // Props
 const props = defineProps({
   modelValue: {
@@ -157,10 +159,7 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
-  courses: {
-    type: Array,
-    required: true,
-  },
+ 
   coachs: {
     type: Array,
     required: true,
@@ -186,8 +185,8 @@ const formRef = ref();
 const form = reactive({
   course_id: "",
   coach_id: "",
-  start_datetime: "",
-  end_datetime: "",
+  start_time: "",
+  end_time: "",
   location: "",
   max_capacity: 20,
   status: "waiting",
@@ -198,7 +197,7 @@ const form = reactive({
 const rules = {
   course_id: [{ required: true, message: "请选择课程", trigger: "change" }],
   coach_id: [{ required: true, message: "请选择教练", trigger: "change" }],
-  start_datetime: [
+  start_time: [
     { required: true, message: "请选择开始时间", trigger: "change" },
   ],
   location: [{ required: true, message: "请输入上课地点", trigger: "blur" }],
@@ -214,7 +213,17 @@ const rules = {
   ],
   status: [{ required: true, message: "请选择状态", trigger: "change" }],
 };
-
+const courses = ref([]);
+const getCourses = async () => {
+  const response = await getCourseList({
+    page: 1,
+    pageSize: 10,
+  });
+  courses.value = response.rows;
+};
+onMounted(() => {
+  getCourses();
+});
 // 计算属性
 const availableCoachs = computed(() => {
   // 这里可以根据权限逻辑返回可用的教练列表
@@ -239,30 +248,30 @@ watch(visible, (newVal) => {
 
 // 课程选择变化处理
 const onCourseChange = (courseId) => {
-  const selectedCourse = props.courses.find((course) => course.id === courseId);
-  if (selectedCourse && form.start_datetime) {
+  const selectedCourse = courses.value.find((course) => course.id === courseId);
+  if (selectedCourse && form.start_time) {
     // 根据课程时长自动设置结束时间
-    const startDate = new Date(form.start_datetime);
+    const startDate = new Date(form.start_time);
     const endDate = new Date(
-      startDate.getTime() + selectedCourse.duration_minutes * 60000
+      startDate.getTime() + selectedCourse.durationMinutes * 60000
     );
-    form.end_datetime = endDate.toISOString().slice(0, 16);
+    form.end_time = endDate.toISOString().slice(0, 16);
   }
 };
 
 // 开始时间变化处理
 const onStartTimeChange = () => {
-  if (form.course_id && form.start_datetime) {
-    const selectedCourse = props.courses.find(
+  if (form.course_id && form.start_time) {
+    const selectedCourse = courses.value.find(
       (course) => course.id === form.course_id
     );
     if (selectedCourse) {
       // 根据课程时长自动设置结束时间
-      const startDate = new Date(form.start_datetime);
+      const startDate = new Date(form.start_time);
       const endDate = new Date(
-        startDate.getTime() + selectedCourse.duration_minutes * 60000
+          startDate.getTime() + selectedCourse.durationMinutes * 60000
       );
-      form.end_datetime = endDate.toISOString().slice(0, 16);
+      form.end_time = endDate.toISOString().slice(0, 16);
     }
   }
 };
@@ -274,8 +283,8 @@ const initForm = () => {
     Object.assign(form, {
       course_id: props.scheduleData.course_id || "",
       coach_id: props.scheduleData.coach_id || "",
-      start_datetime: props.scheduleData.start_datetime || "",
-      end_datetime: props.scheduleData.end_datetime || "",
+      start_time: props.scheduleData.start_time || "",
+      end_time: props.scheduleData.end_time || "",
       location: props.scheduleData.location || "",
       max_capacity: props.scheduleData.max_capacity || 20,
       status: props.scheduleData.status || "waiting",
@@ -292,8 +301,8 @@ const resetForm = () => {
   Object.assign(form, {
     course_id: "",
     coach_id: isCoach.value && props.currentUser ? props.currentUser.id : "",
-    start_datetime: "",
-    end_datetime: "",
+    start_time: "",
+    end_time: "",
     location: "",
     max_capacity: 20,
     status: "waiting",

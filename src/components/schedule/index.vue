@@ -90,7 +90,6 @@
     v-model="showScheduleDialog"
     :is-edit="isEditMode"
     :schedule-data="editingSchedule"
-    :courses="courses"
     :coachs="coachs"
     :current-user="currentUser"
     @submit="handleScheduleSubmit"
@@ -107,7 +106,6 @@ import CoachSchedule from "./CoachSchedule.vue";
 import LocationSchedule from "./LocationSchedule.vue";
 import CourseManagement from "./CourseManagement.vue";
 import ScheduleFormDialog from "./ScheduleFormDialog.vue";
-import { generateMockCourses } from "@/api/course";
 
 // 认证相关
 const { isCoach, currentUser } = useAuth();
@@ -118,7 +116,6 @@ const currentView = ref("coachs");
 const currentWeek = ref(new Date());
 const schedules = ref([]);
 const coachs = ref([]);
-const courses = ref([]);
 const locations = ref([]);
 
 // 模态框状态
@@ -190,13 +187,12 @@ const weekDays = computed(() => {
 
 // 初始化
 onMounted(() => {
-  initializeMockData();
+  initializeData();
 });
 
+
 // 初始化模拟数据
-const initializeMockData = () => {
-  // 模拟课程数据
-  courses.value = generateMockCourses(15);
+const initializeData = () => {
 
   // 模拟教练数据
   coachs.value = [
@@ -243,10 +239,10 @@ const initializeMockData = () => {
       course_id: 1,
       coach_id: 1,
       coach_name: "李教练",
-      start_datetime: new Date(weekStart.getTime() + 7 * 60 * 60 * 1000)
+      start_time: new Date(weekStart.getTime() + 7 * 60 * 60 * 1000)
         .toISOString()
         .slice(0, 16),
-      end_datetime: new Date(weekStart.getTime() + 8 * 60 * 60 * 1000)
+      end_time: new Date(weekStart.getTime() + 8 * 60 * 60 * 1000)
         .toISOString()
         .slice(0, 16),
       location: "瑜伽室A",
@@ -259,10 +255,10 @@ const initializeMockData = () => {
       course_id: 2,
       coach_id: 2,
       coach_name: "王教练",
-      start_datetime: new Date(weekStart.getTime() + 19 * 60 * 60 * 1000)
+      start_time: new Date(weekStart.getTime() + 19 * 60 * 60 * 1000)
         .toISOString()
         .slice(0, 16),
-      end_datetime: new Date(weekStart.getTime() + 20 * 60 * 60 * 1000)
+      end_time: new Date(weekStart.getTime() + 20 * 60 * 60 * 1000)
         .toISOString()
         .slice(0, 16),
       location: "单车房",
@@ -276,12 +272,12 @@ const initializeMockData = () => {
       course_id: 3,
       coach_id: 3,
       coach_name: "张教练",
-      start_datetime: new Date(
+      start_time: new Date(
         weekStart.getTime() + 24 * 60 * 60 * 1000 + 18 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
-      end_datetime: new Date(
+      end_time: new Date(
         weekStart.getTime() + 24 * 60 * 60 * 1000 + 19 * 60 * 60 * 1000
       )
         .toISOString()
@@ -296,12 +292,12 @@ const initializeMockData = () => {
       course_id: 4,
       coach_id: 4,
       coach_name: "陈教练",
-      start_datetime: new Date(
+      start_time: new Date(
         weekStart.getTime() + 24 * 60 * 60 * 1000 + 20 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
-      end_datetime: new Date(
+      end_time: new Date(
         weekStart.getTime() + 24 * 60 * 60 * 1000 + 21 * 60 * 60 * 1000
       )
         .toISOString()
@@ -317,12 +313,12 @@ const initializeMockData = () => {
       course_id: 5,
       coach_id: 5,
       coach_name: "刘教练",
-      start_datetime: new Date(
+      start_time: new Date(
         weekStart.getTime() + 48 * 60 * 60 * 1000 + 6.5 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
-      end_datetime: new Date(
+      end_time: new Date(
         weekStart.getTime() + 48 * 60 * 60 * 1000 + 7.5 * 60 * 60 * 1000
       )
         .toISOString()
@@ -337,12 +333,12 @@ const initializeMockData = () => {
       course_id: 6,
       coach_id: 6,
       coach_name: "赵教练",
-      start_datetime: new Date(
+      start_time: new Date(
         weekStart.getTime() + 48 * 60 * 60 * 1000 + 19 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
-      end_datetime: new Date(
+      end_time: new Date(
         weekStart.getTime() + 48 * 60 * 60 * 1000 + 20 * 60 * 60 * 1000
       )
         .toISOString()
@@ -358,12 +354,12 @@ const initializeMockData = () => {
       course_id: 7,
       coach_id: 7,
       coach_name: "孙教练",
-      start_datetime: new Date(
+      start_time: new Date(
         weekStart.getTime() + 72 * 60 * 60 * 1000 + 9 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
-      end_datetime: new Date(
+      end_time: new Date(
         weekStart.getTime() + 72 * 60 * 60 * 1000 + 10 * 60 * 60 * 1000
       )
         .toISOString()
@@ -378,12 +374,12 @@ const initializeMockData = () => {
       course_id: 8,
       coach_id: 8,
       coach_name: "周教练",
-      start_datetime: new Date(
+      start_time: new Date(
         weekStart.getTime() + 72 * 60 * 60 * 1000 + 16 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
-      end_datetime: new Date(
+      end_time: new Date(
         weekStart.getTime() + 72 * 60 * 60 * 1000 + 17 * 60 * 60 * 1000
       )
         .toISOString()
@@ -399,12 +395,12 @@ const initializeMockData = () => {
       course_id: 9,
       coach_id: 9,
       coach_name: "吴教练",
-      start_datetime: new Date(
+      start_time: new Date(
         weekStart.getTime() + 96 * 60 * 60 * 1000 + 7 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
-      end_datetime: new Date(
+      end_time: new Date(
         weekStart.getTime() + 96 * 60 * 60 * 1000 + 8 * 60 * 60 * 1000
       )
         .toISOString()
@@ -419,12 +415,12 @@ const initializeMockData = () => {
       course_id: 1,
       coach_id: 1,
       coach_name: "李教练",
-      start_datetime: new Date(
+      start_time: new Date(
         weekStart.getTime() + 96 * 60 * 60 * 1000 + 18 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
-      end_datetime: new Date(
+      end_time: new Date(
         weekStart.getTime() + 96 * 60 * 60 * 1000 + 19 * 60 * 60 * 1000
       )
         .toISOString()
@@ -440,12 +436,12 @@ const initializeMockData = () => {
       course_id: 2,
       coach_id: 2,
       coach_name: "王教练",
-      start_datetime: new Date(
+      start_time: new Date(
         weekStart.getTime() + 120 * 60 * 60 * 1000 + 9 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
-      end_datetime: new Date(
+      end_time: new Date(
         weekStart.getTime() + 120 * 60 * 60 * 1000 + 10 * 60 * 60 * 1000
       )
         .toISOString()
@@ -460,12 +456,12 @@ const initializeMockData = () => {
       course_id: 3,
       coach_id: 3,
       coach_name: "张教练",
-      start_datetime: new Date(
+      start_time: new Date(
         weekStart.getTime() + 120 * 60 * 60 * 1000 + 14 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
-      end_datetime: new Date(
+      end_time: new Date(
         weekStart.getTime() + 120 * 60 * 60 * 1000 + 15 * 60 * 60 * 1000
       )
         .toISOString()
@@ -481,12 +477,12 @@ const initializeMockData = () => {
       course_id: 4,
       coach_id: 4,
       coach_name: "陈教练",
-      start_datetime: new Date(
+      start_time: new Date(
         weekStart.getTime() + 144 * 60 * 60 * 1000 + 10 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
-      end_datetime: new Date(
+      end_time: new Date(
         weekStart.getTime() + 144 * 60 * 60 * 1000 + 11 * 60 * 60 * 1000
       )
         .toISOString()
@@ -501,12 +497,12 @@ const initializeMockData = () => {
       course_id: 5,
       coach_id: 5,
       coach_name: "刘教练",
-      start_datetime: new Date(
+      start_time: new Date(
         weekStart.getTime() + 144 * 60 * 60 * 1000 + 16 * 60 * 60 * 1000
       )
         .toISOString()
         .slice(0, 16),
-      end_datetime: new Date(
+      end_time: new Date(
         weekStart.getTime() + 144 * 60 * 60 * 1000 + 17 * 60 * 60 * 1000
       )
         .toISOString()
@@ -647,7 +643,7 @@ const handleScheduleSubmit = async (formData) => {
 const deleteSchedule = async (schedule) => {
   const result = await Swal.fire({
     title: "确认删除",
-    text: `确定要删除 ${schedule.coach_name} 在 ${schedule.start_datetime} 的排班吗？`,
+    text: `确定要删除 ${schedule.coach_name} 在 ${schedule.start_time} 的排班吗？`,
     icon: "warning",
     showCancelButton: true,
     confirmButtonColor: "#ef4444",

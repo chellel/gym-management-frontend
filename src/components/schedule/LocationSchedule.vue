@@ -39,9 +39,9 @@
                 class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs cursor-pointer hover:bg-green-200"
                 @click="$emit('edit-schedule', schedule)"
               >
-                {{ schedule.trainer_name }}
+                {{ schedule.coach_name }}
                 <br />
-                {{ schedule.activity }}
+                {{ schedule.location }}
               </div>
             </td>
           </tr>
@@ -76,10 +76,17 @@ const emit = defineEmits(["edit-schedule"]);
 // 获取场地的排班
 const getLocationSchedules = (locationId, timeSlot) => {
   const [startTime] = timeSlot.split("-");
-  return props.schedules.filter(
-    (schedule) =>
-      schedule.location_id === locationId &&
-      schedule.start_time.startsWith(startTime.slice(0, 2))
-  );
+  const location = props.locations.find(l => l.id === locationId);
+  
+  return props.schedules.filter((schedule) => {
+    // 检查场地匹配
+    if (schedule.location !== location?.name) return false;
+    
+    // 检查时间匹配 - 从start_time中提取小时
+    const scheduleHour = schedule.start_time.split('T')[1]?.split(':')[0];
+    const slotHour = startTime.slice(0, 2);
+    
+    return scheduleHour === slotHour;
+  });
 };
 </script>

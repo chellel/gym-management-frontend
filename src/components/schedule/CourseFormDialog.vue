@@ -73,6 +73,8 @@
 
 <script setup>
 import { ref, reactive, computed, watch } from "vue";
+import Swal from "sweetalert2";
+import { createCourse, updateCourse } from "@/api/course";
 
 // Props
 const props = defineProps({
@@ -91,7 +93,7 @@ const props = defineProps({
 });
 
 // Emits
-const emit = defineEmits(["update:modelValue", "submit", "close"]);
+const emit = defineEmits(["update:modelValue", "success", "close"]);
 
 // 响应式数据
 const visible = ref(false);
@@ -209,10 +211,47 @@ const handleSubmit = async () => {
       remark: form.remark.trim() || undefined,
     };
 
-    // 发送提交事件
-    emit("submit", submitData);
+    // 根据模式调用不同的API
+    if (props.isEdit && props.courseData) {
+      // 更新课程
+      const updateData = {
+        ...submitData,
+        id: props.courseData.id,
+      };
+      await updateCourse(updateData);
+      
+      await Swal.fire({
+        title: "更新成功",
+        text: "课程信息更新成功！",
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } else {
+      // 创建课程
+      await createCourse(submitData);
+      
+      await Swal.fire({
+        title: "添加成功",
+        text: "课程添加成功！",
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    }
+
+    // 关闭对话框并通知父组件刷新
+    handleClose();
+    emit("success");
   } catch (error) {
-    console.error("表单验证失败:", error);
+    console.error("操作失败:", error);
+    await Swal.fire({
+      title: props.isEdit ? "更新失败" : "添加失败",
+      text: props.isEdit
+        ? "更新课程信息失败，请重试"
+        : "添加课程失败，请重试",
+      icon: "error",
+    });
   } finally {
     loading.value = false;
   }
