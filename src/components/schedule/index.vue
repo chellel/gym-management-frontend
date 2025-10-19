@@ -62,9 +62,9 @@
     </div>
 
     <!-- 教练排班视图 -->
-    <TrainerSchedule
-      v-if="currentView === 'trainers'"
-      :trainers="trainers"
+    <CoachSchedule
+      v-if="currentView === 'coachs'"
+      :coachs="coachs"
       :schedules="schedules"
       :week-days="weekDays"
       :can-delete-schedule="canDeleteSchedule"
@@ -73,9 +73,7 @@
     />
 
     <!-- 课程管理视图 -->
-    <CourseManagement
-      v-if="currentView === 'courses'"
-    />
+    <CourseManagement v-if="currentView === 'courses'" />
 
     <!-- 场地预约视图 -->
     <LocationSchedule
@@ -93,7 +91,7 @@
     :is-edit="isEditMode"
     :schedule-data="editingSchedule"
     :courses="courses"
-    :trainers="trainers"
+    :coachs="coachs"
     :current-user="currentUser"
     @submit="handleScheduleSubmit"
     @close="closeScheduleDialog"
@@ -105,7 +103,7 @@ import { ref, reactive, computed, onMounted } from "vue";
 import Swal from "sweetalert2";
 import { useAuth } from "@/composables/useAuth";
 import { useAdminAuth } from "@/composables/useAdminAuth";
-import TrainerSchedule from "./TrainerSchedule.vue";
+import CoachSchedule from "./CoachSchedule.vue";
 import LocationSchedule from "./LocationSchedule.vue";
 import CourseManagement from "./CourseManagement.vue";
 import ScheduleFormDialog from "./ScheduleFormDialog.vue";
@@ -116,10 +114,10 @@ const { isCoach, currentUser } = useAuth();
 const { isAdmin } = useAdminAuth();
 
 // 响应式数据
-const currentView = ref("trainers");
+const currentView = ref("coachs");
 const currentWeek = ref(new Date());
 const schedules = ref([]);
-const trainers = ref([]);
+const coachs = ref([]);
 const courses = ref([]);
 const locations = ref([]);
 
@@ -127,7 +125,6 @@ const locations = ref([]);
 const showScheduleDialog = ref(false);
 const isEditMode = ref(false);
 const editingSchedule = ref(null);
-
 
 // 权限控制计算属性
 const canAddSchedule = computed(() => {
@@ -154,11 +151,10 @@ const canDeleteSchedule = computed(() => {
   };
 });
 
-
 // 视图选项
 const views = [
   { key: "courses", name: "课程管理" },
-  { key: "trainers", name: "教练排班" },
+  { key: "coachs", name: "教练排班" },
   { key: "locations", name: "场地预约" },
 ];
 
@@ -192,7 +188,6 @@ const weekDays = computed(() => {
   return days;
 });
 
-
 // 初始化
 onMounted(() => {
   initializeMockData();
@@ -204,7 +199,7 @@ const initializeMockData = () => {
   courses.value = generateMockCourses(15);
 
   // 模拟教练数据
-  trainers.value = [
+  coachs.value = [
     { id: 1, name: "李教练", specialty: "瑜伽/普拉提/冥想" },
     { id: 2, name: "王教练", specialty: "动感单车/杠铃操" },
     { id: 3, name: "张教练", specialty: "力量训练/HIIT/CrossFit" },
@@ -240,73 +235,289 @@ const initializeMockData = () => {
   const weekStart = new Date(today);
   weekStart.setDate(today.getDate() - today.getDay());
 
-  // 生成示例排班数据
-  const generateScheduleData = () => {
-    const scheduleData = [];
-    let scheduleId = 1;
-    
-    // 为本周的每一天生成排班
-    for (let day = 0; day < 7; day++) {
-      const currentDay = new Date(weekStart.getTime() + day * 24 * 60 * 60 * 1000);
-      
-      // 每天生成3-5个排班
-      const dailySchedules = Math.floor(Math.random() * 3) + 3; // 3-5个排班
-      
-      for (let i = 0; i < dailySchedules; i++) {
-        const course = courses.value[Math.floor(Math.random() * courses.value.length)];
-        const coach = trainers.value[Math.floor(Math.random() * trainers.value.length)];
-        const location = locations.value[Math.floor(Math.random() * locations.value.length)];
-        
-        // 生成不同的时间段
-        const timeSlots = [
-          { hour: 7, minute: 0 },   // 早上7点
-          { hour: 9, minute: 0 },   // 上午9点
-          { hour: 14, minute: 0 },  // 下午2点
-          { hour: 16, minute: 0 },   // 下午4点
-          { hour: 18, minute: 0 },  // 晚上6点
-          { hour: 19, minute: 30 }, // 晚上7:30
-          { hour: 20, minute: 0 },  // 晚上8点
-        ];
-        
-        const timeSlot = timeSlots[i % timeSlots.length];
-        const startTime = new Date(currentDay.getTime() + timeSlot.hour * 60 * 60 * 1000 + timeSlot.minute * 60 * 1000);
-        const endTime = new Date(startTime.getTime() + course.duration_minutes * 60000);
-        
-        // 随机状态
-        const statuses = ["waiting", "waiting", "waiting", "completed", "cancelled"]; // 大部分是等待状态
-        const status = statuses[Math.floor(Math.random() * statuses.length)];
-        
-        scheduleData.push({
-          id: scheduleId++,
-          course_id: course.id,
-          coach_id: coach.id,
-          coach_name: coach.name,
-          start_datetime: startTime.toISOString().slice(0, 16),
-          end_datetime: endTime.toISOString().slice(0, 16),
-          location: location.name,
-          max_capacity: Math.floor(Math.random() * 25) + 10, // 10-35人
-          status: status,
-          remark: `${course.name} - ${getStatusRemark(status)}`,
-        });
-      }
-    }
-    
-    return scheduleData;
-  };
-  
-  // 获取状态备注
-  const getStatusRemark = (status) => {
-    const remarks = {
-      waiting: "等待开始",
-      completed: "已完成",
-      cancelled: "已取消"
-    };
-    return remarks[status] || "正常";
-  };
-
-  schedules.value = generateScheduleData();
+  // 模拟排班数据 - 本周的排班安排
+  schedules.value = [
+    // 周一
+    {
+      id: 1,
+      course_id: 1,
+      coach_id: 1,
+      coach_name: "李教练",
+      start_datetime: new Date(weekStart.getTime() + 7 * 60 * 60 * 1000)
+        .toISOString()
+        .slice(0, 16),
+      end_datetime: new Date(weekStart.getTime() + 8 * 60 * 60 * 1000)
+        .toISOString()
+        .slice(0, 16),
+      location: "瑜伽室A",
+      max_capacity: 20,
+      status: "waiting",
+      remark: "适合初学者",
+    },
+    {
+      id: 2,
+      course_id: 2,
+      coach_id: 2,
+      coach_name: "王教练",
+      start_datetime: new Date(weekStart.getTime() + 19 * 60 * 60 * 1000)
+        .toISOString()
+        .slice(0, 16),
+      end_datetime: new Date(weekStart.getTime() + 20 * 60 * 60 * 1000)
+        .toISOString()
+        .slice(0, 16),
+      location: "单车房",
+      max_capacity: 25,
+      status: "waiting",
+      remark: "高强度训练",
+    },
+    // 周二
+    {
+      id: 3,
+      course_id: 3,
+      coach_id: 3,
+      coach_name: "张教练",
+      start_datetime: new Date(
+        weekStart.getTime() + 24 * 60 * 60 * 1000 + 18 * 60 * 60 * 1000
+      )
+        .toISOString()
+        .slice(0, 16),
+      end_datetime: new Date(
+        weekStart.getTime() + 24 * 60 * 60 * 1000 + 19 * 60 * 60 * 1000
+      )
+        .toISOString()
+        .slice(0, 16),
+      location: "器械区",
+      max_capacity: 15,
+      status: "waiting",
+      remark: "专业指导",
+    },
+    {
+      id: 4,
+      course_id: 4,
+      coach_id: 4,
+      coach_name: "陈教练",
+      start_datetime: new Date(
+        weekStart.getTime() + 24 * 60 * 60 * 1000 + 20 * 60 * 60 * 1000
+      )
+        .toISOString()
+        .slice(0, 16),
+      end_datetime: new Date(
+        weekStart.getTime() + 24 * 60 * 60 * 1000 + 21 * 60 * 60 * 1000
+      )
+        .toISOString()
+        .slice(0, 16),
+      location: "瑜伽室B",
+      max_capacity: 20,
+      status: "waiting",
+      remark: "核心训练",
+    },
+    // 周三
+    {
+      id: 5,
+      course_id: 5,
+      coach_id: 5,
+      coach_name: "刘教练",
+      start_datetime: new Date(
+        weekStart.getTime() + 48 * 60 * 60 * 1000 + 6.5 * 60 * 60 * 1000
+      )
+        .toISOString()
+        .slice(0, 16),
+      end_datetime: new Date(
+        weekStart.getTime() + 48 * 60 * 60 * 1000 + 7.5 * 60 * 60 * 1000
+      )
+        .toISOString()
+        .slice(0, 16),
+      location: "户外跑道",
+      max_capacity: 30,
+      status: "waiting",
+      remark: "户外运动",
+    },
+    {
+      id: 6,
+      course_id: 6,
+      coach_id: 6,
+      coach_name: "赵教练",
+      start_datetime: new Date(
+        weekStart.getTime() + 48 * 60 * 60 * 1000 + 19 * 60 * 60 * 1000
+      )
+        .toISOString()
+        .slice(0, 16),
+      end_datetime: new Date(
+        weekStart.getTime() + 48 * 60 * 60 * 1000 + 20 * 60 * 60 * 1000
+      )
+        .toISOString()
+        .slice(0, 16),
+      location: "拳击台",
+      max_capacity: 12,
+      status: "waiting",
+      remark: "拳击基础训练",
+    },
+    // 周四
+    {
+      id: 7,
+      course_id: 7,
+      coach_id: 7,
+      coach_name: "孙教练",
+      start_datetime: new Date(
+        weekStart.getTime() + 72 * 60 * 60 * 1000 + 9 * 60 * 60 * 1000
+      )
+        .toISOString()
+        .slice(0, 16),
+      end_datetime: new Date(
+        weekStart.getTime() + 72 * 60 * 60 * 1000 + 10 * 60 * 60 * 1000
+      )
+        .toISOString()
+        .slice(0, 16),
+      location: "舞蹈室",
+      max_capacity: 25,
+      status: "waiting",
+      remark: "Zumba舞蹈",
+    },
+    {
+      id: 8,
+      course_id: 8,
+      coach_id: 8,
+      coach_name: "周教练",
+      start_datetime: new Date(
+        weekStart.getTime() + 72 * 60 * 60 * 1000 + 16 * 60 * 60 * 1000
+      )
+        .toISOString()
+        .slice(0, 16),
+      end_datetime: new Date(
+        weekStart.getTime() + 72 * 60 * 60 * 1000 + 17 * 60 * 60 * 1000
+      )
+        .toISOString()
+        .slice(0, 16),
+      location: "游泳池",
+      max_capacity: 20,
+      status: "waiting",
+      remark: "游泳技巧指导",
+    },
+    // 周五
+    {
+      id: 9,
+      course_id: 9,
+      coach_id: 9,
+      coach_name: "吴教练",
+      start_datetime: new Date(
+        weekStart.getTime() + 96 * 60 * 60 * 1000 + 7 * 60 * 60 * 1000
+      )
+        .toISOString()
+        .slice(0, 16),
+      end_datetime: new Date(
+        weekStart.getTime() + 96 * 60 * 60 * 1000 + 8 * 60 * 60 * 1000
+      )
+        .toISOString()
+        .slice(0, 16),
+      location: "太极练习区",
+      max_capacity: 15,
+      status: "waiting",
+      remark: "太极晨练",
+    },
+    {
+      id: 10,
+      course_id: 1,
+      coach_id: 1,
+      coach_name: "李教练",
+      start_datetime: new Date(
+        weekStart.getTime() + 96 * 60 * 60 * 1000 + 18 * 60 * 60 * 1000
+      )
+        .toISOString()
+        .slice(0, 16),
+      end_datetime: new Date(
+        weekStart.getTime() + 96 * 60 * 60 * 1000 + 19 * 60 * 60 * 1000
+      )
+        .toISOString()
+        .slice(0, 16),
+      location: "瑜伽室A",
+      max_capacity: 20,
+      status: "completed",
+      remark: "瑜伽放松",
+    },
+    // 周六
+    {
+      id: 11,
+      course_id: 2,
+      coach_id: 2,
+      coach_name: "王教练",
+      start_datetime: new Date(
+        weekStart.getTime() + 120 * 60 * 60 * 1000 + 9 * 60 * 60 * 1000
+      )
+        .toISOString()
+        .slice(0, 16),
+      end_datetime: new Date(
+        weekStart.getTime() + 120 * 60 * 60 * 1000 + 10 * 60 * 60 * 1000
+      )
+        .toISOString()
+        .slice(0, 16),
+      location: "单车房",
+      max_capacity: 25,
+      status: "waiting",
+      remark: "周末动感单车",
+    },
+    {
+      id: 12,
+      course_id: 3,
+      coach_id: 3,
+      coach_name: "张教练",
+      start_datetime: new Date(
+        weekStart.getTime() + 120 * 60 * 60 * 1000 + 14 * 60 * 60 * 1000
+      )
+        .toISOString()
+        .slice(0, 16),
+      end_datetime: new Date(
+        weekStart.getTime() + 120 * 60 * 60 * 1000 + 15 * 60 * 60 * 1000
+      )
+        .toISOString()
+        .slice(0, 16),
+      location: "CrossFit训练区",
+      max_capacity: 18,
+      status: "waiting",
+      remark: "CrossFit训练",
+    },
+    // 周日
+    {
+      id: 13,
+      course_id: 4,
+      coach_id: 4,
+      coach_name: "陈教练",
+      start_datetime: new Date(
+        weekStart.getTime() + 144 * 60 * 60 * 1000 + 10 * 60 * 60 * 1000
+      )
+        .toISOString()
+        .slice(0, 16),
+      end_datetime: new Date(
+        weekStart.getTime() + 144 * 60 * 60 * 1000 + 11 * 60 * 60 * 1000
+      )
+        .toISOString()
+        .slice(0, 16),
+      location: "瑜伽室B",
+      max_capacity: 20,
+      status: "waiting",
+      remark: "普拉提训练",
+    },
+    {
+      id: 14,
+      course_id: 5,
+      coach_id: 5,
+      coach_name: "刘教练",
+      start_datetime: new Date(
+        weekStart.getTime() + 144 * 60 * 60 * 1000 + 16 * 60 * 60 * 1000
+      )
+        .toISOString()
+        .slice(0, 16),
+      end_datetime: new Date(
+        weekStart.getTime() + 144 * 60 * 60 * 1000 + 17 * 60 * 60 * 1000
+      )
+        .toISOString()
+        .slice(0, 16),
+      location: "有氧区",
+      max_capacity: 30,
+      status: "cancelled",
+      remark: "有氧运动（已取消）",
+    },
+  ];
 };
-
 
 // 周导航
 const previousWeek = () => {
@@ -337,12 +548,14 @@ const formatWeekRange = (date) => {
     if (typeof date === "string") {
       date = new Date(date);
     }
-    return date.toLocaleDateString("zh-CN", { month: "2-digit", day: "2-digit" });
+    return date.toLocaleDateString("zh-CN", {
+      month: "2-digit",
+      day: "2-digit",
+    });
   };
 
   return `${formatDate(startOfWeek)} - ${formatDate(endOfWeek)}`;
 };
-
 
 // 打开添加排班对话框
 const openAddScheduleDialog = () => {
@@ -387,9 +600,7 @@ const handleScheduleSubmit = async (formData) => {
         schedules.value[index] = {
           ...editingSchedule.value,
           ...formData,
-          coach_name: trainers.value.find(
-            (t) => t.id == formData.coach_id
-          )?.name,
+          coach_name: coachs.value.find((t) => t.id == formData.coach_id)?.name,
         };
       }
 
@@ -405,8 +616,7 @@ const handleScheduleSubmit = async (formData) => {
       const newSchedule = {
         id: Date.now(),
         ...formData,
-        coach_name: trainers.value.find((t) => t.id == formData.coach_id)
-          ?.name,
+        coach_name: coachs.value.find((t) => t.id == formData.coach_id)?.name,
       };
 
       schedules.value.push(newSchedule);
@@ -425,7 +635,9 @@ const handleScheduleSubmit = async (formData) => {
     console.error("Failed to handle schedule:", error);
     await Swal.fire({
       title: isEditMode.value ? "更新失败" : "添加失败",
-      text: isEditMode.value ? "更新排班信息失败，请重试" : "添加排班失败，请重试",
+      text: isEditMode.value
+        ? "更新排班信息失败，请重试"
+        : "添加排班失败，请重试",
       icon: "error",
     });
   }

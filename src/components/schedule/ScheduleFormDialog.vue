@@ -44,10 +44,10 @@
             :disabled="isCoach"
           >
             <el-option
-              v-for="trainer in availableTrainers"
-              :key="trainer.id"
-              :label="trainer.name"
-              :value="trainer.id"
+              v-for="coach in availableCoachs"
+              :key="coach.id"
+              :label="coach.name"
+              :value="coach.id"
             />
           </el-select>
         </el-form-item>
@@ -161,7 +161,7 @@ const props = defineProps({
     type: Array,
     required: true,
   },
-  trainers: {
+  coachs: {
     type: Array,
     required: true,
   },
@@ -216,9 +216,9 @@ const rules = {
 };
 
 // 计算属性
-const availableTrainers = computed(() => {
+const availableCoachs = computed(() => {
   // 这里可以根据权限逻辑返回可用的教练列表
-  return props.trainers;
+  return props.coachs;
 });
 
 // 监听 modelValue 变化

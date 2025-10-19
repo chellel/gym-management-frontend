@@ -2,9 +2,10 @@
   <div class="space-y-6">
     <!-- 课程管理头部 -->
     <div class="bg-white shadow rounded-lg p-6">
-      <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-4 lg:space-y-0">
+      <div
+        class="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-4 lg:space-y-0"
+      >
         <div class="flex items-center space-x-4">
-          <h2 class="text-xl font-semibold text-gray-900">课程管理</h2>
           <div class="flex items-center space-x-2">
             <el-input
               v-model="searchKeyword"
@@ -19,7 +20,7 @@
             </el-input>
           </div>
         </div>
-        
+
         <div class="flex items-center space-x-3">
           <el-button @click="refreshCourses" :loading="loading">
             <el-icon class="w-4 h-4 mr-1"><Refresh /></el-icon>
@@ -46,29 +47,45 @@
         stripe
         class="w-full"
       >
-        
         <el-table-column prop="name" label="课程名称" min-width="150">
           <template #default="{ row }">
             <div class="font-medium text-gray-900">{{ row.name }}</div>
           </template>
         </el-table-column>
-        
-        <el-table-column prop="description" label="课程描述" min-width="200" show-overflow-tooltip />
-        
-        <el-table-column prop="duration_minutes" label="时长" width="100" align="center">
+
+        <el-table-column
+          prop="description"
+          label="课程描述"
+          min-width="200"
+          show-overflow-tooltip
+        />
+
+        <el-table-column
+          prop="duration_minutes"
+          label="时长"
+          width="100"
+          align="center"
+        >
           <template #default="{ row }">
-            <el-tag type="info" size="small">{{ row.duration_minutes }}分钟</el-tag>
+            <el-tag type="info" size="small"
+              >{{ row.duration_minutes }}分钟</el-tag
+            >
           </template>
         </el-table-column>
-        
+
         <el-table-column prop="create_time" label="创建时间" width="160">
           <template #default="{ row }">
             {{ formatDate(row.create_time) }}
           </template>
         </el-table-column>
-        
-        <el-table-column prop="remark" label="备注" min-width="120" show-overflow-tooltip />
-        
+
+        <el-table-column
+          prop="remark"
+          label="备注"
+          min-width="120"
+          show-overflow-tooltip
+        />
+
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
             <div class="flex items-center space-x-2">
@@ -134,13 +151,13 @@ import { ref, reactive, computed, onMounted, watch } from "vue";
 import Swal from "sweetalert2";
 import { useAuth } from "@/composables/useAuth";
 import { useAdminAuth } from "@/composables/useAdminAuth";
-import { 
-  getCourseList, 
-  createCourse, 
-  updateCourse, 
+import {
+  getCourseList,
+  createCourse,
+  updateCourse,
   deleteCourse as deleteCourseApi,
   restoreCourse as restoreCourseApi,
-  generateMockCourses
+  generateMockCourses,
 } from "@/api/course";
 import CourseFormDialog from "./CourseFormDialog.vue";
 
@@ -195,12 +212,13 @@ const filteredCourses = computed(() => {
   if (!searchKeyword.value) {
     return courses.value;
   }
-  
+
   const keyword = searchKeyword.value.toLowerCase();
-  return courses.value.filter(course => 
-    course.name.toLowerCase().includes(keyword) ||
-    course.description?.toLowerCase().includes(keyword) ||
-    course.course_code?.toLowerCase().includes(keyword)
+  return courses.value.filter(
+    (course) =>
+      course.name.toLowerCase().includes(keyword) ||
+      course.description?.toLowerCase().includes(keyword) ||
+      course.course_code?.toLowerCase().includes(keyword)
   );
 });
 
@@ -213,12 +231,12 @@ onMounted(() => {
 const loadCourses = async () => {
   try {
     loading.value = true;
-    
+
     // 使用模拟数据，实际项目中应该调用API
     const mockCourses = generateMockCourses(50);
     courses.value = mockCourses;
     totalCourses.value = mockCourses.length;
-    
+
     // 实际API调用示例：
     // const response = await getCourseList({
     //   page: currentPage.value,
@@ -228,7 +246,6 @@ const loadCourses = async () => {
     // });
     // courses.value = response.rows;
     // totalCourses.value = response.total;
-    
   } catch (error) {
     console.error("Failed to load courses:", error);
     await Swal.fire({
@@ -301,15 +318,17 @@ const handleCourseSubmit = async (formData) => {
       const updateData = {
         ...formData,
         id: editingCourse.value.id,
-        update_by: currentUser.value?.id || 'admin',
-        update_time: new Date().toISOString()
+        update_by: currentUser.value?.id || "admin",
+        update_time: new Date().toISOString(),
       };
-      
+
       // 实际API调用：
       // await updateCourse(updateData);
-      
+
       // 更新本地数据
-      const index = courses.value.findIndex(c => c.id === editingCourse.value.id);
+      const index = courses.value.findIndex(
+        (c) => c.id === editingCourse.value.id
+      );
       if (index !== -1) {
         courses.value[index] = { ...courses.value[index], ...updateData };
       }
@@ -326,18 +345,18 @@ const handleCourseSubmit = async (formData) => {
       const newCourse = {
         id: Date.now(),
         ...formData,
-        create_by: currentUser.value?.id || 'admin',
+        create_by: currentUser.value?.id || "admin",
         create_time: new Date().toISOString(),
-        update_by: currentUser.value?.id || 'admin',
+        update_by: currentUser.value?.id || "admin",
         update_time: new Date().toISOString(),
-        remark: formData.remark || '',
+        remark: formData.remark || "",
         is_deleted: 0,
-        delete_time: null
+        delete_time: null,
       };
-      
+
       // 实际API调用：
       // await createCourse(formData);
-      
+
       courses.value.unshift(newCourse);
       totalCourses.value++;
 
@@ -355,7 +374,9 @@ const handleCourseSubmit = async (formData) => {
     console.error("Failed to handle course:", error);
     await Swal.fire({
       title: isEditMode.value ? "更新失败" : "添加失败",
-      text: isEditMode.value ? "更新课程信息失败，请重试" : "添加课程失败，请重试",
+      text: isEditMode.value
+        ? "更新课程信息失败，请重试"
+        : "添加课程失败，请重试",
       icon: "error",
     });
   }
@@ -378,14 +399,14 @@ const deleteCourse = async (course) => {
     try {
       // 实际API调用：
       // await deleteCourseApi(course.id);
-      
+
       // 更新本地数据（软删除）
-      const index = courses.value.findIndex(c => c.id === course.id);
+      const index = courses.value.findIndex((c) => c.id === course.id);
       if (index !== -1) {
         courses.value[index] = {
           ...courses.value[index],
           is_deleted: 1,
-          delete_time: new Date().toISOString()
+          delete_time: new Date().toISOString(),
         };
       }
 
@@ -412,14 +433,14 @@ const restoreCourse = async (course) => {
   try {
     // 实际API调用：
     // await restoreCourseApi(course.id);
-    
+
     // 更新本地数据
-    const index = courses.value.findIndex(c => c.id === course.id);
+    const index = courses.value.findIndex((c) => c.id === course.id);
     if (index !== -1) {
       courses.value[index] = {
         ...courses.value[index],
         is_deleted: 0,
-        delete_time: null
+        delete_time: null,
       };
     }
 
@@ -442,14 +463,14 @@ const restoreCourse = async (course) => {
 
 // 格式化日期
 const formatDate = (dateString) => {
-  if (!dateString) return '-';
+  if (!dateString) return "-";
   const date = new Date(dateString);
-  return date.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
+  return date.toLocaleDateString("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 };
 </script>

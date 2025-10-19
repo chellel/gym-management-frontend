@@ -71,7 +71,7 @@ const props = defineProps({
 });
 
 // Emits
-const emit = defineEmits(['edit-schedule']);
+const emit = defineEmits(["edit-schedule"]);
 
 // 获取场地的排班
 const getLocationSchedules = (locationId, timeSlot) => {

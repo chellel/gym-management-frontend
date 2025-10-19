@@ -25,7 +25,7 @@
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="trainer in trainers" :key="trainer.id">
+          <tr v-for="coach in coachs" :key="coach.id">
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="flex items-center">
                 <div class="flex-shrink-0 h-10 w-10">
@@ -33,16 +33,16 @@
                     class="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center"
                   >
                     <span class="text-sm font-medium text-primary-600">
-                      {{ trainer.name.charAt(0) }}
+                      {{ coach.name.charAt(0) }}
                     </span>
                   </div>
                 </div>
                 <div class="ml-4">
                   <div class="text-sm font-medium text-gray-900">
-                    {{ trainer.name }}
+                    {{ coach.name }}
                   </div>
                   <div class="text-sm text-gray-500">
-                    {{ trainer.specialty }}
+                    {{ coach.specialty }}
                   </div>
                 </div>
               </div>
@@ -54,12 +54,13 @@
             >
               <div class="space-y-1">
                 <div
-                  v-for="schedule in getTrainerSchedules(trainer.id, day.date)"
+                  v-for="schedule in getCoachSchedules(coach.id, day.date)"
                   :key="schedule.id"
                   class="bg-primary-100 text-primary-800 px-2 py-1 rounded text-xs cursor-pointer hover:bg-primary-200 relative group"
                   @click="$emit('edit-schedule', schedule)"
                 >
-                  {{ schedule.start_time }} - {{ schedule.end_time }}
+                  {{ formatTime(schedule.start_datetime) }} -
+                  {{ formatTime(schedule.end_datetime) }}
                   <br />
                   {{ schedule.location }}
                   <div
@@ -84,7 +85,7 @@ import { computed } from "vue";
 
 // Props
 const props = defineProps({
-  trainers: {
+  coachs: {
     type: Array,
     required: true,
   },
@@ -103,13 +104,18 @@ const props = defineProps({
 });
 
 // Emits
-const emit = defineEmits(['edit-schedule', 'delete-schedule']);
+const emit = defineEmits(["edit-schedule", "delete-schedule"]);
 
 // 获取教练的排班
-const getTrainerSchedules = (trainerId, date) => {
-  return props.schedules.filter(
-    (schedule) => schedule.trainer_id === trainerId && schedule.date === date
-  );
+const getCoachSchedules = (coachId, date) => {
+  return props.schedules.filter((schedule) => {
+    // 检查教练ID匹配
+    if (schedule.coach_id !== coachId) return false;
+
+    // 检查日期匹配 - 从start_datetime中提取日期
+    const scheduleDate = schedule.start_datetime.split("T")[0];
+    return scheduleDate === date;
+  });
 };
 
 // 格式化日期
@@ -118,5 +124,16 @@ const formatDate = (date) => {
     date = new Date(date);
   }
   return date.toLocaleDateString("zh-CN", { month: "2-digit", day: "2-digit" });
+};
+
+// 格式化时间
+const formatTime = (datetime) => {
+  if (!datetime) return "";
+  const date = new Date(datetime);
+  return date.toLocaleTimeString("zh-CN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
 };
 </script>
