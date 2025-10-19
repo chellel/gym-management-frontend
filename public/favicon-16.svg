@@ -1,0 +1,14 @@
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景圆形 -->
+  <circle cx="8" cy="8" r="7" fill="#3B82F6"/>
+  
+  <!-- 简化的哑铃图标 -->
+  <g transform="translate(4, 5)">
+    <!-- 左侧重量 -->
+    <rect x="0" y="1" width="2" height="4" rx="0.5" fill="#FFFFFF"/>
+    <!-- 中间杠铃杆 -->
+    <rect x="2" y="2.5" width="4" height="1" fill="#FFFFFF"/>
+    <!-- 右侧重量 -->
+    <rect x="6" y="1" width="2" height="4" rx="0.5" fill="#FFFFFF"/>
+  </g>
+</svg>
