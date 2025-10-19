@@ -2,7 +2,7 @@ import {
   getMemberList,
   createMember,
   updateMember,
-  deleteMember,
+  stopMember,
   getMemberStats,
 } from "@/api/member";
 
@@ -56,9 +56,9 @@ export const memberService = {
   },
 
   // 删除会员
-  async deleteMember(id) {
+  async stopMember(id) {
     try {
-      const response = await deleteMember(id);
+      const response = await stopMember(id);
       return response;
     } catch (error) {
       console.error("Error deleting member:", error);
