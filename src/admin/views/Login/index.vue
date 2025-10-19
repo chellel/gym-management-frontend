@@ -40,9 +40,9 @@ const handleLogin = async (loginForm) => {
       password: loginForm.password,
     };
     const res = await login(params);
-    if(!res.success){
+    if(res.code !== 0){
       Swal.fire({
-        text: res.message,
+        text: res.msg,
         icon: "error",
       });
       return;

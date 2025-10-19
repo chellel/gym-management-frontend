@@ -2,27 +2,27 @@ import { ref, reactive, computed } from "vue";
 import { useRouter } from "vue-router";
 import Swal from "sweetalert2";
 import { useUserinfoStore } from "@/stores/userinfo";
-
+import { gymAdminLogin } from "@/api/admin";
 // 管理员认证服务
-const adminAuthService = {
-  // 管理员登录
-  async login(email, password) {
-    // 模拟管理员验证 - 从admin表查询
-    if (email === "admin" && password === "123456") {
-      const admin = {
-        id: 1,
-        email: "admin",
-        name: "系统管理员",
-        role: "admin",
-        avatar: null,
-        login_time: new Date().toISOString(),
-      };
-      return { user: admin, success: true };
-    } else {
-      return { user: null, success: false, message: "管理员账号或密码错误" };
-    }
-  },
-};
+// const adminAuthService = {
+//   // 管理员登录
+//   async login(email, password) {
+//     // 模拟管理员验证 - 从admin表查询
+//     if (email === "admin" && password === "123456") {
+//       const admin = {
+//         id: 1,
+//         email: "admin",
+//         name: "系统管理员",
+//         role: "admin",
+//         avatar: null,
+//         login_time: new Date().toISOString(),
+//       };
+//       return { user: admin, success: true };
+//     } else {
+//       return { user: null, success: false, message: "管理员账号或密码错误" };
+//     }
+//   },
+// };
 
 export const useAdminAuth = () => {
   const router = useRouter();
@@ -30,19 +30,24 @@ export const useAdminAuth = () => {
 
   const loading = ref(false);
 
-  const login = async (params) => {
+  const login = async (data) => {
     loading.value = true;
+    const params = {
+      username: data.username,
+      password: data.password,
+    };
 
     try {
-      const res = await adminAuthService.login(
-        params.username,
-        params.password
-      );
-      if (res.user) {
-        userinfoStore.setUserinfo(res.user);
+      const res = await gymAdminLogin(params);
+      if (res.code === 0) {
+        userinfoStore.setUserinfo(res.data);
       }
       return res;
     } catch (err) {
+      Swal.fire({
+        text: err.msg,
+        icon: "error",
+      });
       return Promise.reject(err);
     } 
   };

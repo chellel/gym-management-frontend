@@ -10,14 +10,14 @@ const memberAuthService = {
     // 教练验证 - 从member表查询，role为coach
     if (email === "coach" && password === "123456") {
       const user = {
-        id: 2,
-        email: "coach",
-        name: "李教练",
+        id: 7,
+        email: "chenjiaolian@example.com",
+        userId: "C002",
+        name: "陈教练",
         role: "coach",
         member_type: "coach",
-        specialty: "瑜伽/普拉提/冥想",
-        phone: "13800138002",
-        avatar: null,
+        description: "瑜伽/普拉提/冥想",
+        phone: "13900139002",
         login_time: new Date().toISOString(),
       };
       return { user, message: "", success: true };
@@ -25,7 +25,7 @@ const memberAuthService = {
     // 会员验证 - 从member表查询，role为member
     else if (email === "member" && password === "123456") {
       const user = {
-        id: 3,
+        id: 1,
         email: "member",
         name: "张三",
         role: "member",
