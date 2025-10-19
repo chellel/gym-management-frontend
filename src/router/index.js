@@ -181,13 +181,13 @@ const router = createRouter({
 
 // 导航守卫
 router.beforeEach((to, from, next) => {
-  const userIsAuthenticated = isAuthenticated();
+  const userIsAuthenticated = isAuthenticated.value;
   const userRole = getUserRole();
   const targetRouteName = to.name;
   const targetPath = to.path;
 
   // 公共路径（登录、注册等）无需权限检查
-  const publicRouteNames = ["Login", "Register", "AdminLogin"];
+  const publicRouteNames = ["Login", "Register", "AdminLogin", "Welcome"];
   if (publicRouteNames.includes(targetRouteName)) {
     // 如果已登录用户访问登录页面，重定向到合适的首页
     if (

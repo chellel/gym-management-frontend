@@ -9,6 +9,7 @@ export const useUserinfoStore = defineStore('userinfo', () => {
 
   // 计算属性
   const isAuthenticated = computed(() => !!userinfo.value)
+  const isLogin = computed(() => !!userinfo.value)
   const userRole = computed(() => userinfo.value?.role || null)
   const isAdmin = computed(() => userRole.value === 'admin')
   const isCoach = computed(() => userRole.value === 'coach')
@@ -101,7 +102,7 @@ export const useUserinfoStore = defineStore('userinfo', () => {
     userinfo,
     loading,
     error,
-    
+    isLogin,
     // 计算属性
     isAuthenticated,
     userRole,

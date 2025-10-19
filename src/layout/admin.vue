@@ -181,7 +181,7 @@ const user = computed(() => userinfoStore.userinfo)
 // 登出方法
 const logout = async () => {
   userinfoStore.clearUserinfo()
-  await router.push('/admin/login')
+  await router.push('/welcome')
 }
 
 // 导航菜单 - 根据角色显示不同菜单

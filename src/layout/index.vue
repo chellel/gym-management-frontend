@@ -296,7 +296,7 @@ const user = computed(() => userinfoStore.userinfo);
 // 登出方法
 const logout = async () => {
   userinfoStore.clearUserinfo();
-  await router.push('/login');
+  await router.push('/welcome');
 };
 
 const navigation = computed(() => {
