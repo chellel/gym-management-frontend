@@ -372,6 +372,7 @@ const loadData = async () => {
 // 筛选后的课程
 const filteredClasses = computed(() => {
   let filtered = classes.value
+  return filtered
 
   // 按类型筛选
   if (selectedType.value) {

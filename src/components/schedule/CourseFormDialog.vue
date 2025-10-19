@@ -33,9 +33,9 @@
         />
       </el-form-item>
 
-      <el-form-item label="课程时长" prop="duration_minutes">
+      <el-form-item label="课程时长" prop="durationMinutes">
         <el-select
-          v-model="form.duration_minutes"
+          v-model="form.durationMinutes"
           placeholder="选择课程时长"
           class="w-full"
         >
@@ -114,7 +114,7 @@ const durationOptions = [
 const form = reactive({
   name: "",
   description: "",
-  duration_minutes: 60,
+  durationMinutes: 60,
   remark: "",
 });
 
@@ -132,7 +132,7 @@ const rules = {
   description: [
     { max: 500, message: "课程描述长度不能超过 500 个字符", trigger: "blur" },
   ],
-  duration_minutes: [
+  durationMinutes: [
     { required: true, message: "请选择课程时长", trigger: "change" },
   ],
   remark: [
@@ -163,7 +163,7 @@ const initForm = () => {
     Object.assign(form, {
       name: props.courseData.name || "",
       description: props.courseData.description || "",
-      duration_minutes: props.courseData.duration_minutes || 60,
+      durationMinutes: props.courseData.durationMinutes || 60,
       remark: props.courseData.remark || "",
     });
   } else {
@@ -177,7 +177,7 @@ const resetForm = () => {
   Object.assign(form, {
     name: "",
     description: "",
-    duration_minutes: 60,
+    durationMinutes: 60,
     remark: "",
   });
 
@@ -207,7 +207,7 @@ const handleSubmit = async () => {
     const submitData = {
       name: form.name.trim(),
       description: form.description.trim() || undefined,
-      duration_minutes: form.duration_minutes,
+      durationMinutes: form.durationMinutes,
       remark: form.remark.trim() || undefined,
     };
 
@@ -224,7 +224,7 @@ const handleSubmit = async () => {
         title: "更新成功",
         text: "课程信息更新成功！",
         icon: "success",
-        timer: 2000,
+        timer: 1500,
         showConfirmButton: false,
       });
     } else {
@@ -235,7 +235,7 @@ const handleSubmit = async () => {
         title: "添加成功",
         text: "课程添加成功！",
         icon: "success",
-        timer: 2000,
+        timer: 1500,
         showConfirmButton: false,
       });
     }

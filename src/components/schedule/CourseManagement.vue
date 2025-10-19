@@ -1,6 +1,5 @@
 <template>
   <div class="space-y-6">
-    <!-- 课程管理头部 -->
     <div class="bg-white shadow rounded-lg p-6">
       <div
         class="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-4 lg:space-y-0"
@@ -60,21 +59,21 @@
         />
 
         <el-table-column
-          prop="duration_minutes"
+          prop="durationMinutes"
           label="时长"
           width="100"
           align="center"
         >
           <template #default="{ row }">
             <el-tag type="info" size="small"
-              >{{ row.duration_minutes }}分钟</el-tag
+              >{{ row.durationMinutes }}分钟</el-tag
             >
           </template>
         </el-table-column>
 
-        <el-table-column prop="create_time" label="创建时间" width="160">
+        <el-table-column prop="createTime" label="创建时间" width="160">
           <template #default="{ row }">
-            {{ formatDate(row.create_time) }}
+            {{ formatDate(row.createTime) }}
           </template>
         </el-table-column>
 
@@ -97,21 +96,12 @@
                 编辑
               </el-button>
               <el-button
-                @click="deleteCourse(row)"
+                @click="handleDelete(row)"
                 type="danger"
                 size="small"
                 link
               >
                 删除
-              </el-button>
-              <el-button
-                v-if="row.is_deleted === 1"
-                @click="restoreCourse(row)"
-                type="success"
-                size="small"
-                link
-              >
-                恢复
               </el-button>
             </div>
           </template>
@@ -144,12 +134,7 @@
 import { ref, reactive, computed, onMounted, watch } from "vue";
 import Swal from "sweetalert2";
 import { useAuth } from "@/composables/useAuth";
-import { useAdminAuth } from "@/composables/useAdminAuth";
-import {
-  getCourseList,
-  deleteCourse as deleteCourseApi,
-  restoreCourse as restoreCourseApi,
-} from "@/api/course";
+import { getCourseList, deleteCourse } from "@/api/course";
 import CourseFormDialog from "./CourseFormDialog.vue";
 import Pagination from "@/admin/components/Pagination.vue";
 
@@ -193,11 +178,11 @@ const filteredCourses = computed(() => {
 
 // 初始化
 onMounted(() => {
-  loadCourses();
+  getCourseData();
 });
 
 // 加载课程列表
-const loadCourses = async () => {
+const getCourseData = async () => {
   try {
     loading.value = true;
     const response = await getCourseList({
@@ -208,7 +193,6 @@ const loadCourses = async () => {
     courses.value = response.rows;
     totalCourses.value = response.total;
   } catch (error) {
-    console.error("Failed to load courses:", error);
     await Swal.fire({
       title: "加载失败",
       text: "加载课程列表失败，请重试",
@@ -268,7 +252,7 @@ const handleCourseSuccess = () => {
 };
 
 // 删除课程
-const deleteCourse = async (course) => {
+const handleDelete = async (course) => {
   const result = await Swal.fire({
     title: "确认删除",
     text: `确定要删除课程 "${course.name}" 吗？`,
@@ -282,8 +266,7 @@ const deleteCourse = async (course) => {
 
   if (result.isConfirmed) {
     try {
-      // 调用API删除课程
-      await deleteCourseApi(course.id);
+      await deleteCourse(course.id);
 
       // 重新加载课程列表
       await loadCourses();
@@ -292,7 +275,7 @@ const deleteCourse = async (course) => {
         title: "删除成功",
         text: "课程删除成功！",
         icon: "success",
-        timer: 2000,
+        timer: 1500,
         showConfirmButton: false,
       });
     } catch (error) {
@@ -303,31 +286,6 @@ const deleteCourse = async (course) => {
         icon: "error",
       });
     }
-  }
-};
-
-// 恢复课程
-const restoreCourse = async (course) => {
-  try {
-    // 调用API恢复课程
-    await restoreCourseApi(course.id);
-
-    // 重新加载课程列表
-    await loadCourses();
-
-    await Swal.fire({
-      title: "恢复成功",
-      text: "课程恢复成功！",
-      icon: "success",
-      timer: 2000,
-      showConfirmButton: false,
-    });
-  } catch (error) {
-    await Swal.fire({
-      title: "恢复失败",
-      text: "恢复课程失败，请重试",
-      icon: "error",
-    });
   }
 };
 

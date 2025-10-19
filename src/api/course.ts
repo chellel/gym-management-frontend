@@ -60,12 +60,7 @@ export const updateCourse = (data: CourseFormData & { id: number }) => {
 
 // 删除课程（软删除）
 export const deleteCourse = (id: number) => {
-  return del(`/system/gymcourse/${id}`, {});
-};
-
-// 恢复已删除的课程
-export const restoreCourse = (id: number) => {
-  return post(`/system/gymcourse/restore/${id}`, {});
+  return post(`/system/gymcourse/remove`, { id });
 };
 
 // 获取课程统计信息

@@ -12,28 +12,6 @@ export const classService = {
       const storedBookings = localStorage.getItem('gym_bookings')
       const bookings = storedBookings ? JSON.parse(storedBookings) : mockBookings
       
-      classes = classes.map(cls => {
-        const bookingCount = bookings.filter(booking => 
-          booking.class_id === cls.id && booking.status === 'confirmed'
-        ).length
-        return {
-          ...cls,
-          current_participants: bookingCount
-        }
-      })
-
-      if (date) {
-        classes = classes.filter(cls => cls.date === date)
-      }
-
-      // 排序
-      classes.sort((a, b) => {
-        if (a.date !== b.date) {
-          return new Date(a.date) - new Date(b.date)
-        }
-        return a.start_time.localeCompare(b.start_time)
-      })
-
       return classes
     } catch (error) {
       console.error('Error fetching classes:', error)
