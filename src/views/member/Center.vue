@@ -7,116 +7,6 @@
     />
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <!-- 会员信息卡片 -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <!-- 个人信息 -->
-        <div class="lg:col-span-2">
-          <div class="bg-white rounded-xl shadow-lg p-6">
-            <div class="flex items-center justify-between mb-6">
-              <h2 class="text-xl font-bold text-gray-900">个人信息</h2>
-              <el-button @click="editProfile" type="primary" size="small">
-                <el-icon class="w-4 h-4 mr-1">
-                  <Edit />
-                </el-icon>
-                编辑
-              </el-button>
-            </div>
-
-            <div v-if="loading" class="text-center py-8">
-              <el-icon class="w-8 h-8 text-gray-400 animate-spin">
-                <Loading />
-              </el-icon>
-              <p class="text-gray-500 mt-2">加载中...</p>
-            </div>
-
-            <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div class="space-y-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">姓名</label>
-                  <div class="text-lg text-gray-900">{{ memberInfo.name || '张三' }}</div>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">手机号</label>
-                  <div class="text-lg text-gray-900">{{ memberInfo.phone || '138****8001' }}</div>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">邮箱</label>
-                  <div class="text-lg text-gray-900">{{ memberInfo.email || 'zhangsan@example.com' }}</div>
-                </div>
-              </div>
-              <div class="space-y-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">会员类型</label>
-                  <div class="text-lg text-gray-900">{{ memberInfo.membership_type || '年度会员' }}</div>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">入会日期</label>
-                  <div class="text-lg text-gray-900">{{ memberInfo.join_date || '2024-01-15' }}</div>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">到期日期</label>
-                  <div class="text-lg text-gray-900">{{ memberInfo.expire_date || '2024-12-15' }}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 会员状态 -->
-        <div class="space-y-6">
-          <!-- 会员状态卡片 -->
-          <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-semibold text-gray-900">会员状态</h3>
-              <el-icon class="w-6 h-6 text-green-500">
-                <CircleCheck />
-              </el-icon>
-            </div>
-            <div class="text-center">
-              <div class="text-2xl font-bold text-green-600 mb-2">有效</div>
-              <div class="text-sm text-gray-600">剩余 {{ remainingDays }} 天</div>
-            </div>
-          </div>
-
-          <!-- 健身统计 -->
-          <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-semibold text-gray-900">本月健身</h3>
-              <el-icon class="w-6 h-6 text-blue-500">
-                <DataAnalysis />
-              </el-icon>
-            </div>
-            <div class="space-y-3">
-              <div class="flex justify-between">
-                <span class="text-gray-600">签到次数</span>
-                <span class="font-semibold">{{ monthlyStats.checkins }} 次</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-gray-600">课程参与</span>
-                <span class="font-semibold">{{ monthlyStats.classes }} 次</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-gray-600">健身时长</span>
-                <span class="font-semibold">{{ monthlyStats.hours }} 小时</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- 积分余额 -->
-          <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-semibold text-gray-900">积分余额</h3>
-              <el-icon class="w-6 h-6 text-yellow-500">
-                <Star />
-              </el-icon>
-            </div>
-            <div class="text-center">
-              <div class="text-3xl font-bold text-yellow-600 mb-2">{{ memberInfo.points || 1250 }}</div>
-              <div class="text-sm text-gray-600">积分</div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- 功能导航 -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -188,56 +78,59 @@
           </div>
         </div>
       </div>
+      <!-- 会员信息卡片 -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <!-- 个人信息 -->
+        <div class="lg:col-span-2">
+          <div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-xl font-bold text-gray-900">个人信息</h2>
+              <el-button @click="editProfile" type="primary" size="small">
+                <el-icon class="w-4 h-4 mr-1">
+                  <Edit />
+                </el-icon>
+                编辑
+              </el-button>
+            </div>
 
-      <!-- 最近活动 -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- 最近签到记录 -->
-        <div class="bg-white rounded-xl shadow-lg p-6">
-          <div class="flex items-center justify-between mb-6">
-            <h3 class="text-xl font-bold text-gray-900">最近签到</h3>
-            <el-button @click="refreshCheckins" :loading="loading" type="text">
-              <el-icon class="w-4 h-4 mr-1">
-                <Refresh />
+            <div v-if="loading" class="text-center py-8">
+              <el-icon class="w-8 h-8 text-gray-400 animate-spin">
+                <Loading />
               </el-icon>
-              刷新
-            </el-button>
-          </div>
+              <p class="text-gray-500 mt-2">加载中...</p>
+            </div>
 
-          <div v-if="loading" class="text-center py-8">
-            <el-icon class="w-8 h-8 text-gray-400 animate-spin">
-              <Loading />
-            </el-icon>
-            <p class="text-gray-500 mt-2">加载中...</p>
-          </div>
-
-          <div v-else-if="recentCheckins.length === 0" class="text-center py-8">
-            <el-icon class="w-12 h-12 text-gray-300 mb-4">
-              <Calendar />
-            </el-icon>
-            <p class="text-gray-500">暂无签到记录</p>
-          </div>
-
-          <div v-else class="space-y-3">
-            <div
-              v-for="checkin in recentCheckins.slice(0, 5)"
-              :key="checkin.id"
-              class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-            >
-              <div class="flex items-center">
-                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                  <el-icon class="w-4 h-4 text-green-600">
-                    <Check />
-                  </el-icon>
+            <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">姓名</label>
+                  <div class="text-lg text-gray-900">{{ memberInfo.name || '张三' }}</div>
                 </div>
                 <div>
-                  <div class="font-medium text-gray-900">{{ formatDate(checkin.date) }}</div>
-                  <div class="text-sm text-gray-500">{{ checkin.checkin_time }}</div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">手机号</label>
+                  <div class="text-lg text-gray-900">{{ memberInfo.phone || '138****8001' }}</div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">邮箱</label>
+                  <div class="text-lg text-gray-900">{{ memberInfo.email || 'zhangsan@example.com' }}</div>
                 </div>
               </div>
-              <div class="text-sm text-green-600 font-medium">已签到</div>
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">会员类型</label>
+                  <div class="text-lg text-gray-900">{{ memberInfo.membership_type || '年度会员' }}</div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">入会日期</label>
+                  <div class="text-lg text-gray-900">{{ memberInfo.join_date || '2024-01-15' }}</div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">到期日期</label>
+                  <div class="text-lg text-gray-900">{{ memberInfo.expire_date || '2024-12-15' }}</div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
         <!-- 最近预约记录 -->
         <div class="bg-white rounded-xl shadow-lg p-6">
@@ -286,7 +179,65 @@
             </div>
           </div>
         </div>
+        </div>
+
+        <!-- 会员状态 -->
+        <div class="space-y-6">
+          <!-- 会员状态卡片 -->
+          <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold text-gray-900">会员状态</h3>
+              <el-icon class="w-6 h-6 text-green-500">
+                <CircleCheck />
+              </el-icon>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-green-600 mb-2">有效</div>
+              <div class="text-sm text-gray-600">剩余 {{ remainingDays }} 天</div>
+            </div>
+          </div>
+
+          <!-- 健身统计 -->
+          <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold text-gray-900">本月健身</h3>
+              <el-icon class="w-6 h-6 text-blue-500">
+                <DataAnalysis />
+              </el-icon>
+            </div>
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span class="text-gray-600">签到次数</span>
+                <span class="font-semibold">{{ monthlyStats.checkins }} 次</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">课程参与</span>
+                <span class="font-semibold">{{ monthlyStats.classes }} 次</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">健身时长</span>
+                <span class="font-semibold">{{ monthlyStats.hours }} 小时</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 积分余额 -->
+          <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold text-gray-900">积分余额</h3>
+              <el-icon class="w-6 h-6 text-yellow-500">
+                <Star />
+              </el-icon>
+            </div>
+            <div class="text-center">
+              <div class="text-3xl font-bold text-yellow-600 mb-2">{{ memberInfo.points || 1250 }}</div>
+              <div class="text-sm text-gray-600">积分</div>
+            </div>
+          </div>
+        </div>
       </div>
+
+
     </div>
 
     <!-- 编辑个人信息对话框 -->

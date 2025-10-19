@@ -363,8 +363,7 @@
           </div>
         </el-tab-pane>
 
-        <el-tab-pane label="财务数据" name="finance">
-          <!-- 财务数据表格 -->
+        <!-- <el-tab-pane label="财务数据" name="finance">
           <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
@@ -420,44 +419,11 @@
               </tbody>
             </table>
           </div>
-        </el-tab-pane>
+        </el-tab-pane> -->
       </el-tabs>
 
     </div>
 
-    <!-- 导出功能 -->
-    <div class="bg-white shadow rounded-lg p-6">
-      <div
-        class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0"
-      >
-        <div>
-          <h3 class="text-lg font-medium text-gray-900">数据导出</h3>
-          <p class="mt-1 text-sm text-gray-600">导出报表数据，支持多种格式。</p>
-        </div>
-        <div class="flex space-x-3">
-          <el-button
-            @click="exportData('excel')"
-            type="default"
-            class="inline-flex items-center px-4 py-2 text-sm font-medium"
-          >
-            <el-icon class="w-4 h-4 mr-2">
-              <Document />
-            </el-icon>
-            导出 Excel
-          </el-button>
-          <el-button
-            @click="exportData('pdf')"
-            type="default"
-            class="inline-flex items-center px-4 py-2 text-sm font-medium"
-          >
-            <el-icon class="w-4 h-4 mr-2">
-              <Document />
-            </el-icon>
-            导出 PDF
-          </el-button>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -666,32 +632,4 @@ const refreshData = async () => {
   }
 };
 
-// 导出数据
-const exportData = async (format) => {
-  try {
-    await Swal.fire({
-      title: "导出中",
-      text: `正在生成 ${format.toUpperCase()} 文件...`,
-      icon: "info",
-      timer: 1500,
-      showConfirmButton: false,
-    });
-
-    // 这里实现实际的导出逻辑
-    // 可以使用库如 xlsx、jspdf 等
-
-    await Swal.fire({
-      title: "导出成功",
-      text: `${format.toUpperCase()} 文件已生成`,
-      icon: "success",
-    });
-  } catch (error) {
-    console.error("Failed to export data:", error);
-    await Swal.fire({
-      title: "导出失败",
-      text: "数据导出失败，请重试",
-      icon: "error",
-    });
-  }
-};
 </script>

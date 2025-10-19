@@ -152,11 +152,11 @@ const routes = [
         name: "Reports",
         component: () => import("@/views/Reports.vue"),
       },
-      {
-        path: "finance",
-        name: "Finance",
-        component: () => import("@/admin/views/Finance/index.vue"),
-      },
+      // {
+      //   path: "finance",
+      //   name: "Finance",
+      //   component: () => import("@/admin/views/Finance/index.vue"),
+      // },
     ],
   },
   // 教练工作台

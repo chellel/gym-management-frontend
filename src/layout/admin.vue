@@ -191,7 +191,7 @@ const navigation = computed(() => {
     { name: '会员管理', href: '/admin/member', icon: 'User' },
     { name: '教练管理', href: '/admin/coach', icon: 'User' },
     { name: '排班管理', href: '/admin/schedules', icon: 'Clock' },
-    { name: '财务管理', href: '/admin/finance', icon: 'Money' },
+    // { name: '财务管理', href: '/admin/finance', icon: 'Money' },
     { name: '数据看板', href: '/admin/reports', icon: 'DataAnalysis' }
   ]
   
