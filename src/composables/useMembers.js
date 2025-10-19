@@ -123,25 +123,25 @@ export const useMembers = () => {
     }
   }
 
-  // 删除会员
-  const deleteMember = async (id, memberName) => {
+  // 禁用会员
+  const stopMember = async (id, memberName) => {
     const result = await Swal.fire({
-      title: '确认删除',
-      text: `确定要删除会员"${memberName}"吗？此操作不可恢复！`,
+      title: '确认禁用',
+      text: `确定要禁用会员"${memberName}"吗？禁用后会员将无法使用健身房服务！`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#ef4444',
       cancelButtonColor: '#6b7280',
-      confirmButtonText: '删除',
+      confirmButtonText: '禁用',
       cancelButtonText: '取消'
     })
 
     if (result.isConfirmed) {
       try {
-        await memberService.deleteMember(id)
+        await memberService.updateMember(id, { status: 'inactive' })
         await Swal.fire({
-          title: '已删除',
-          text: '会员删除成功！',
+          title: '已禁用',
+          text: '会员禁用成功！',
           icon: 'success',
           timer: 2000,
           showConfirmButton: false
@@ -151,7 +151,7 @@ export const useMembers = () => {
       } catch (err) {
         await Swal.fire({
           title: '错误',
-          text: '删除会员失败，请重试',
+          text: '禁用会员失败，请重试',
           icon: 'error'
         })
       }
@@ -267,7 +267,7 @@ export const useMembers = () => {
     fetchStats,
     addMember,
     updateMember,
-    deleteMember,
+    stopMember,
     searchMembers,
     filterByStatus,
     goToPage,

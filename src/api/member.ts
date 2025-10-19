@@ -12,55 +12,25 @@ export const getMemberList = (params: {
 
 // 获取会员详情
 export const getMemberDetail = (id: number) => {
-  return get(`/users/${id}`);
+  return get(`/system/gymmember/${id}`);
 };
 
 // 创建新会员
-export const createMember = (data: {
-  name: string;
-  member_id: string;
-  phone: string;
-  email?: string;
-  membership_type: string;
-  expire_date: string;
-  join_date?: string;
-  status?: string;
-  gender?: number;
-  birth_date?: string;
-}) => {
-  return post(`/users`, data);
+export const createMember = (data: any) => {
+  return post(`/system/gymmember/add`, data);
 };
 
 // 更新会员信息
-export const updateMember = (id: number, data: {
-  name?: string;
-  member_id?: string;
-  phone?: string;
-  email?: string;
-  membership_type?: string;
-  expire_date?: string;
-  status?: string;
-  gender?: number;
-  birth_date?: string;
-  leaveType?: string;
-  leaveReason?: string;
-  leaveStartDate?: string;
-  leaveEndDate?: string;
-}) => {
-  return put(`/users/${id}`, data);
+export const updateMember = (data: any) => {
+  return put(`/system/gymmember/edit`, data);
 };
 
 // 删除会员
-export const deleteMember = (id: number) => {
-  return del(`/users/${id}`, {});
+export const stopMember = (id: number) => {
+  return del(`/system/gymmember/${id}`, {});
 };
 
 // 获取会员统计信息
 export const getMemberStats = () => {
   return get(`/users/stats`);
-};
-
-// 获取会员套餐列表（保留原有功能）
-export const getPlanList = () => {
-  return get(`/member/plan`);
 };

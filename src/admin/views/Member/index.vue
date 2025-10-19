@@ -234,13 +234,14 @@
                   </el-icon>
                 </el-button>
                 <el-button
-                  @click="deleteMember(member.id, member.userName)"
+                  @click="stopMember(member.id, member.userName)"
                   type="danger"
                   size="small"
                   circle
+                  :title="'禁用会员'"
                 >
                   <el-icon class="h-4 w-4">
-                    <Delete />
+                    <Lock />
                   </el-icon>
                 </el-button>
               </div>
@@ -266,13 +267,20 @@
       />
     </div>
 
-    <!-- 新增/编辑会员模态框 -->
-    <div v-if="showAddMemberModal || showEditMemberModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <!-- 会籍编辑对话框 -->
+    <MembershipEditDialog
+      v-model:visible="showMembershipEditModal"
+      :member="editingMember"
+      @success="handleMembershipEditSuccess"
+    />
+
+    <!-- 新增会员模态框 -->
+    <div v-if="showAddMemberModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
       <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
         <div class="mt-3">
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-medium text-gray-900">
-              {{ showAddMemberModal ? '新增会员' : '编辑会员' }}
+              新增会员
             </h3>
             <el-button
               @click="closeModal"
@@ -285,7 +293,7 @@
             </el-button>
           </div>
 
-          <el-form @submit.prevent="showAddMemberModal ? handleAddMember() : handleUpdateMember()" class="space-y-4">
+          <el-form @submit.prevent="handleAddMember" class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <el-form-item label="姓名" required>
                 <el-input
@@ -389,7 +397,7 @@
                 type="primary"
                 native-type="submit"
               >
-                {{ showAddMemberModal ? '添加' : '保存' }}
+                添加
               </el-button>
             </div>
           </el-form>
@@ -413,6 +421,7 @@ import { ref, reactive, computed } from 'vue'
 import { useMembers } from '@/composables/useMembers'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import MemberLeaveModal from '@/admin/components/MemberLeaveModal.vue'
+import MembershipEditDialog from '@/admin/components/MembershipEditDialog.vue'
 import Pagination from '@/admin/components/Pagination.vue'
 
 const {
@@ -424,7 +433,7 @@ const {
   fetchMembers,
   addMember,
   updateMember,
-  deleteMember,
+  stopMember,
   searchMembers,
   filterByStatus,
   goToPage,
@@ -440,7 +449,7 @@ const searchForm = reactive({
 })    
 // 模态框状态
 const showAddMemberModal = ref(false)
-const showEditMemberModal = ref(false)
+const showMembershipEditModal = ref(false)
 const showLeaveModalFlag = ref(false)
 const editingMember = ref(null)
 const currentLeaveMember = ref(null)
@@ -488,7 +497,6 @@ const resetForm = () => {
 // 关闭模态框
 const closeModal = () => {
   showAddMemberModal.value = false
-  showEditMemberModal.value = false
   editingMember.value = null
   resetForm()
 }
@@ -506,21 +514,17 @@ const closeLeaveModal = () => {
   leaveLoading.value = false
 }
 
-// 编辑会员
+// 编辑会员会籍
 const editMember = (member) => {
   editingMember.value = member
-  Object.assign(memberForm, {
-    name: member.userName,
-    member_id: member.userCode,
-    phone: member.phone,
-    email: member.email || '',
-    membership_type: member.membershipType,
-    expire_date: member.membershipExpireDate,
-    status: member.userStatus || 'active',
-    gender: member.gender || 1,
-    birth_date: member.birthDate || ''
-  })
-  showEditMemberModal.value = true
+  showMembershipEditModal.value = true
+}
+
+// 会籍编辑成功回调
+const handleMembershipEditSuccess = () => {
+  showMembershipEditModal.value = false
+  editingMember.value = null
+  loadMembers()
 }
 
 // 添加会员
@@ -529,12 +533,6 @@ const handleAddMember = async () => {
     ...memberForm,
     join_date: new Date().toISOString().split('T')[0]
   })
-  closeModal()
-}
-
-// 更新会员
-const handleUpdateMember = async () => {
-  await updateMember(editingMember.value.id, memberForm)
   closeModal()
 }
 
