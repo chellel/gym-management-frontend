@@ -106,6 +106,7 @@ export const useAuth = () => {
   return {
     // 从store获取的状态
     user: computed(() => userinfoStore.userinfo),
+    currentUser: computed(() => userinfoStore.userinfo),
     isAuthenticated: computed(() => userinfoStore.isAuthenticated),
     getUserRole: () => userinfoStore.userRole,
     isCoach: computed(() => userinfoStore.isCoach),

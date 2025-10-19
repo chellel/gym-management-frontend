@@ -56,19 +56,6 @@ export const classService = {
     }
   },
 
-  // 删除课程
-  async deleteClass(id) {
-    try {
-      const storedClasses = localStorage.getItem('gym_classes')
-      const classes = storedClasses ? JSON.parse(storedClasses) : mockClasses
-      
-      const filteredClasses = classes.filter(cls => cls.id !== id)
-      localStorage.setItem('gym_classes', JSON.stringify(filteredClasses))
-    } catch (error) {
-      console.error('Error deleting class:', error)
-      throw error
-    }
-  },
 
   // 课程预约
   async bookClass(classId, memberId) {
