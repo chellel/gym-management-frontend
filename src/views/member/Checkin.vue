@@ -1,20 +1,10 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
     <!-- 页面标题 -->
-    <div class="bg-white shadow-sm border-b border-gray-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div class="flex items-center justify-between">
-          <div>
-            <h1 class="text-2xl font-bold text-gray-900">健身房签到</h1>
-            <p class="text-gray-600 mt-1">欢迎来到健身房，请点击签到按钮开始您的健身之旅</p>
-          </div>
-          <div class="text-right">
-            <div class="text-sm text-gray-500">当前时间</div>
-            <div class="text-lg font-semibold text-gray-900">{{ currentTime }}</div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <PageHeader
+      title="健身房签到"
+      subtitle="欢迎来到健身房，请点击签到按钮开始您的健身之旅"
+    />
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- 签到状态卡片 -->
@@ -182,6 +172,7 @@ import { ElMessage } from 'element-plus'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/zh-cn'
+import PageHeader from '@/components/common/PageHeader.vue'
 
 dayjs.extend(relativeTime)
 dayjs.locale('zh-cn')
@@ -189,7 +180,6 @@ dayjs.locale('zh-cn')
 const { getCurrentUser } = useAuth()
 
 // 响应式数据
-const currentTime = ref('')
 const isCheckedIn = ref(false)
 const todayCheckinTime = ref('')
 const checkinLoading = ref(false)
@@ -202,30 +192,10 @@ const checkinStats = ref({
   lastCheckin: null
 })
 
-// 定时器
-let timeInterval = null
-
 // 初始化
 onMounted(async () => {
   await loadCheckinData()
-  startTimeUpdate()
-})
-
-onUnmounted(() => {
-  if (timeInterval) {
-    clearInterval(timeInterval)
-  }
-})
-
-// 更新时间
-const startTimeUpdate = () => {
-  updateTime()
-  timeInterval = setInterval(updateTime, 1000)
-}
-
-const updateTime = () => {
-  currentTime.value = dayjs().format('YYYY-MM-DD HH:mm:ss')
-}
+});
 
 // 加载签到数据
 const loadCheckinData = async () => {

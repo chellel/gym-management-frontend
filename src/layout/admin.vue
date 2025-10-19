@@ -41,7 +41,7 @@
             <!-- 右侧用户信息和操作 -->
             <div class="flex items-center space-x-4">
               <!-- 通知按钮 -->
-              <el-button
+              <!-- <el-button
                 type="text"
                 class="bg-white p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
               >
@@ -49,7 +49,7 @@
                   <Bell />
                 </el-icon>
               </el-button>
-  
+   -->
               <!-- 用户信息 -->
               <div class="relative">
                 <div class="flex items-center space-x-3">

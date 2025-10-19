@@ -1,20 +1,10 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
     <!-- 页面标题 -->
-    <div class="bg-white shadow-sm border-b border-gray-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div class="flex items-center justify-between">
-          <div>
-            <h1 class="text-2xl font-bold text-gray-900">会员中心</h1>
-            <p class="text-gray-600 mt-1">管理您的个人信息和健身记录</p>
-          </div>
-          <div class="text-right">
-            <div class="text-sm text-gray-500">会员ID</div>
-            <div class="text-lg font-semibold text-gray-900">{{ memberInfo.member_id || 'M001' }}</div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <PageHeader
+      title="会员中心"
+      subtitle="管理您的个人信息和健身记录"
+    />
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- 会员信息卡片 -->
@@ -328,6 +318,7 @@ import { checkinService } from '@/services/checkinService'
 import { classService } from '@/services/classService'
 import { ElMessage } from 'element-plus'
 import dayjs from 'dayjs'
+import PageHeader from '@/components/common/PageHeader.vue'
 
 const router = useRouter()
 const { getCurrentUser } = useAuth()

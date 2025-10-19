@@ -1,33 +1,10 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
     <!-- 页面标题 -->
-    <div class="bg-white/80 backdrop-blur-sm shadow-lg border-b border-gray-200/50 sticky top-0 z-10">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-4">
-            <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-              <el-icon class="w-6 h-6 text-white">
-                <Calendar />
-              </el-icon>
-            </div>
-            <div>
-              <h1 class="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                课程查询
-              </h1>
-              <p class="text-gray-600 mt-1 text-sm">
-                浏览所有可用的健身课程，找到最适合您的课程
-              </p>
-            </div>
-          </div>
-          <div class="text-right bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200/50">
-            <div class="text-sm text-gray-500 font-medium">当前时间</div>
-            <div class="text-lg font-bold text-gray-900 font-mono">
-              {{ currentTime }}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <PageHeader
+      title="课程查询"
+      subtitle="浏览所有可用的健身课程，找到最适合您的课程"
+    />
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- 搜索和筛选 -->
@@ -398,12 +375,12 @@ import {
   Location,
 } from "@element-plus/icons-vue";
 import CourseDetailDialog from "@/components/common/CourseDetailDialog.vue";
+import PageHeader from "@/components/common/PageHeader.vue";
 
 const { currentUser } = useAuth();
 
 // 响应式数据
 const loading = ref(false);
-const currentTime = ref("");
 const selectedDate = ref("");
 const searchParams = ref({
   courseId: "",
@@ -418,32 +395,12 @@ const bookings = ref([]);
 const detailsDialogVisible = ref(false);
 const selectedClass = ref(null);
 
-// 定时器
-let timeInterval = null;
-
 // 初始化
 onMounted(async () => {
   getCoachData();
   getCourseData();
   loadData();
-  startTimeUpdate();
 });
-
-onUnmounted(() => {
-  if (timeInterval) {
-    clearInterval(timeInterval);
-  }
-});
-
-// 更新时间
-const startTimeUpdate = () => {
-  updateTime();
-  timeInterval = setInterval(updateTime, 1000);
-};
-
-const updateTime = () => {
-  currentTime.value = dayjs().format("YYYY-MM-DD HH:mm:ss");
-};
 
 const pagination = ref({
   total: 0,

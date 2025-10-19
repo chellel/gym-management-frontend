@@ -54,14 +54,14 @@
             </div>
 
             <!-- 通知按钮 -->
-            <el-button
+            <!-- <el-button
               type="text"
               class="bg-white p-2 rounded-full text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
             >
               <el-icon class="h-5 w-5">
                 <Bell />
               </el-icon>
-            </el-button>
+            </el-button> -->
 
             <el-dropdown @command="handleUserCommand" trigger="hover">
               <el-button type="text" class="p-1">
