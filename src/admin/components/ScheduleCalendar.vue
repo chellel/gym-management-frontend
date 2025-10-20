@@ -64,11 +64,11 @@
               class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs cursor-pointer hover:bg-blue-200"
               @click="handleScheduleClick(schedule)"
             >
-              <div class="font-medium">{{ schedule.start_time }}</div>
-              <div class="truncate">{{ schedule.activity }}</div>
+              <div class="font-medium">{{ formatTime(schedule.startTime) }}</div>
+              <div class="truncate">{{ schedule.courseName }}</div>
               <div class="text-blue-600">{{ schedule.location }}</div>
-              <div class="text-xs text-blue-500" v-if="schedule.current_bookings !== undefined">
-                {{ schedule.current_bookings }}/{{ schedule.max_capacity }}
+              <div class="text-xs text-blue-500">
+                {{ schedule.maxCapacity }}人
               </div>
             </div>
           </div>
@@ -118,7 +118,7 @@
               class="bg-blue-100 text-blue-800 px-1 py-0.5 rounded text-xs cursor-pointer hover:bg-blue-200"
               @click="handleScheduleClick(schedule)"
             >
-              {{ schedule.start_time }} {{ schedule.activity }}
+              {{ formatTime(schedule.startTime) }} {{ schedule.courseName }}
             </div>
           </div>
         </div>
@@ -130,11 +130,11 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { ArrowLeft, ArrowRight, Refresh } from '@element-plus/icons-vue'
-import type { CoachSchedule } from '@/api/coach'
+import type { Schedule } from '@/api/schedule'
 
 // Props
 const props = withDefaults(defineProps<{
-  schedules: CoachSchedule[]
+  schedules: Schedule[]
   title?: string
   showViewToggle?: boolean
   showRefresh?: boolean
@@ -148,7 +148,7 @@ const props = withDefaults(defineProps<{
 
 // Emits
 const emit = defineEmits<{
-  'schedule-click': [schedule: CoachSchedule]
+  'schedule-click': [schedule: Schedule]
   'date-change': [date: Date]
   'refresh': []
 }>()
@@ -217,6 +217,16 @@ const formatDate = (date: Date | string) => {
   return date.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' })
 }
 
+const formatTime = (datetime: string) => {
+  if (!datetime) return ''
+  const date = new Date(datetime)
+  return date.toLocaleTimeString('zh-CN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  })
+}
+
 const isToday = (date: string) => {
   const today = new Date().toISOString().split('T')[0]
   return date === today
@@ -224,11 +234,14 @@ const isToday = (date: string) => {
 
 // 获取指定日期的排班
 const getScheduleForDate = (date: string) => {
-  return props.schedules.filter(schedule => schedule.date === date)
+  return props.schedules.filter(schedule => {
+    const scheduleDate = new Date(schedule.startTime).toISOString().split('T')[0]
+    return scheduleDate === date
+  })
 }
 
 // 处理排班点击
-const handleScheduleClick = (schedule: CoachSchedule) => {
+const handleScheduleClick = (schedule: Schedule) => {
   emit('schedule-click', schedule)
 }
 

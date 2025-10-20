@@ -36,7 +36,7 @@
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="coach in coachs" :key="coach.id">
+          <tr v-for="coach in sortedCoachs" :key="coach.id">
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="flex items-center">
                 <div class="flex-shrink-0 h-10 w-10">
@@ -145,6 +145,18 @@ const { isAdmin } = useAdminAuth();
 // 权限控制计算属性
 const canAddSchedule = computed(() => {
   return isAdmin.value || isCoach.value;
+});
+
+// 按排班数量排序的教练列表
+const sortedCoachs = computed(() => {
+  return [...props.coachs].sort((a, b) => {
+    // 计算每个教练的总排班数量
+    const aScheduleCount = props.schedules.filter(schedule => schedule.coachId === a.id).length;
+    const bScheduleCount = props.schedules.filter(schedule => schedule.coachId === b.id).length;
+    
+    // 按排班数量降序排列（排班多的在前）
+    return bScheduleCount - aScheduleCount;
+  });
 });
 
 // 模态框状态
@@ -271,7 +283,7 @@ const handleScheduleSubmit = async (formData) => {
         title: "更新成功",
         text: "排班信息更新成功！",
         icon: "success",
-        timer: 2000,
+        timer: 1500,
         showConfirmButton: false,
       });
 
@@ -284,7 +296,7 @@ const handleScheduleSubmit = async (formData) => {
         title: "添加成功",
         text: "排班添加成功！",
         icon: "success",
-        timer: 2000,
+        timer: 1500,
         showConfirmButton: false,
       });
 
@@ -296,9 +308,7 @@ const handleScheduleSubmit = async (formData) => {
     console.error("Failed to handle schedule:", error);
     await Swal.fire({
       title: isEditMode.value ? "更新失败" : "添加失败",
-      text: isEditMode.value
-        ? "更新排班信息失败，请重试"
-        : "添加排班失败，请重试",
+      text: error.msg,
       icon: "error",
     });
   }
