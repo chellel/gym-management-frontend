@@ -193,7 +193,7 @@ const getData = async () => {
       startDate: startOfWeek.toISOString().split('T')[0],
       endDate: endOfWeek.toISOString().split('T')[0],
       page: 1,
-      pageSize: 100,
+      pageSize: 10000,
       isDeleted: 0
     });
     schedules.value = response.rows || [];
@@ -208,7 +208,7 @@ const getData = async () => {
 const getCoachData = async () => {
   const response = await getCoachList({
     page: 1,
-    pageSize: 100,
+    pageSize: 10000,
     status: 'active'
   });
   coachs.value = response.rows || [];

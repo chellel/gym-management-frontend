@@ -23,7 +23,7 @@ service.interceptors.response.use(
       return res;
     } else {
       return Promise.reject({
-        message: res.message || "",
+        message: res.message || res.msg || "",
         msg: res.msg || "",
         status: res.code,
       });

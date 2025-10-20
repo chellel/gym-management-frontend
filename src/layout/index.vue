@@ -308,8 +308,8 @@ const navigation = computed(() => {
     { name: "首页", href: "/member", icon: "HomeFilled" },
     { name: "会员中心", href: "/member/center", icon: "User" },
     { name: "签到", href: "/member/checkin", icon: "Check" },
-    { name: "课程预约", href: "/member/booking", icon: "Calendar" },
-    { name: "课程查询", href: "/member/courses", icon: "Search" },
+    { name: "我的预约", href: "/member/booking", icon: "Calendar" },
+    { name: "课程预约", href: "/member/courses", icon: "Search" },
   ];
 });
 

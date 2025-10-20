@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
     <!-- 页面标题 -->
     <PageHeader
-      title="课程预约"
+      title="我的预约"
       subtitle="查看和管理您的课程预约记录"
       :icon="Calendar"
     />
@@ -62,7 +62,7 @@
               </div>
             </div>
             <div class="flex items-center space-x-3">
-              <el-tag :type="getBookingStatusType(booking)" size="small">
+              <el-tag v-if="getBookingStatusText(booking)" :type="getBookingStatusType(booking)" size="small">
                 {{ getBookingStatusText(booking) }}
               </el-tag>
               <el-button
@@ -155,6 +155,7 @@ const loadData = async () => {
 
 // 检查是否可以取消预约
 const canCancelBooking = (booking) => {
+  if(booking.checkinTime) return false
   const now = dayjs()
   const scheduleStartTime = getScheduleStartTime(booking.scheduleId)
   if (!scheduleStartTime) return false
@@ -244,7 +245,7 @@ const getBookingStatusType = (booking) => {
 const getBookingStatusText = (booking) => {
   if (booking.isDeleted) return '已取消'
   if (booking.checkinTime) return '已签到'
-  return '已预约'
+  return ''
 }
 
 // 格式化时间
