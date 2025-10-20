@@ -66,13 +66,13 @@
     <CourseManagement v-if="currentView === 'courses'" />
 
     <!-- 场地预约视图 -->
-    <LocationSchedule
+    <!-- <LocationSchedule
       v-if="currentView === 'locations'"
       :locations="locations"
       :schedules="schedules"
       :time-slots="timeSlots"
       @edit-schedule="editSchedule"
-    />
+    /> -->
   </div>
 </template>
 
@@ -82,7 +82,7 @@ import Swal from "sweetalert2";
 import { useAuth } from "@/composables/useAuth";
 import { useAdminAuth } from "@/composables/useAdminAuth";
 import CoachSchedule from "./CoachSchedule.vue";
-import LocationSchedule from "./LocationSchedule.vue";
+// import LocationSchedule from "./LocationSchedule.vue";
 import CourseManagement from "./CourseManagement.vue";
 import { 
   getScheduleList, 
@@ -124,7 +124,7 @@ const canDeleteSchedule = computed(() => {
 const views = [
   { key: "courses", name: "课程管理" },
   { key: "coachs", name: "教练排班" },
-  { key: "locations", name: "场地预约" },
+  // { key: "locations", name: "场地预约" },
 ];
 
 // 时间段
@@ -209,6 +209,7 @@ const getCoachData = async () => {
   const response = await getCoachList({
     page: 1,
     pageSize: 100,
+    status: 'active'
   });
   coachs.value = response.rows || [];
 };

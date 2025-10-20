@@ -44,19 +44,7 @@
         </div>
       </div>
 
-      <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex items-center">
-          <div class="flex-shrink-0">
-            <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
-              <el-icon class="w-5 h-5 text-yellow-600"><Clock /></el-icon>
-            </div>
-          </div>
-          <div class="ml-4">
-            <p class="text-sm font-medium text-gray-500">今日课程</p>
-            <p class="text-2xl font-semibold text-gray-900">{{ stats.todayClasses }}</p>
-          </div>
-        </div>
-      </div>
+    
     </div>
 
     <!-- 搜索和筛选 -->
@@ -238,7 +226,6 @@ const scheduleCoach = ref(null)
 const stats = reactive({
   totalCoaches: 0,
   activeCoaches: 0,
-  todayClasses: 0
 })
 
 // 计算属性
@@ -290,11 +277,7 @@ const loadStats = async () => {
     // 模拟统计数据
     stats.totalCoaches = 25
     stats.activeCoaches = 20
-    stats.todayClasses = 15
-    
-    // 实际API调用
-    // const response = await getCoachStats()
-    // Object.assign(stats, response.data)
+   
   } catch (error) {
     console.error('加载统计数据失败:', error)
   }

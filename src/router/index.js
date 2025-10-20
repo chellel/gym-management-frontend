@@ -6,9 +6,9 @@ import AdminLogin from "@/admin/views/Login/index.vue";
 import { useUserinfoStore } from "@/stores/userinfo";
 
 // 认证和角色检查函数
-const isAuthenticated = () => {
+const checkIsLogin = () => {
   const store = useUserinfoStore();
-  return store.isAuthenticated;
+  return store.isLogin;
 };
 
 const getUserRole = () => {
@@ -181,7 +181,7 @@ const router = createRouter({
 
 // 导航守卫
 router.beforeEach((to, from, next) => {
-  const userIsAuthenticated = isAuthenticated.value;
+  const isLogin = checkIsLogin();
   const userRole = getUserRole();
   const targetRouteName = to.name;
   const targetPath = to.path;
@@ -192,7 +192,7 @@ router.beforeEach((to, from, next) => {
     // 如果已登录用户访问登录页面，重定向到合适的首页
     if (
       (targetRouteName === "Login" || targetRouteName === "AdminLogin") &&
-      userIsAuthenticated
+      isLogin
     ) {
       redirectToHomeByRole(next, userRole);
       return;
@@ -201,7 +201,7 @@ router.beforeEach((to, from, next) => {
     return;
   }
   // 检查是否需要认证（非公共路径都需要认证）
-  if (!userIsAuthenticated) {
+  if (!isLogin) {
     const role = getRequiredRoleByPath(targetPath);
     if (role === "admin") {
       next("/admin/login");
