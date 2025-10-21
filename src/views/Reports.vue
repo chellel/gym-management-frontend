@@ -80,38 +80,6 @@
         </div>
       </div>
 
-      <div class="bg-white overflow-hidden shadow rounded-lg">
-        <div class="p-5">
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <el-icon class="h-6 w-6 text-gray-400">
-                <Money />
-              </el-icon>
-            </div>
-            <div class="ml-5 w-0 flex-1">
-              <dl>
-                <dt class="text-sm font-medium text-gray-500 truncate">
-                  营业收入
-                </dt>
-                <dd class="flex items-baseline">
-                  <div class="text-2xl font-semibold text-gray-900">
-                    ¥{{ kpis.totalRevenue.toLocaleString() }}
-                  </div>
-                  <div
-                    class="ml-2 flex items-baseline text-sm font-semibold text-green-600"
-                  >
-                    <el-icon class="self-center flex-shrink-0 h-4 w-4">
-                      <ArrowUp />
-                    </el-icon>
-                    <span class="sr-only">Increased by</span>
-                    {{ kpis.revenueGrowth }}%
-                  </div>
-                </dd>
-              </dl>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <div class="bg-white overflow-hidden shadow rounded-lg">
         <div class="p-5">
@@ -196,21 +164,6 @@
         </div>
       </div>
 
-      <!-- 收入分析 -->
-      <div class="bg-white shadow rounded-lg">
-        <div class="px-6 py-4">
-          <h3 class="text-lg leading-6 font-medium text-gray-900">收入分析</h3>
-        </div>
-        <div class="p-6">
-          <div class="h-64 sm:h-80">
-            <RevenueChart :data="revenueChartData" />
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 第二行图表 -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <!-- 课程预约 Top 5 -->
       <div class="bg-white shadow rounded-lg">
         <div class="px-6 py-4">
@@ -224,7 +177,10 @@
           </div>
         </div>
       </div>
+    </div>
 
+    <!-- 第二行图表 -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <!-- 训练高峰期 -->
       <div class="bg-white shadow rounded-lg">
         <div class="px-6 py-4">
@@ -433,7 +389,6 @@ import Swal from "sweetalert2";
 import {
   MemberGrowthChart,
   ClassBookingChart,
-  RevenueChart,
   PeakHoursChart
 } from "@/components/charts";
 // Element Plus 图标已全局注册，无需导入
@@ -451,8 +406,6 @@ const dateRange = ref([
 const kpis = reactive({
   totalMembers: 1256,
   memberGrowth: 12.5,
-  totalRevenue: 158600,
-  revenueGrowth: 8.3,
   totalCheckIns: 3420,
   checkInGrowth: 15.2,
   activityRate: 68.5,
@@ -516,13 +469,6 @@ const classBookingData = ref([
   { name: "普拉提", bookings: 156 }
 ]);
 
-// 收入统计图表数据
-const revenueChartData = ref([
-  { name: "会员费", value: 126800, color: "#3b82f6" },
-  { name: "私教费", value: 18600, color: "#10b981" },
-  { name: "商品销售", value: 8900, color: "#f59e0b" },
-  { name: "其他收入", value: 4300, color: "#8b5cf6" }
-]);
 
 // 训练高峰期数据 - 按不同时段分类
 const peakHoursData = ref({
