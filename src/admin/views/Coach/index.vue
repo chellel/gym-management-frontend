@@ -179,7 +179,7 @@
 
     <!-- 教练详情对话框 -->
     <CoachDetailDialog
-      v-model:visible="showDetailDialog"
+      v-model:visible="CoachDetailDialog"
       :coach="viewingCoach"
     />
 

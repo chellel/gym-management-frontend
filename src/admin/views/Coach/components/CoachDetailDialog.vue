@@ -98,7 +98,7 @@
       <div class="bg-white rounded-lg border p-6">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-lg font-semibold text-gray-900">最近课程</h3>
-          <el-button size="small" @click="loadRecentClasses">
+          <el-button size="small" @click="() => props.coach && loadRecentClasses(props.coach.id)">
             <el-icon class="mr-1"><Refresh /></el-icon>
             刷新
           </el-button>
@@ -144,13 +144,19 @@
 
 <script lang="ts" setup>
 import { ref, reactive, computed, watch, onMounted } from "vue";
+import { Message, Phone, Calendar, Star, Refresh, Edit } from "@element-plus/icons-vue";
 import {
-  getCoachStats,
-  getCoachSchedule,
-  generateMockCoachStats,
   type Coach,
   type CoachStats,
 } from "@/api/coach";
+import { getScheduleList } from "@/api/schedule";
+import { getBookingList } from "@/api/booking";
+import dayjs from "dayjs";
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+
+dayjs.extend(isSameOrAfter);
+dayjs.extend(isSameOrBefore);
 
 // Props
 const props = defineProps<{
@@ -184,23 +190,82 @@ const dialogVisible = computed({
 // 加载教练数据
 const loadCoachData = async (coachId: number) => {
   try {
-    // 加载统计数据
-    const mockStats = generateMockCoachStats(coachId);
-    Object.assign(stats, mockStats);
-
-    // 加载最近课程
-    loadRecentClasses();
-
-    // 实际API调用
-    // const [statsRes, classesRes] = await Promise.all([
-    //   getCoachStats(),
-    //   getCoachSchedule(coachId, { start_date: getDateRange().start, end_date: getDateRange().end })
-    // ])
-    // Object.assign(stats, statsRes.data)
-    // recentClasses.value = classesRes.data.slice(0, 5)
-    // reviews.value = reviewsRes.data.slice(0, 5)
+    // 加载统计数据和最近课程
+    await Promise.all([
+      loadCoachStats(coachId),
+      loadRecentClasses(coachId)
+    ]);
   } catch (error) {
     console.error("加载教练数据失败:", error);
+  }
+};
+
+// 加载教练统计数据
+const loadCoachStats = async (coachId: number) => {
+  try {
+    const today = dayjs();
+    const startOfMonth = today.startOf('month');
+    
+    // 获取所有课程（用于统计）
+    const allSchedulesResponse = await getScheduleList({
+      coachId: coachId,
+      page: 1,
+      pageSize: 1000,
+      isDeleted: 0
+    });
+
+    // 获取本月课程
+    const monthlySchedulesResponse = await getScheduleList({
+      coachId: coachId,
+      startDate: startOfMonth.format('YYYY-MM-DD'),
+      endDate: today.format('YYYY-MM-DD'),
+      page: 1,
+      pageSize: 1000,
+      isDeleted: 0
+    });
+
+    const allSchedules = allSchedulesResponse.rows || [];
+    const monthlySchedules = monthlySchedulesResponse.rows || [];
+
+    // 获取所有预约记录以统计学员数
+    const allBookingsResponse = await getBookingList({
+      page: 1,
+      pageSize: 1000,
+      isDeleted: 0
+    }) as any;
+
+    const allBookings = (allBookingsResponse.rows || allBookingsResponse.data?.rows || []);
+    const scheduleIds = allSchedules.map(s => s.id);
+    const coachBookings = allBookings.filter(b => scheduleIds.includes(b.scheduleId));
+    
+    // 统计唯一学员数
+    const uniqueMembers = new Set(coachBookings.map(b => b.memberId));
+    
+    // 获取本月预约
+    const monthlyBookings = coachBookings.filter(b => {
+      const bookingDate = dayjs(b.bookingTime);
+      return bookingDate.isSameOrAfter(startOfMonth) && bookingDate.isSameOrBefore(today);
+    });
+    const monthlyUniqueMembers = new Set(monthlyBookings.map(b => b.memberId));
+
+    // 更新统计数据
+    Object.assign(stats, {
+      coach_id: coachId,
+      total_classes: allSchedules.length,
+      total_members: uniqueMembers.size,
+      monthly_classes: monthlySchedules.length,
+      monthly_members: monthlyUniqueMembers.size
+    });
+  } catch (error) {
+    console.error("加载教练统计数据失败:", error);
+    // 设置默认值
+    Object.assign(stats, {
+      coach_id: coachId,
+      total_classes: 0,
+      total_members: 0,
+      monthly_classes: 0,
+      monthly_members: 0
+    });
   }
 };
 // 监听教练变化
@@ -214,33 +279,41 @@ watch(
   { immediate: true }
 );
 // 加载最近课程
-const loadRecentClasses = async () => {
+const loadRecentClasses = async (coachId: number) => {
   try {
-    // 模拟数据
-    recentClasses.value = [
-      {
-        id: 1,
-        activity: "晨间瑜伽",
-        location: "瑜伽室A",
-        date: "2024-01-15",
-        start_time: "07:00",
-        end_time: "08:00",
-        max_capacity: 20,
-        current_bookings: 15,
-      },
-      {
-        id: 2,
-        activity: "普拉提核心",
-        location: "瑜伽室B",
-        date: "2024-01-14",
-        start_time: "09:00",
-        end_time: "10:00",
-        max_capacity: 15,
-        current_bookings: 12,
-      },
-    ];
+    if (!coachId) return;
+
+    const today = dayjs().format('YYYY-MM-DD');
+    const futureDate = dayjs().add(30, 'day').format('YYYY-MM-DD');
+
+    // 获取最近的课程
+    const response = await getScheduleList({
+      coachId: coachId,
+      startDate: today,
+      endDate: futureDate,
+      page: 1,
+      pageSize: 5,
+      isDeleted: 0
+    });
+
+    if (response.code === 0) {
+      recentClasses.value = (response.rows || []).map(schedule => ({
+        id: schedule.id,
+        activity: schedule.courseName,
+        courseName: schedule.courseName,
+        location: schedule.location,
+        date: dayjs(schedule.startTime).format('YYYY-MM-DD'),
+        start_time: dayjs(schedule.startTime).format('HH:mm'),
+        end_time: dayjs(schedule.endTime).format('HH:mm'),
+        max_capacity: schedule.maxCapacity,
+        current_bookings: schedule.bookingCount || 0,
+      }));
+    } else {
+      recentClasses.value = [];
+    }
   } catch (error) {
     console.error("加载最近课程失败:", error);
+    recentClasses.value = [];
   }
 };
 
@@ -272,18 +345,10 @@ const getStatusText = (status: string) => {
 };
 
 const formatDate = (date: string) => {
-  return new Date(date).toLocaleDateString("zh-CN");
+  if (!date) return "";
+  return dayjs(date).format('YYYY-MM-DD');
 };
 
-const getDateRange = () => {
-  const end = new Date();
-  const start = new Date();
-  start.setMonth(start.getMonth() - 1);
-  return {
-    start: start.toISOString().split("T")[0],
-    end: end.toISOString().split("T")[0],
-  };
-};
 </script>
 
 <style scoped>

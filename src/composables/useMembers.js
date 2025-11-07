@@ -30,7 +30,6 @@ export const useMembers = () => {
   const fetchMembers = async () => {
     loading.value = true
     error.value = null
-
     try {
       const { data, count } = await memberService.getMembers(
         pagination.start,
@@ -41,11 +40,6 @@ export const useMembers = () => {
       
       members.value = data || []
       pagination.total = count || 0
-      
-      // 如果数据为空且没有错误，显示提示信息
-      if (members.value.length === 0 && !filters.search && filters.status === 'all') {
-        error.value = '暂无会员数据'
-      }
     } catch (err) {
       members.value = []
       pagination.total = 0
@@ -88,7 +82,7 @@ export const useMembers = () => {
         title: '成功',
         text: '会员添加成功！',
         icon: 'success',
-        timer: 1500,
+        timer: 1000,
         showConfirmButton: false
       })
       await fetchMembers()
@@ -110,7 +104,7 @@ export const useMembers = () => {
         title: '成功',
         text: '会员信息更新成功！',
         icon: 'success',
-        timer: 1500,
+        timer: 1000,
         showConfirmButton: false
       })
       await fetchMembers()
@@ -143,7 +137,7 @@ export const useMembers = () => {
           title: '已禁用',
           text: '会员禁用成功！',
           icon: 'success',
-          timer: 1500,
+          timer: 1000,
           showConfirmButton: false
         })
         await fetchMembers()

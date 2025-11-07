@@ -275,7 +275,7 @@ const handleDelete = async (course) => {
         title: "删除成功",
         text: "课程删除成功！",
         icon: "success",
-        timer: 1500,
+        timer: 1000,
         showConfirmButton: false,
       });
     } catch (error) {

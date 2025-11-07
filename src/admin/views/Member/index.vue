@@ -194,8 +194,8 @@
                   <div class="text-sm text-gray-500">
                     类型：{{ member.membershipType }} | 到期：{{ formatDate(member.membershipExpireDate) }}
                   </div>
-                  <div v-if="member.remainingDays !== undefined" class="text-sm text-gray-500">
-                    剩余天数：{{ member.remainingDays > 0 ? member.remainingDays + '天' : '已过期' }}
+                  <div v-if="member.membershipExpireDate" class="text-sm text-gray-500">
+                    剩余天数：<span :class="getRemainingDaysClass(member.membershipExpireDate)">{{ calculateRemainingDays(member.membershipExpireDate) }}</span>
                   </div>
                 </div>
               </div>
@@ -231,6 +231,17 @@
                 >
                   <el-icon class="h-4 w-4">
                     <Check />
+                  </el-icon>
+                </el-button>
+                <el-button
+                  @click="showRenewalModal(member)"
+                  type="primary"
+                  size="small"
+                  circle
+                  :title="'会员续费'"
+                >
+                  <el-icon class="h-4 w-4">
+                    <Refresh />
                   </el-icon>
                 </el-button>
                 <el-button
@@ -413,6 +424,13 @@
       @close="closeLeaveModal"
       @submit="handleLeaveMember"
     />
+
+    <!-- 会员续费弹窗组件 -->
+    <MembershipRenewalDialog
+      v-model:visible="showRenewalModalFlag"
+      :member="currentRenewalMember"
+      @success="handleRenewalSuccess"
+    />
   </div>
 </template>
 
@@ -420,8 +438,23 @@
 import { ref, reactive, computed } from 'vue'
 import { useMembers } from '@/composables/useMembers'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { 
+  Plus, 
+  User, 
+  CircleCheckFilled, 
+  WarningFilled, 
+  UserFilled, 
+  Search, 
+  Edit, 
+  Calendar, 
+  Check, 
+  Lock, 
+  Close,
+  Refresh
+} from '@element-plus/icons-vue'
 import MemberLeaveModal from '@/admin/components/MemberLeaveModal.vue'
 import MembershipEditDialog from '@/admin/components/MembershipEditDialog.vue'
+import MembershipRenewalDialog from '@/admin/components/MembershipRenewalDialog.vue'
 import Pagination from '@/admin/components/Pagination.vue'
 
 const {
@@ -451,8 +484,10 @@ const searchForm = reactive({
 const showAddMemberModal = ref(false)
 const showMembershipEditModal = ref(false)
 const showLeaveModalFlag = ref(false)
+const showRenewalModalFlag = ref(false)
 const editingMember = ref(null)
 const currentLeaveMember = ref(null)
+const currentRenewalMember = ref(null)
 const leaveLoading = ref(false)
 
 // 会员表单
@@ -543,7 +578,7 @@ const handleLeaveMember = async (leaveData) => {
 
     // 调用请假API
     await updateMember(currentLeaveMember.value.id, {
-      status: 'leave',
+      status: 'suspended',
       leaveType: leaveData.leaveType,
       leaveReason: leaveData.reason,
       leaveStartDate: leaveData.startDate,
@@ -590,5 +625,48 @@ const returnFromLeave = async (member) => {
       ElMessage.error('复课操作失败，请重试')
     }
   }
+}
+
+// 显示续费模态框
+const showRenewalModal = (member) => {
+  currentRenewalMember.value = member
+  showRenewalModalFlag.value = true
+}
+
+// 续费成功回调
+const handleRenewalSuccess = () => {
+  showRenewalModalFlag.value = false
+  currentRenewalMember.value = null
+  fetchMembers() // 刷新会员列表
+}
+
+// 计算剩余天数
+const calculateRemainingDays = (expireDate) => {
+  if (!expireDate) return '无'
+  
+  const now = new Date()
+  const expire = new Date(expireDate)
+  const diffTime = expire - now
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  
+  if (diffDays > 0) {
+    return `${diffDays}天`
+  } else {
+    return '已过期'
+  }
+}
+
+// 获取剩余天数的样式类
+const getRemainingDaysClass = (expireDate) => {
+  if (!expireDate) return 'text-gray-500'
+  
+  const now = new Date()
+  const expire = new Date(expireDate)
+  const diffTime = expire - now
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  
+  if (diffDays <= 0) return 'text-red-600'
+  if (diffDays <= 7) return 'text-orange-600'
+  return 'text-green-600'
 }
 </script>

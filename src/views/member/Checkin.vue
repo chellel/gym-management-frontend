@@ -2,8 +2,8 @@
   <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
     <!-- 页面标题 -->
     <PageHeader
-      title="健身房签到"
-      subtitle="欢迎来到健身房，请点击签到按钮开始您的健身之旅"
+      title="课程签到"
+      subtitle="选择您已预约的课程进行签到，开始您的健身课程"
     />
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -18,8 +18,8 @@
                   <Check />
                 </el-icon>
               </div>
-              <h2 class="text-2xl font-bold text-gray-900 mb-2">今日签到</h2>
-              <p class="text-gray-600">点击下方按钮完成签到</p>
+              <h2 class="text-2xl font-bold text-gray-900 mb-2">课程签到</h2>
+              <p class="text-gray-600">选择已预约的课程进行签到</p>
             </div>
 
             <!-- 签到状态 -->
@@ -33,11 +33,37 @@
               <p class="text-gray-600 mt-2">签到时间：{{ todayCheckinTime }}</p>
             </div>
 
-            <!-- 签到按钮 -->
-            <div v-else class="mb-6">
+            <!-- 课程签到选择 -->
+            <div v-else-if="todayBookings.length > 0" class="mb-6">
+              <div class="mb-4">
+                <h3 class="text-lg font-semibold text-gray-900 mb-3">选择要签到的课程</h3>
+                <div class="space-y-3">
+                  <div
+                    v-for="booking in todayBookings"
+                    :key="booking.id"
+                    class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                    :class="{ 'ring-2 ring-primary-500 bg-primary-50': selectedBookingId === booking.id }"
+                    @click="selectBooking(booking.id)"
+                  >
+                    <div class="flex-1">
+                      <div class="font-medium text-gray-900">{{ booking.courseName }}</div>
+                      <div class="text-sm text-gray-600">
+                        <span class="mr-4">教练：{{ booking.coachName }}</span>
+                        <span class="mr-4">时间：{{ booking.startTime }} - {{ booking.endTime }}</span>
+                        <span>地点：{{ booking.location }}</span>
+                      </div>
+                    </div>
+                    <div class="ml-4">
+                      <el-radio :value="selectedBookingId" :label="booking.id" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
               <el-button
                 @click="handleCheckIn"
                 :loading="checkinLoading"
+                :disabled="!selectedBookingId"
                 type="primary"
                 size="large"
                 class="px-8 py-3 text-lg font-semibold"
@@ -45,15 +71,26 @@
                 <el-icon class="w-6 h-6 mr-2">
                   <Check />
                 </el-icon>
-                立即签到
+                课程签到
               </el-button>
+            </div>
+
+            <!-- 无预约课程 -->
+            <div v-else class="mb-6">
+              <div class="text-center py-8">
+                <el-icon class="w-12 h-12 text-gray-300 mb-4">
+                  <Calendar />
+                </el-icon>
+                <p class="text-gray-500 mb-2">今日暂无预约课程</p>
+                <p class="text-sm text-gray-400">请先预约课程后再进行签到</p>
+              </div>
             </div>
 
             <!-- 签到提示 -->
             <div class="text-sm text-gray-500">
-              <p>• 每天只能签到一次</p>
-              <p>• 签到后可享受健身房所有设施</p>
-              <p>• 连续签到可获得积分奖励</p>
+              <p>• 只能对已预约的课程进行签到</p>
+              <p>• 每节课程只能签到一次</p>
+              <p>• 签到后可参与课程活动</p>
             </div>
           </div>
         </div>
@@ -107,7 +144,7 @@
       <!-- 最近签到记录 -->
       <div class="bg-white rounded-xl shadow-lg p-6">
         <div class="flex items-center justify-between mb-6">
-          <h3 class="text-xl font-bold text-gray-900">最近签到记录</h3>
+          <h3 class="text-xl font-bold text-gray-900">最近课程签到记录</h3>
           <el-button @click="refreshCheckins" :loading="loading" type="text">
             <el-icon class="w-4 h-4 mr-1">
               <Refresh />
@@ -127,7 +164,7 @@
           <el-icon class="w-12 h-12 text-gray-300 mb-4">
             <Calendar />
           </el-icon>
-          <p class="text-gray-500">暂无签到记录</p>
+          <p class="text-gray-500">暂无课程签到记录</p>
         </div>
 
         <div v-else class="space-y-3">
@@ -144,10 +181,13 @@
               </div>
               <div>
                 <div class="font-medium text-gray-900">
-                  {{ formatDate(checkin.date) }}
+                  {{ checkin.courseName }}
                 </div>
                 <div class="text-sm text-gray-500">
-                  {{ checkin.checkin_time }}
+                  {{ formatDate(checkin.date) }} {{ checkin.checkin_time }}
+                </div>
+                <div class="text-xs text-gray-400">
+                  教练：{{ checkin.coachName }}
                 </div>
               </div>
             </div>
@@ -185,6 +225,8 @@ const todayCheckinTime = ref('')
 const checkinLoading = ref(false)
 const loading = ref(false)
 const recentCheckins = ref([])
+const todayBookings = ref([])
+const selectedBookingId = ref(null)
 const checkinStats = ref({
   totalCheckins: 0,
   thisWeekCheckins: 0,
@@ -216,6 +258,10 @@ const loadCheckinData = async () => {
     const checkins = await checkinService.getMemberCheckins(user.id, 7)
     recentCheckins.value = checkins
 
+    // 获取今天可签到的课程
+    const bookings = await checkinService.getTodayBookings(user.id)
+    todayBookings.value = bookings
+
     // 如果有今日签到，显示签到时间
     if (checkedInToday && checkins.length > 0) {
       const todayCheckin = checkins.find(checkin => 
@@ -243,12 +289,17 @@ const handleCheckIn = async () => {
       return
     }
 
-    const result = await checkinService.checkIn(user.id)
+    if (!selectedBookingId.value) {
+      ElMessage.warning('请选择要签到的课程')
+      return
+    }
+
+    const result = await checkinService.checkIn(user.id, selectedBookingId.value)
     
     if (result.success) {
       ElMessage.success(result.message)
       isCheckedIn.value = true
-      todayCheckinTime.value = result.checkin.checkin_time
+      todayCheckinTime.value = result.checkin.checkinTime
       
       // 刷新数据
       await loadCheckinData()
@@ -261,6 +312,11 @@ const handleCheckIn = async () => {
   } finally {
     checkinLoading.value = false
   }
+}
+
+// 选择预约课程
+const selectBooking = (bookingId) => {
+  selectedBookingId.value = bookingId
 }
 
 // 刷新签到记录

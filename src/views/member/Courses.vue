@@ -1,5 +1,7 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+  <div
+    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100"
+  >
     <!-- 页面标题 -->
     <PageHeader
       title="课程查询"
@@ -284,28 +286,23 @@
 
                         <!-- 预约/取消按钮 -->
                         <el-button
-                          v-if="!isBooked(classItem)"
+                          v-if="allowBook(classItem, bookings)"
                           @click="bookClass(classItem)"
                           type="success"
                           size="small"
                           :disabled="
-                            getCurrentParticipants(classItem) >=
+                            classItem.bookingCount >=
                             classItem.maxCapacity
                           "
                         >
                           <el-icon class="w-4 h-4 mr-1">
                             <Calendar />
                           </el-icon>
-                          {{
-                            getCurrentParticipants(classItem) >=
-                            classItem.maxCapacity
-                              ? "已满"
-                              : "立即预约"
-                          }}
+                          立即预约
                         </el-button>
 
                         <el-button
-                          v-else
+                          v-if="isBooked(classItem, bookings) && !checkIsExpired(classItem)"
                           @click="cancelClassBooking(classItem)"
                           type="danger"
                           size="small"
@@ -376,7 +373,7 @@ import {
 } from "@element-plus/icons-vue";
 import CourseDetailDialog from "@/components/common/CourseDetailDialog.vue";
 import PageHeader from "@/components/common/PageHeader.vue";
-
+import { checkIsExpired, checkIsFull, allowBook, isBooked } from "@/utils";
 const { currentUser } = useAuth();
 
 // 响应式数据
@@ -501,7 +498,9 @@ const loadData = () => {
 const totalClasses = computed(() => schedules.value.length);
 const availableClasses = computed(
   () =>
-  schedules.value.filter((schedule) => schedule.maxCapacity > schedule.bookingCount).length
+    schedules.value.filter(
+      (schedule) => schedule.maxCapacity > schedule.bookingCount
+    ).length
 );
 
 // 处理日期变化
@@ -545,7 +544,7 @@ const bookClass = async (schedule) => {
       title: "预约成功",
       text: "课程预约成功！",
       icon: "success",
-      timer: 1500,
+      timer: 1000,
       showConfirmButton: false,
     });
 
@@ -592,7 +591,7 @@ const cancelClassBooking = async (schedule) => {
         title: "取消成功",
         text: "课程预约已取消！",
         icon: "success",
-        timer: 1500,
+        timer: 1000,
         showConfirmButton: false,
       });
 
@@ -627,20 +626,7 @@ const getCoachName = (coachId) => {
   return coach ? coach.name : "未知教练";
 };
 
-// 获取当前参与人数（基于实际预约数据）
-const getCurrentParticipants = (schedule) => {
-  const scheduleBookings = bookings.value.filter(
-    (booking) => booking.scheduleId === schedule.id && !booking.isDeleted
-  );
-  return scheduleBookings.length;
-};
 
-// 检查是否已预约
-const isBooked = (schedule) => {
-  return bookings.value.some(
-    (booking) => booking.scheduleId === schedule.id && !booking.isDeleted
-  );
-};
 
 // 格式化时间
 const formatTime = (datetime) => {
@@ -664,23 +650,21 @@ const getClassStatusType = (schedule) => {
     return "info"; // 已结束
   }
 
-  if (getCurrentParticipants(schedule) >= schedule.maxCapacity) {
+  if (checkIsFull(schedule)) {
     return "warning"; // 已满员
   }
 
   return "success"; // 可预约
 };
 
+
 // 获取课程状态文本
 const getClassStatusText = (schedule) => {
-  const now = dayjs();
-  const classDateTime = dayjs(schedule.startTime);
-
-  if (now.isAfter(classDateTime)) {
+  if (checkIsExpired(schedule)) {
     return "已结束";
   }
 
-  if (getCurrentParticipants(schedule) >= schedule.maxCapacity) {
+  if (checkIsFull(schedule)) {
     return "已满员";
   }
 

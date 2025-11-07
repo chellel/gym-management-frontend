@@ -1,7 +1,7 @@
 <template>
   <div class="p-6">
     <div class="flex items-center justify-between mb-6">
-      <h2 class="text-xl font-semibold text-gray-900">课堂管理</h2>
+      <h2 class="text-xl font-semibold text-gray-900">课程管理</h2>
       <el-button @click="refreshClasses" type="default" size="small">
         <el-icon class="w-4 h-4 mr-1">
           <Refresh />
@@ -21,16 +21,16 @@
             <div class="flex items-center space-x-4">
               <div>
                 <h3 class="text-lg font-medium text-gray-900">
-                  {{ classItem.activity }}
+                  {{ classItem.courseName || classItem.activity }}
                 </h3>
                 <p class="text-sm text-gray-500">{{ classItem.location }}</p>
               </div>
               <div class="text-right">
                 <div class="text-sm font-medium text-gray-900">
-                  {{ classItem.date }}
+                  {{ formatDate(classItem.startTime) }}
                 </div>
                 <div class="text-sm text-gray-500">
-                  {{ classItem.start_time }} - {{ classItem.end_time }}
+                  {{ formatTime(classItem.startTime) }} - {{ formatTime(classItem.endTime) }}
                 </div>
               </div>
             </div>
@@ -67,7 +67,7 @@
       <div v-if="selectedClass" class="space-y-4">
         <div class="flex items-center justify-between">
           <h3 class="text-lg font-medium">
-            {{ selectedClass.activity }} - 学员名单
+            {{ selectedClass.courseName || selectedClass.activity }} - 学员名单
           </h3>
           <el-button @click="exportMembers" type="primary" size="small">
             <el-icon class="w-4 h-4 mr-1">
@@ -88,26 +88,26 @@
                 class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center"
               >
                 <span class="text-sm font-medium text-gray-600">{{
-                  member.name.charAt(0)
+                  (member.memberName || member.name || '').charAt(0)
                 }}</span>
               </div>
               <div>
-                <p class="font-medium text-gray-900">{{ member.name }}</p>
-                <p class="text-sm text-gray-500">{{ member.phone }}</p>
+                <p class="font-medium text-gray-900">{{ member.memberName || member.name }}</p>
+                <p class="text-sm text-gray-500">{{ member.memberPhone || member.phone }}</p>
               </div>
             </div>
             <div class="flex items-center space-x-2">
               <el-tag
                 :type="
-                  member.attendance_status === 'present' ? 'success' : 'default'
+                  member.checkinTime ? 'success' : 'default'
                 "
               >
                 {{
-                  member.attendance_status === "present" ? "已签到" : "未签到"
+                  member.checkinTime ? "已签到" : "未签到"
                 }}
               </el-tag>
               <el-button
-                v-if="member.attendance_status !== 'present'"
+                v-if="!member.checkinTime"
                 @click="markAttendance(member)"
                 type="primary"
                 size="small"
@@ -124,8 +124,13 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import { Refresh, Download } from "@element-plus/icons-vue";
 import { useCoachService } from "@/composables/useCoachService";
+import { useAuth } from "@/composables/useAuth";
 import Swal from "sweetalert2";
+import dayjs from "dayjs";
+
+const { currentUser } = useAuth();
 
 const {
   coachInfo,
@@ -143,24 +148,37 @@ const selectedClass = ref(null);
 
 // 初始化数据
 onMounted(async () => {
-  await getCoachClasses(coachInfo.value.id);
+  if (currentUser.value?.id) {
+    await getCoachClasses(currentUser.value.id);
+  }
 });
 
 // 计算属性
 const upcomingClasses = computed(() => {
-  const today = new Date().toISOString().split("T")[0];
-  return coachClasses.value.filter((cls) => cls.date >= today).slice(0, 5);
+  const today = dayjs().startOf('day');
+  return coachClasses.value
+    .filter((cls) => {
+      if (!cls.startTime) return false;
+      const classDate = dayjs(cls.startTime).startOf('day');
+      return classDate.isSameOrAfter(today);
+    })
+    .sort((a, b) => {
+      return dayjs(a.startTime).valueOf() - dayjs(b.startTime).valueOf();
+    })
+    .slice(0, 10);
 });
 
 // 事件处理函数
 const refreshClasses = async () => {
   try {
-    await getCoachClasses(coachInfo.value.id);
+    if (currentUser.value?.id) {
+      await getCoachClasses(currentUser.value.id);
+    }
     Swal.fire({
       title: "刷新成功",
       text: "课程管理数据已更新",
       icon: "success",
-      timer: 1500,
+      timer: 1000,
       showConfirmButton: false,
     });
   } catch (error) {
@@ -191,7 +209,7 @@ const viewClassMembers = async (classItem) => {
 const startAttendance = (classItem) => {
   Swal.fire({
     title: "开始签到",
-    text: `确定要开始 ${classItem.activity} 的签到吗？`,
+    text: `确定要开始 ${classItem.courseName || classItem.activity} 的签到吗？`,
     icon: "question",
     showCancelButton: true,
     confirmButtonText: "开始",
@@ -202,7 +220,7 @@ const startAttendance = (classItem) => {
         title: "签到已开始",
         text: "学员可以开始签到了",
         icon: "success",
-        timer: 1500,
+        timer: 1000,
         showConfirmButton: false,
       });
     }
@@ -210,27 +228,43 @@ const startAttendance = (classItem) => {
 };
 
 const canStartAttendance = (classItem) => {
-  const now = new Date();
-  const classTime = new Date(`${classItem.date} ${classItem.start_time}`);
-  const timeDiff = classTime.getTime() - now.getTime();
-  return timeDiff <= 30 * 60 * 1000; // 课程开始前30分钟内可以开始签到
+  if (!classItem.startTime) return false;
+  const now = dayjs();
+  const classTime = dayjs(classItem.startTime);
+  const timeDiff = classTime.diff(now, 'minute');
+  // 课程开始前30分钟内可以开始签到，且课程未开始
+  return timeDiff <= 30 && timeDiff >= 0;
+};
+
+// 格式化日期
+const formatDate = (date) => {
+  if (!date) return "";
+  return dayjs(date).format('YYYY-MM-DD');
+};
+
+// 格式化时间
+const formatTime = (datetime) => {
+  if (!datetime) return "";
+  return dayjs(datetime).format('HH:mm');
 };
 
 const markAttendance = async (member) => {
   try {
     await markAttendanceService(selectedClass.value.id, member.id, "present");
+    // 刷新学员名单
+    await getClassMembers(selectedClass.value.id);
     Swal.fire({
       title: "签到成功",
-      text: `${member.name} 已签到`,
+      text: `${member.memberName || member.name} 已签到`,
       icon: "success",
-      timer: 1500,
+      timer: 1000,
       showConfirmButton: false,
     });
   } catch (error) {
     console.error("签到失败:", error);
     Swal.fire({
       title: "签到失败",
-      text: "签到失败，请重试",
+      text: error.msg || error.message || "签到失败，请重试",
       icon: "error",
     });
   }
@@ -243,7 +277,7 @@ const exportMembers = async () => {
       title: "导出成功",
       text: "学员名单已导出",
       icon: "success",
-      timer: 1500,
+      timer: 1000,
       showConfirmButton: false,
     });
   } catch (error) {

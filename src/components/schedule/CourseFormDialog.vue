@@ -224,7 +224,7 @@ const handleSubmit = async () => {
         title: "更新成功",
         text: "课程信息更新成功！",
         icon: "success",
-        timer: 1500,
+        timer: 1000,
         showConfirmButton: false,
       });
     } else {
@@ -235,7 +235,7 @@ const handleSubmit = async () => {
         title: "添加成功",
         text: "课程添加成功！",
         icon: "success",
-        timer: 1500,
+        timer: 1000,
         showConfirmButton: false,
       });
     }

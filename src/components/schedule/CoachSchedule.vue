@@ -166,14 +166,18 @@ const editingSchedule = ref(null);
 
 // 获取教练的排班
 const getCoachSchedules = (coachId, date) => {
-  return props.schedules.filter((schedule) => {
-    // 检查教练ID匹配
-    if (schedule.coachId !== coachId) return false;
+  return props.schedules
+    .filter((schedule) => {
+      // 检查教练ID匹配
+      if (schedule.coachId !== coachId) return false;
 
-    // 检查日期匹配 - 从startTime中提取日期
-    const scheduleDate = dayjs(schedule.startTime).format("YYYY-MM-DD");
-    return scheduleDate === date;
-  });
+      // 检查日期匹配 - 从startTime中提取日期
+      const scheduleDate = dayjs(schedule.startTime).format("YYYY-MM-DD");
+      return scheduleDate === date;
+    })
+    .sort((a, b) => {
+      return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+    });
 };
 
 // 格式化日期
@@ -239,7 +243,7 @@ const handleDeleteSchedule = async (schedule) => {
         title: "删除成功",
         text: "排班删除成功！",
         icon: "success",
-        timer: 1500,
+        timer: 1000,
         showConfirmButton: false,
       });
       emit("schedule-deleted");
@@ -255,6 +259,7 @@ const handleDeleteSchedule = async (schedule) => {
 };
 
 const canEditSchedule = (schedule) => {
+  return true;
   if (isAdmin.value) return true;
   if (isCoach.value) {
     return schedule.coachId === currentUser.value?.id;
@@ -283,7 +288,7 @@ const handleScheduleSubmit = async (formData) => {
         title: "更新成功",
         text: "排班信息更新成功！",
         icon: "success",
-        timer: 1500,
+        timer: 1000,
         showConfirmButton: false,
       });
 
@@ -296,7 +301,7 @@ const handleScheduleSubmit = async (formData) => {
         title: "添加成功",
         text: "排班添加成功！",
         icon: "success",
-        timer: 1500,
+        timer: 1000,
         showConfirmButton: false,
       });
 

@@ -226,11 +226,11 @@
                   >
                     占比
                   </th>
-                  <th
+                  <!-- <th
                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
                     平均收入
-                  </th>
+                  </th> -->
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
@@ -246,9 +246,9 @@
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {{ item.percentage }}%
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <!-- <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     ¥{{ item.avgRevenue.toLocaleString() }}
-                  </td>
+                  </td> -->
                 </tr>
               </tbody>
             </table>
@@ -276,11 +276,11 @@
                   >
                     签到率
                   </th>
-                  <th
+                  <!-- <th
                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
                     满意度
-                  </th>
+                  </th> -->
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
@@ -296,7 +296,7 @@
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {{ item.attendanceRate }}%
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <!-- <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     <div class="flex items-center">
                       <div class="flex-shrink-0 w-10 h-10">
                         <div class="w-full bg-gray-200 rounded-full h-2">
@@ -312,7 +312,7 @@
                         </div>
                       </div>
                     </div>
-                  </td>
+                  </td> -->
                 </tr>
               </tbody>
             </table>
@@ -395,11 +395,12 @@ import {
 
 // 响应式数据
 const currentTab = ref("members");
+// 默认为本月：本月1日到今天
+const today = new Date();
+const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 const dateRange = ref([
-  new Date(new Date().setDate(new Date().getDate() - 30))
-    .toISOString()
-    .split("T")[0],
-  new Date().toISOString().split("T")[0]
+  firstDayOfMonth.toISOString().split("T")[0],
+  today.toISOString().split("T")[0]
 ]);
 
 // KPI数据
@@ -565,7 +566,7 @@ const refreshData = async () => {
       title: "数据已更新",
       text: `已加载 ${dateRange.value[0]} 至 ${dateRange.value[1]} 的数据`,
       icon: "success",
-      timer: 1500,
+      timer: 1000,
       showConfirmButton: false,
     });
   } catch (error) {

@@ -130,37 +130,7 @@ export const deleteCoachSchedule = (id: number, scheduleId: number) => {
   return del(`/coaches/${id}/schedule/${scheduleId}`, {});
 };
 
-// 模拟数据生成函数（用于开发测试）
-export const generateMockCoaches = (count: number = 10): Coach[] => {
-  const statuses: string[] = ['active', 'inactive', 'suspended']
 
-  return Array.from({ length: count }, (_, index) => {
-    const id = index + 1
-    const status = statuses[Math.floor(Math.random() * statuses.length)]
-    const hireDate = new Date(2023, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1)
-
-    return {
-      id,
-      userId: `C${String(id).padStart(3, '0')}`,
-      name: `教练${id}`,
-      email: `coach${id}@gym.com`,
-      phone: `139${String(id).padStart(8, '0')}`,
-      gender: Math.floor(Math.random() * 2),
-      birthDate: new Date(1980 + Math.floor(Math.random() * 20), Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toISOString().split('T')[0],
-      role: 'coach',
-      status,
-      experience: `${Math.floor(Math.random() * 10) + 1}年`,
-      description: `专业教练，拥有丰富的教学经验。`,
-      hireDate: hireDate.toISOString().split('T')[0],
-      remark: `教练${id}的备注信息`,
-      createBy: 'admin',
-      createTime: hireDate.toISOString(),
-      updateBy: 'admin',
-      updateTime: new Date().toISOString(),
-      isDeleted: 0
-    }
-  })
-}
 
 export const generateMockCoachStats = (coachId: number): CoachStats => {
   return {

@@ -64,15 +64,6 @@
 
     <!-- 课程管理视图 -->
     <CourseManagement v-if="currentView === 'courses'" />
-
-    <!-- 场地预约视图 -->
-    <!-- <LocationSchedule
-      v-if="currentView === 'locations'"
-      :locations="locations"
-      :schedules="schedules"
-      :time-slots="timeSlots"
-      @edit-schedule="editSchedule"
-    /> -->
   </div>
 </template>
 
@@ -82,11 +73,8 @@ import Swal from "sweetalert2";
 import { useAuth } from "@/composables/useAuth";
 import { useAdminAuth } from "@/composables/useAdminAuth";
 import CoachSchedule from "./CoachSchedule.vue";
-// import LocationSchedule from "./LocationSchedule.vue";
 import CourseManagement from "./CourseManagement.vue";
-import { 
-  getScheduleList, 
-} from "@/api/schedule";
+import { getScheduleList } from "@/api/schedule";
 import { getCoachList } from "@/api/coach";
 // 认证相关
 const { isCoach, currentUser } = useAuth();
@@ -165,11 +153,7 @@ onMounted(() => {
 // 初始化数据
 const initializeData = async () => {
   try {
-    await Promise.all([
-      getData(),
-      getCoachData(),
-      loadLocations()
-    ]);
+    await Promise.all([getData(), getCoachData(), loadLocations()]);
   } catch (error) {
     console.error("Failed to initialize data:", error);
     Swal.fire({
@@ -185,16 +169,20 @@ const getData = async () => {
   try {
     const startOfWeek = new Date(currentWeek.value);
     startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-    
+
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 6);
-    
-    const response = await getScheduleList({
-      startDate: startOfWeek.toISOString().split('T')[0],
-      endDate: endOfWeek.toISOString().split('T')[0],
+
+    const params = {
+      startDate: startOfWeek.toISOString().split("T")[0],
+      endDate: endOfWeek.toISOString().split("T")[0],
       page: 1,
       pageSize: 10000,
-      isDeleted: 0
+      isDeleted: 0,
+    };
+
+    const response = await getScheduleList({
+      ...params,
     });
     schedules.value = response.rows || [];
   } catch (error) {
@@ -209,7 +197,7 @@ const getCoachData = async () => {
   const response = await getCoachList({
     page: 1,
     pageSize: 10000,
-    status: 'active'
+    status: "active",
   });
   coachs.value = response.rows || [];
 };

@@ -21,12 +21,7 @@
             </div>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">课程类型</label>
-            <div class="text-lg text-gray-900">
-              {{ getClassType(getCourseName(schedule.courseId)) }}
-            </div>
-          </div>
-          <div>
+
             <label class="block text-sm font-medium text-gray-700 mb-1">日期</label>
             <div class="text-lg text-gray-900">
               {{ formatDate(schedule.startTime) }}
@@ -57,7 +52,7 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">参与人数</label>
               <div class="text-lg text-gray-900">
-                {{ getCurrentParticipants(schedule) }}/{{ schedule.maxCapacity }} 人
+                {{ schedule.bookingCount }}/{{ schedule.maxCapacity }} 人
               </div>
             </div>
             <div class="text-right">
@@ -87,23 +82,19 @@
 
       <!-- 预约/取消按钮 -->
       <el-button
-        v-if="!isBooked(schedule)"
+        v-if="allowBook(schedule, bookings)"
         @click="handleBook"
         type="success"
-        :disabled="getCurrentParticipants(schedule) >= schedule.maxCapacity"
+        :disabled="schedule.bookingCount >= schedule.maxCapacity"
       >
         <el-icon class="w-4 h-4 mr-1">
           <Calendar />
         </el-icon>
-        {{
-          getCurrentParticipants(schedule) >= schedule.maxCapacity
-            ? "已满"
-            : "立即预约"
-        }}
+        立即预约
       </el-button>
 
       <el-button
-        v-else
+        v-if="isBooked(schedule,bookings) && !checkIsExpired(schedule)"
         @click="handleCancel"
         type="danger"
       >
@@ -120,7 +111,7 @@
 import { computed } from 'vue'
 import { Calendar, Close } from '@element-plus/icons-vue'
 import dayjs from 'dayjs'
-
+import { isBooked, checkIsExpired, checkIsFull, allowBook } from '@/utils'
 // Props
 const props = defineProps({
   modelValue: {
@@ -183,39 +174,17 @@ const getCoachName = (coachId) => {
   return coach ? coach.name : '未知教练'
 }
 
-const getCurrentParticipants = (schedule) => {
-  const scheduleBookings = props.bookings.filter(
-    booking => booking.scheduleId === schedule.id && !booking.isDeleted
-  )
-  return scheduleBookings.length
-}
 
-const isBooked = (schedule) => {
-  return props.bookings.some(
-    booking => booking.scheduleId === schedule.id && !booking.isDeleted
-  )
-}
 
-const getClassType = (name) => {
-  if (name.includes('瑜伽')) return '瑜伽'
-  if (name.includes('力量')) return '力量训练'
-  if (name.includes('单车') || name.includes('舞蹈') || name.includes('有氧'))
-    return '有氧运动'
-  if (name.includes('游泳')) return '游泳'
-  if (name.includes('拳击') || name.includes('泰拳')) return '拳击'
-  if (name.includes('普拉提')) return '普拉提'
-  return '其他'
-}
+
 
 const getClassStatusType = (schedule) => {
-  const now = dayjs()
-  const classDateTime = dayjs(schedule.startTime)
 
-  if (now.isAfter(classDateTime)) {
+  if (checkIsExpired(schedule)) {
     return 'info' // 已结束
   }
 
-  if (getCurrentParticipants(schedule) >= schedule.maxCapacity) {
+  if (schedule.bookingCount >= schedule.maxCapacity) {
     return 'warning' // 已满员
   }
 
@@ -223,14 +192,11 @@ const getClassStatusType = (schedule) => {
 }
 
 const getClassStatusText = (schedule) => {
-  const now = dayjs()
-  const classDateTime = dayjs(schedule.startTime)
-
-  if (now.isAfter(classDateTime)) {
+  if (checkIsExpired(schedule)) {
     return '已结束'
   }
 
-  if (getCurrentParticipants(schedule) >= schedule.maxCapacity) {
+  if (checkIsFull(schedule)) {
     return '已满员'
   }
 
@@ -238,9 +204,7 @@ const getClassStatusText = (schedule) => {
 }
 
 const getDuration = (schedule) => {
-  const start = dayjs(schedule.startTime)
-  const end = dayjs(schedule.endTime)
-  return end.diff(start, 'minute')
+  return dayjs(schedule.endTime).diff(dayjs(schedule.startTime), 'minute')
 }
 
 const formatTime = (datetime) => {

@@ -1,36 +1,31 @@
 import dayjs from 'dayjs'
+import { checkinBooking, getMemberBookings } from '@/api/booking'
 
 // 签到数据服务
 export const checkinService = {
-  // 会员签到
-  async checkIn(memberId) {
+  // 课程签到
+  async checkIn(memberId, bookingId) {
     try {
-      const storedCheckins = localStorage.getItem('gym_checkins')
-      const checkins = storedCheckins ? JSON.parse(storedCheckins) : []
-      
-      const today = dayjs().format('YYYY-MM-DD')
-      
-      // 检查今天是否已经签到
-      const todayCheckin = checkins.find(checkin => 
-        checkin.member_id === memberId && checkin.date === today
-      )
-      
-      if (todayCheckin) {
-        return { success: false, message: '您今天已经签到过了' }
+      if (!bookingId) {
+        return { success: false, message: '请选择要签到的课程' }
       }
+
+      // 调用后端API进行课程签到
+      const result = await checkinBooking(bookingId)
       
-      const newCheckin = {
-        id: Date.now(),
-        member_id: memberId,
-        date: today,
-        checkin_time: dayjs().format('HH:mm:ss'),
-        timestamp: new Date().toISOString()
+      if (result.code === 0) {
+        return { 
+          success: true, 
+          message: '课程签到成功！',
+          checkin: {
+            bookingId: bookingId,
+            checkinTime: dayjs().format('HH:mm:ss'),
+            timestamp: new Date().toISOString()
+          }
+        }
+      } else {
+        return { success: false, message: result.msg || '签到失败，请重试' }
       }
-      
-      checkins.push(newCheckin)
-      localStorage.setItem('gym_checkins', JSON.stringify(checkins))
-      
-      return { success: true, message: '签到成功！', checkin: newCheckin }
     } catch (error) {
       console.error('Error checking in:', error)
       return { success: false, message: '签到失败，请重试' }
@@ -40,19 +35,30 @@ export const checkinService = {
   // 获取会员签到记录
   async getMemberCheckins(memberId, days = 30) {
     try {
-      const storedCheckins = localStorage.getItem('gym_checkins')
-      const checkins = storedCheckins ? JSON.parse(storedCheckins) : []
+      // 获取会员的预约记录
+      const result = await getMemberBookings(memberId, {
+        page: 1,
+        pageSize: days,
+        startTime: dayjs().subtract(days, 'day').format('YYYY-MM-DD'),
+        endTime: dayjs().format('YYYY-MM-DD')
+      })
       
-      const startDate = dayjs().subtract(days, 'day').format('YYYY-MM-DD')
+      if (result.code === 0) {
+        // 只返回已签到的记录
+        return result.data.rows
+          .filter(booking => booking.checkinTime)
+          .map(booking => ({
+            id: booking.id,
+            date: dayjs(booking.bookingTime).format('YYYY-MM-DD'),
+            checkin_time: booking.checkinTime,
+            timestamp: booking.updateTime,
+            courseName: booking.schedule?.courseName || '未知课程',
+            coachName: booking.schedule?.coachName || '未知教练'
+          }))
+          .sort((a, b) => new Date(b.date) - new Date(a.date))
+      }
       
-      const memberCheckins = checkins
-        .filter(checkin => 
-          checkin.member_id === memberId && 
-          checkin.date >= startDate
-        )
-        .sort((a, b) => new Date(b.date) - new Date(a.date))
-      
-      return memberCheckins
+      return []
     } catch (error) {
       console.error('Error fetching member checkins:', error)
       return []
@@ -62,14 +68,22 @@ export const checkinService = {
   // 检查今天是否已签到
   async isCheckedInToday(memberId) {
     try {
-      const storedCheckins = localStorage.getItem('gym_checkins')
-      const checkins = storedCheckins ? JSON.parse(storedCheckins) : []
-      
       const today = dayjs().format('YYYY-MM-DD')
       
-      return checkins.some(checkin => 
-        checkin.member_id === memberId && checkin.date === today
-      )
+      // 获取今天的预约记录
+      const result = await getMemberBookings(memberId, {
+        page: 1,
+        pageSize: 10,
+        startTime: today,
+        endTime: today
+      })
+      
+      if (result.code === 0) {
+        // 检查是否有已签到的记录
+        return result.data.rows.some(booking => booking.checkinTime)
+      }
+      
+      return false
     } catch (error) {
       console.error('Error checking today checkin status:', error)
       return false
@@ -102,6 +116,41 @@ export const checkinService = {
         consecutiveDays: 0,
         lastCheckin: null
       }
+    }
+  },
+
+  // 获取今天可签到的课程
+  async getTodayBookings(memberId) {
+    try {
+      const today = dayjs().format('YYYY-MM-DD')
+      
+      const result = await getMemberBookings(memberId, {
+        page: 1,
+        pageSize: 10,
+        startTime: today,
+        endTime: today
+      })
+      
+      if (result.code === 0) {
+        // 返回未签到的预约记录
+        return result.data.rows
+          .filter(booking => !booking.checkinTime)
+          .map(booking => ({
+            id: booking.id,
+            scheduleId: booking.scheduleId,
+            courseName: booking.schedule?.courseName || '未知课程',
+            coachName: booking.schedule?.coachName || '未知教练',
+            startTime: booking.schedule?.startTime || '',
+            endTime: booking.schedule?.endTime || '',
+            location: booking.schedule?.location || '未知地点',
+            bookingTime: booking.bookingTime
+          }))
+      }
+      
+      return []
+    } catch (error) {
+      console.error('Error getting today bookings:', error)
+      return []
     }
   },
 

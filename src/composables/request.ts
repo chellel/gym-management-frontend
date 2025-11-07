@@ -30,8 +30,6 @@ service.interceptors.response.use(
     }
   },
   (error) => {
-    const { response } = error;
-    console.log(response.status, response.info);
     return Promise.reject(error);
   }
 );

@@ -78,15 +78,14 @@ const currentWeek = ref(new Date())
 // 计算属性 - 周日期
 const weekDays = computed(() => {
   const days = []
-  const startOfWeek = new Date(currentWeek.value)
-  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay())
+  // 使用 dayjs 获取本周的开始日期（星期日）
+  const startOfWeek = dayjs(currentWeek.value).startOf('week')
 
   for (let i = 0; i < 7; i++) {
-    const day = new Date(startOfWeek)
-    day.setDate(startOfWeek.getDate() + i)
+    const day = startOfWeek.add(i, 'day')
     days.push({
       name: ["周日", "周一", "周二", "周三", "周四", "周五", "周六"][i],
-      date: day.toISOString().split("T")[0],
+      date: day.format('YYYY-MM-DD'),
     })
   }
 
@@ -108,16 +107,14 @@ const loadScheduleData = async () => {
   try {
     loading.value = true
     
-    const startOfWeek = new Date(currentWeek.value)
-    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay())
-    
-    const endOfWeek = new Date(startOfWeek)
-    endOfWeek.setDate(startOfWeek.getDate() + 6)
+    // 使用 dayjs 获取本周的开始和结束日期
+    const startOfWeek = dayjs(currentWeek.value).startOf('week')
+    const endOfWeek = startOfWeek.add(6, 'day')
     
     const response = await getScheduleList({
       coachId: currentUser.value.id,
-      startDate: startOfWeek.toISOString().split('T')[0],
-      endDate: endOfWeek.toISOString().split('T')[0],
+      startDate: startOfWeek.format('YYYY-MM-DD'),
+      endDate: endOfWeek.format('YYYY-MM-DD'),
       page: 1,
       pageSize: 100,
       isDeleted: 0
@@ -127,118 +124,11 @@ const loadScheduleData = async () => {
     schedules.value = response.rows || []
   } catch (error) {
     console.error('Failed to load schedules:', error)
-    // 如果API失败，使用模拟数据作为后备
-    loadMockSchedules()
   } finally {
     loading.value = false
   }
 }
 
-
-// 加载模拟排班数据（作为后备）
-const loadMockSchedules = () => {
-  const today = new Date()
-  const weekStart = new Date(today)
-  weekStart.setDate(today.getDate() - today.getDay())
-
-  schedules.value = [
-    {
-      id: 1,
-      courseId: 1,
-      coachId: currentUser.value?.id || 1,
-      coachName: currentUser.value?.name || "当前教练",
-      courseName: "瑜伽基础",
-      startTime: new Date(weekStart.getTime() + 7 * 60 * 60 * 1000).toISOString(),
-      endTime: new Date(weekStart.getTime() + 8 * 60 * 60 * 1000).toISOString(),
-      location: "瑜伽室A",
-      maxCapacity: 20,
-      status: "waiting",
-      remark: "适合初学者",
-      createBy: "admin",
-      createTime: "2025-10-19 15:55:57",
-      updateBy: "admin",
-      updateTime: "2025-10-19 15:55:57",
-      isDeleted: 0,
-      deleteTime: null,
-    },
-    {
-      id: 2,
-      courseId: 2,
-      coachId: currentUser.value?.id || 1,
-      coachName: currentUser.value?.name || "当前教练",
-      courseName: "普拉提核心",
-      startTime: new Date(weekStart.getTime() + 24 * 60 * 60 * 1000 + 9 * 60 * 60 * 1000).toISOString(),
-      endTime: new Date(weekStart.getTime() + 24 * 60 * 60 * 1000 + 10 * 60 * 60 * 1000).toISOString(),
-      location: "瑜伽室B",
-      maxCapacity: 15,
-      status: "waiting",
-      remark: "核心训练",
-      createBy: "admin",
-      createTime: "2025-10-19 15:55:57",
-      updateBy: "admin",
-      updateTime: "2025-10-19 15:55:57",
-      isDeleted: 0,
-      deleteTime: null,
-    },
-    {
-      id: 3,
-      courseId: 3,
-      coachId: currentUser.value?.id || 1,
-      coachName: currentUser.value?.name || "当前教练",
-      courseName: "冥想瑜伽",
-      startTime: new Date(weekStart.getTime() + 48 * 60 * 60 * 1000 + 19 * 60 * 60 * 1000).toISOString(),
-      endTime: new Date(weekStart.getTime() + 48 * 60 * 60 * 1000 + 20 * 60 * 60 * 1000).toISOString(),
-      location: "冥想室",
-      maxCapacity: 10,
-      status: "waiting",
-      remark: "心灵净化",
-      createBy: "admin",
-      createTime: "2025-10-19 15:55:57",
-      updateBy: "admin",
-      updateTime: "2025-10-19 15:55:57",
-      isDeleted: 0,
-      deleteTime: null,
-    },
-    {
-      id: 4,
-      courseId: 4,
-      coachId: currentUser.value?.id || 1,
-      coachName: currentUser.value?.name || "当前教练",
-      courseName: "高温瑜伽",
-      startTime: new Date(weekStart.getTime() + 72 * 60 * 60 * 1000 + 18 * 60 * 60 * 1000).toISOString(),
-      endTime: new Date(weekStart.getTime() + 72 * 60 * 60 * 1000 + 19 * 60 * 60 * 1000).toISOString(),
-      location: "高温瑜伽室",
-      maxCapacity: 12,
-      status: "waiting",
-      remark: "深度排毒",
-      createBy: "admin",
-      createTime: "2025-10-19 15:55:57",
-      updateBy: "admin",
-      updateTime: "2025-10-19 15:55:57",
-      isDeleted: 0,
-      deleteTime: null,
-    },
-    {
-      id: 5,
-      courseId: 5,
-      coachId: currentUser.value?.id || 1,
-      coachName: currentUser.value?.name || "当前教练",
-      courseName: "夜间瑜伽",
-      startTime: new Date(weekStart.getTime() + 96 * 60 * 60 * 1000 + 21 * 60 * 60 * 1000).toISOString(),
-      endTime: new Date(weekStart.getTime() + 96 * 60 * 60 * 1000 + 22 * 60 * 60 * 1000).toISOString(),
-      location: "瑜伽室A",
-      maxCapacity: 15,
-      status: "waiting",
-      remark: "改善睡眠",
-      createBy: "admin",
-      createTime: "2025-10-19 15:55:57",
-      updateBy: "admin",
-      updateTime: "2025-10-19 15:55:57",
-      isDeleted: 0,
-      deleteTime: null,
-    }
-  ]
-}
 
 // 事件处理函数
 const refreshSchedule = async () => {
@@ -248,7 +138,7 @@ const refreshSchedule = async () => {
       title: '刷新成功',
       text: '课程数据已更新',
       icon: 'success',
-      timer: 1500,
+      timer: 1000,
       showConfirmButton: false
     })
   } catch (error) {

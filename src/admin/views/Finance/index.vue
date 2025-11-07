@@ -586,7 +586,7 @@ const addIncome = async () => {
       title: '添加成功',
       text: '收入记录已添加',
       icon: 'success',
-      timer: 1500,
+      timer: 1000,
       showConfirmButton: false
     })
   } catch (error) {
@@ -626,7 +626,7 @@ const addExpense = async () => {
       title: '添加成功',
       text: '支出记录已添加',
       icon: 'success',
-      timer: 1500,
+      timer: 1000,
       showConfirmButton: false
     })
   } catch (error) {
@@ -663,7 +663,7 @@ const deleteRecord = async (record) => {
           title: '删除成功',
           text: '记录已删除',
           icon: 'success',
-          timer: 1500,
+          timer: 1000,
           showConfirmButton: false
         })
       }
