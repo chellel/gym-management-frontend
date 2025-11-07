@@ -1,4 +1,7 @@
 import { ref, reactive } from 'vue'
+import { getScheduleList } from '@/api/schedule'
+import { getBookingByScheduleId, checkinBooking } from '@/api/booking'
+import dayjs from 'dayjs'
 
 // 教练服务
 export const useCoachService = () => {
@@ -33,12 +36,64 @@ export const useCoachService = () => {
   // 获取教练课程
   const getCoachClasses = async (coachId, dateRange = null) => {
     try {
-      // 模拟API调用
-      const mockClasses = generateMockClasses(coachId, dateRange)
-      coachClasses.value = mockClasses
-      return mockClasses
+      if (!coachId) {
+        throw new Error('教练ID不能为空')
+      }
+
+      // 构建查询参数
+      const params = {
+        coachId: coachId,
+        page: 1,
+        pageSize: 100,
+        isDeleted: 0
+      }
+
+      // 如果提供了日期范围，添加日期过滤
+      if (dateRange) {
+        if (dateRange.startDate) {
+          params.startDate = dateRange.startDate
+        }
+        if (dateRange.endDate) {
+          params.endDate = dateRange.endDate
+        }
+      } else {
+        // 默认获取未来30天的课程
+        const today = dayjs().format('YYYY-MM-DD')
+        const futureDate = dayjs().add(30, 'day').format('YYYY-MM-DD')
+        params.startDate = today
+        params.endDate = futureDate
+      }
+
+      // 调用真实API
+      const response = await getScheduleList(params)
+      
+      if (response.code === 0) {
+        // 转换数据格式以匹配组件期望的格式
+        coachClasses.value = (response.rows || []).map(schedule => ({
+          id: schedule.id,
+          scheduleId: schedule.id,
+          courseId: schedule.courseId,
+          coachId: schedule.coachId,
+          activity: schedule.courseName,
+          courseName: schedule.courseName,
+          location: schedule.location,
+          date: dayjs(schedule.startTime).format('YYYY-MM-DD'),
+          startTime: schedule.startTime,
+          endTime: schedule.endTime,
+          start_time: dayjs(schedule.startTime).format('HH:mm'),
+          end_time: dayjs(schedule.endTime).format('HH:mm'),
+          maxCapacity: schedule.maxCapacity,
+          bookingCount: schedule.bookingCount || 0,
+          status: schedule.status || 'waiting',
+          remark: schedule.remark
+        }))
+        return coachClasses.value
+      } else {
+        throw new Error(response.msg || '获取教练课程失败')
+      }
     } catch (error) {
       console.error('获取教练课程失败:', error)
+      coachClasses.value = []
       throw error
     }
   }
@@ -47,12 +102,37 @@ export const useCoachService = () => {
   // 获取全局课程
   const getGlobalSchedules = async (date = null) => {
     try {
-      // 模拟API调用
-      const mockSchedules = generateMockGlobalSchedules(date)
-      globalSchedules.value = mockSchedules
-      return mockSchedules
+      // 构建查询参数
+      const params = {
+        page: 1,
+        pageSize: 100,
+        isDeleted: 0
+      }
+
+      // 如果提供了日期，添加日期过滤
+      if (date) {
+        params.startDate = dayjs(date).format('YYYY-MM-DD')
+        params.endDate = dayjs(date).add(1, 'day').format('YYYY-MM-DD')
+      } else {
+        // 默认获取未来30天的课程
+        const today = dayjs().format('YYYY-MM-DD')
+        const futureDate = dayjs().add(30, 'day').format('YYYY-MM-DD')
+        params.startDate = today
+        params.endDate = futureDate
+      }
+
+      // 调用真实API
+      const response = await getScheduleList(params)
+      
+      if (response.code === 0) {
+        globalSchedules.value = response.rows || []
+        return globalSchedules.value
+      } else {
+        throw new Error(response.msg || '获取全局课程失败')
+      }
     } catch (error) {
       console.error('获取全局课程失败:', error)
+      globalSchedules.value = []
       throw error
     }
   }
@@ -60,12 +140,40 @@ export const useCoachService = () => {
   // 获取课程学员
   const getClassMembers = async (classId) => {
     try {
-      // 模拟API调用
-      const mockMembers = generateMockClassMembers(classId)
-      classMembers.value = mockMembers
-      return mockMembers
+      if (!classId) {
+        throw new Error('课程ID不能为空')
+      }
+
+      // 调用真实API获取该排班的预约列表
+      const response = await getBookingByScheduleId({
+        scheduleId: classId,
+        page: 1,
+        pageSize: 100,
+        isDeleted: 0
+      })
+
+      if (response.code === 0) {
+        // 转换数据格式以匹配组件期望的格式
+        classMembers.value = (response.rows || []).map(booking => ({
+          id: booking.id,
+          bookingId: booking.id,
+          memberId: booking.memberId,
+          memberName: booking.member?.name || booking.memberName,
+          memberPhone: booking.member?.phone || booking.memberPhone,
+          name: booking.member?.name || booking.memberName,
+          phone: booking.member?.phone || booking.memberPhone,
+          checkinTime: booking.checkinTime,
+          attendance_status: booking.checkinTime ? 'present' : 'absent',
+          bookingTime: booking.bookingTime,
+          createTime: booking.createTime
+        }))
+        return classMembers.value
+      } else {
+        throw new Error(response.msg || '获取课程学员失败')
+      }
     } catch (error) {
       console.error('获取课程学员失败:', error)
+      classMembers.value = []
       throw error
     }
   }
@@ -73,13 +181,30 @@ export const useCoachService = () => {
   // 学员签到
   const markAttendance = async (classId, memberId, status = 'present') => {
     try {
-      const member = classMembers.value.find(m => m.id === memberId)
-      if (member) {
-        member.attendance_status = status
-        member.attendance_time = new Date().toISOString()
-        return member
+      if (!memberId) {
+        throw new Error('学员ID不能为空')
       }
-      throw new Error('学员不存在')
+
+      // 查找对应的预约记录
+      const booking = classMembers.value.find(m => m.id === memberId || m.bookingId === memberId)
+      if (!booking) {
+        throw new Error('未找到该学员的预约记录')
+      }
+
+      // 调用真实API进行签到
+      const response = await checkinBooking(booking.bookingId || booking.id)
+      
+      if (response.code === 0) {
+        // 更新本地数据
+        const member = classMembers.value.find(m => m.id === memberId || m.bookingId === memberId)
+        if (member) {
+          member.checkinTime = response.data?.checkinTime || new Date().toISOString()
+          member.attendance_status = 'present'
+        }
+        return member || booking
+      } else {
+        throw new Error(response.msg || '签到失败')
+      }
     } catch (error) {
       console.error('签到失败:', error)
       throw error
@@ -108,9 +233,14 @@ export const useCoachService = () => {
   // 导出学员名单
   const exportClassMembers = async (classId) => {
     try {
-      const members = classMembers.value.filter(m => m.class_id === classId)
+      // 确保有最新的学员数据
+      if (classMembers.value.length === 0 || classMembers.value[0]?.scheduleId !== classId) {
+        await getClassMembers(classId)
+      }
+
+      const members = classMembers.value
       const csvContent = generateCSV(members)
-      downloadCSV(csvContent, `课程学员名单_${classId}.csv`)
+      downloadCSV(csvContent, `课程学员名单_${classId}_${dayjs().format('YYYY-MM-DD')}.csv`)
       return csvContent
     } catch (error) {
       console.error('导出学员名单失败:', error)
