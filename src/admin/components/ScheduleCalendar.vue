@@ -51,7 +51,7 @@
           v-for="day in weekDays" 
           :key="day.date"
           class="border rounded-lg p-3"
-          :class="{ 'bg-blue-50 border-blue-200': isToday(day.date) }"
+          :class="{ 'bg-green-50 border-green-200': isToday(day.date) }"
         >
           <div class="text-center">
             <div class="text-sm font-medium text-gray-900">{{ day.name }}</div>
@@ -131,6 +131,7 @@
 import { ref, computed } from 'vue'
 import { ArrowLeft, ArrowRight, Refresh } from '@element-plus/icons-vue'
 import type { Schedule } from '@/api/schedule'
+import dayjs from 'dayjs'
 
 // Props
 const props = withDefaults(defineProps<{
@@ -161,15 +162,14 @@ const currentMonth = ref(new Date())
 // 计算属性
 const weekDays = computed(() => {
   const days = []
-  const startOfWeek = new Date(currentWeek.value)
-  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay())
+  // 使用 dayjs 获取本周的开始日期（星期日）
+  const startOfWeek = dayjs(currentWeek.value).startOf('week')
 
   for (let i = 0; i < 7; i++) {
-    const day = new Date(startOfWeek)
-    day.setDate(startOfWeek.getDate() + i)
+    const day = startOfWeek.add(i, 'day')
     days.push({
       name: ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][i],
-      date: day.toISOString().split('T')[0]
+      date: day.format('YYYY-MM-DD')
     })
   }
   return days
@@ -177,21 +177,16 @@ const weekDays = computed(() => {
 
 const monthDays = computed(() => {
   const days = []
-  const year = currentMonth.value.getFullYear()
-  const month = currentMonth.value.getMonth()
-  
-  const firstDay = new Date(year, month, 1)
-  const lastDay = new Date(year, month + 1, 0)
-  const startDate = new Date(firstDay)
-  startDate.setDate(startDate.getDate() - firstDay.getDay())
+  // 使用 dayjs 获取月份的第一天和该周的开始日期（星期日）
+  const firstDay = dayjs(currentMonth.value).startOf('month')
+  const startDate = firstDay.startOf('week')
   
   for (let i = 0; i < 42; i++) {
-    const day = new Date(startDate)
-    day.setDate(startDate.getDate() + i)
+    const day = startDate.add(i, 'day')
     days.push({
-      date: day.toISOString().split('T')[0],
-      day: day.getDate(),
-      isCurrentMonth: day.getMonth() === month
+      date: day.format('YYYY-MM-DD'),
+      day: day.date(),
+      isCurrentMonth: day.month() === firstDay.month()
     })
   }
   return days
@@ -199,45 +194,39 @@ const monthDays = computed(() => {
 
 // 工具函数
 const formatWeekRange = (date: Date) => {
-  const startOfWeek = new Date(date)
-  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay())
-  const endOfWeek = new Date(startOfWeek)
-  endOfWeek.setDate(startOfWeek.getDate() + 6)
-  return `${formatDate(startOfWeek)} - ${formatDate(endOfWeek)}`
+  // 使用 dayjs 获取本周的开始和结束日期
+  const startOfWeek = dayjs(date).startOf('week')
+  const endOfWeek = startOfWeek.add(6, 'day')
+  return `${formatDate(startOfWeek.toDate())} - ${formatDate(endOfWeek.toDate())}`
 }
 
 const formatMonth = (date: Date) => {
-  return date.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long' })
+  return dayjs(date).format('YYYY年MM月')
 }
 
 const formatDate = (date: Date | string) => {
-  if (typeof date === 'string') {
-    date = new Date(date)
-  }
-  return date.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' })
+  return dayjs(date).format('MM/DD')
 }
 
 const formatTime = (datetime: string) => {
   if (!datetime) return ''
-  const date = new Date(datetime)
-  return date.toLocaleTimeString('zh-CN', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  })
+  return dayjs(datetime).format('HH:mm')
 }
 
 const isToday = (date: string) => {
-  const today = new Date().toISOString().split('T')[0]
-  return date === today
+  return dayjs(date).isSame(dayjs(), 'day')
 }
 
 // 获取指定日期的排班
 const getScheduleForDate = (date: string) => {
-  return props.schedules.filter(schedule => {
-    const scheduleDate = new Date(schedule.startTime).toISOString().split('T')[0]
-    return scheduleDate === date
-  })
+  return props.schedules
+    .filter(schedule => {
+      // 使用 dayjs 比较日期，避免时区问题
+      return dayjs(schedule.startTime).isSame(dayjs(date), 'day')
+    })
+    .sort((a, b) => {
+      return dayjs(a.startTime).valueOf() - dayjs(b.startTime).valueOf()
+    })
 }
 
 // 处理排班点击
@@ -252,29 +241,25 @@ const refreshSchedule = () => {
 
 // 周/月导航
 const previousWeek = () => {
-  const newWeek = new Date(currentWeek.value)
-  newWeek.setDate(newWeek.getDate() - 7)
+  const newWeek = dayjs(currentWeek.value).subtract(1, 'week').toDate()
   currentWeek.value = newWeek
   emit('date-change', newWeek)
 }
 
 const nextWeek = () => {
-  const newWeek = new Date(currentWeek.value)
-  newWeek.setDate(newWeek.getDate() + 7)
+  const newWeek = dayjs(currentWeek.value).add(1, 'week').toDate()
   currentWeek.value = newWeek
   emit('date-change', newWeek)
 }
 
 const previousMonth = () => {
-  const newMonth = new Date(currentMonth.value)
-  newMonth.setMonth(newMonth.getMonth() - 1)
+  const newMonth = dayjs(currentMonth.value).subtract(1, 'month').toDate()
   currentMonth.value = newMonth
   emit('date-change', newMonth)
 }
 
 const nextMonth = () => {
-  const newMonth = new Date(currentMonth.value)
-  newMonth.setMonth(newMonth.getMonth() + 1)
+  const newMonth = dayjs(currentMonth.value).add(1, 'month').toDate()
   currentMonth.value = newMonth
   emit('date-change', newMonth)
 }
