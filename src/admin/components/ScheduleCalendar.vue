@@ -68,7 +68,7 @@
               <div class="truncate">{{ schedule.courseName }}</div>
               <div class="text-blue-600">{{ schedule.location }}</div>
               <div class="text-xs text-blue-500">
-                {{ schedule.maxCapacity }}人
+                {{ schedule.bookingCount }}/{{ schedule.maxCapacity }}人
               </div>
             </div>
           </div>
