@@ -43,8 +43,6 @@
           </div>
         </div>
       </div>
-
-    
     </div>
 
     <!-- 搜索和筛选 -->
@@ -137,17 +135,11 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="操作" width="200" fixed="right">
+          <el-table-column label="操作" width="140" fixed="right">
             <template #default="{ row }">
               <div class="flex space-x-2">
-                <el-button size="small" @click="viewCoach(row)">
-                  <el-icon><View /></el-icon>
-                </el-button>
                 <el-button size="small" @click="editCoach(row)">
                   <el-icon><Edit /></el-icon>
-                </el-button>
-                <el-button size="small" @click="manageSchedule(row)">
-                  <el-icon><Calendar /></el-icon>
                 </el-button>
                 <el-button size="small" type="danger" @click="deleteCoach(row)">
                   <el-icon><Delete /></el-icon>
@@ -176,18 +168,6 @@
       :id="editingCoachId"
       @success="handleFormSuccess"
     />
-
-    <!-- 教练详情对话框 -->
-    <CoachDetailDialog
-      v-model:visible="CoachDetailDialog"
-      :coach="viewingCoach"
-    />
-
-    <!-- 排班管理对话框 -->
-    <CoachScheduleDialog
-      v-model:visible="showScheduleDialog"
-      :coach="scheduleCoach"
-    />
   </div>
 </template>
 
@@ -196,8 +176,6 @@ import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getCoachList } from '@/api/coach'
 import CoachFormDialog from '@/admin/views/Coach/components/CoachFormDialog.vue'
-import CoachDetailDialog from '@/admin/views/Coach/components/CoachDetailDialog.vue'
-import CoachScheduleDialog from '@/admin/views/Coach/components/CoachScheduleDialog.vue'
 import Pagination from '@/admin/components/Pagination.vue'
 import Swal from 'sweetalert2'
 
@@ -216,11 +194,7 @@ const statusFilter = ref('')
 
 // 对话框状态
 const showEditDialog = ref(false)
-const showDetailDialog = ref(false)
-const showScheduleDialog = ref(false)
 const editingCoachId = ref(null)
-const viewingCoach = ref(null)
-const scheduleCoach = ref(null)
 
 // 统计数据
 const stats = reactive({
@@ -296,11 +270,6 @@ const handleFilter = () => {
 }
 
 // 分页处理
-const handleSizeChange = (size: number) => {
-  pageSize.value = size
-  currentPage.value = 1
-}
-
 const handleCurrentChange = (page: number) => {
   currentPage.value = page
 }
@@ -311,29 +280,16 @@ const refreshData = () => {
   loadStats()
 }
 
-
 // 添加教练
 const addCoach = () => {
   editingCoachId.value = null
   showEditDialog.value = true
 }
 
-// 查看教练
-const viewCoach = (coach) => {
-  viewingCoach.value = coach
-  showDetailDialog.value = true
-}
-
 // 编辑教练
 const editCoach = (coach) => {
   editingCoachId.value = coach.id
   showEditDialog.value = true
-}
-
-// 管理排班
-const manageSchedule = (coach) => {
-  scheduleCoach.value = coach
-  showScheduleDialog.value = true
 }
 
 // 删除教练
@@ -349,14 +305,9 @@ const deleteCoach = async (coach) => {
       }
     )
 
-    // 模拟API调用
+    // TODO: 实现删除API调用
     ElMessage.success('删除成功')
     loadCoaches()
-    
-    // 实际API调用
-    // await deleteCoachApi(coach.id)
-    // ElMessage.success('删除成功')
-    // loadCoaches()
   } catch (error) {
     if (error !== 'cancel') {
       console.error('删除教练失败:', error)
