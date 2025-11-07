@@ -1,69 +1,40 @@
-import { ref, reactive, computed } from "vue";
+import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import Swal from "sweetalert2";
 import { useUserinfoStore } from "@/stores/userinfo";
-
-// 会员认证服务（教练和会员都使用member表）
-const memberAuthService = {
-  // 会员登录（包括教练和普通会员）
-  async login(email, password) {
-    // 教练验证 - 从member表查询，role为coach
-    if (email === "coach" && password === "123456") {
-      const user = {
-        id: 7,
-        email: "chenjiaolian@example.com",
-        userId: "C002",
-        name: "陈教练",
-        role: "coach",
-        member_type: "coach",
-        description: "瑜伽/普拉提/冥想",
-        phone: "13900139002",
-        login_time: new Date().toISOString(),
-      };
-      return { user, message: "", success: true };
-    }
-    // 会员验证 - 从member表查询，role为member
-    else if (email === "member" && password === "123456") {
-      const user = {
-        id: 1,
-        email: "member",
-        name: "张三",
-        role: "member",
-        member_type: "member",
-        membership_type: "VIP",
-        phone: "13800138003",
-        expire_date: "2024-12-31",
-        avatar: null,
-        login_time: new Date().toISOString(),
-      };
-      return { user, success: true };
-    } else {
-      return { user: null, message: "用户名或密码错误", success: false };
-    }
-  },
-};
+import { gymLogin } from "@/api/user";
 
 export const useAuth = () => {
   const router = useRouter();
   const userinfoStore = useUserinfoStore();
 
-  const error = ref("");
+  const loading = ref(false);
 
   // 登录
-  const login = async (params) => {
+  const login = async (data) => {
+    loading.value = true;
+    const params = {
+      username: data.username,
+      password: data.password,
+    };
 
     try {
-      const res = await memberAuthService.login(
-        params.username,
-        params.password
-      );
-      if (res.success) {
-        userinfoStore.setUserinfo(res.user);
+      const res = await gymLogin(params);
+      if (res.code === 0) {
+        userinfoStore.setUserinfo(res.data);
+        return { success: true, user: res.data };
+      } else {
+        return { success: false, message: res.msg || "登录失败" };
       }
-      return res;
     } catch (err) {
+      Swal.fire({
+        text: err.msg || err.message || "登录失败，请重试",
+        icon: "error",
+      });
       return Promise.reject(err);
-    } 
+    } finally {
+      loading.value = false;
+    }
   };
 
   // 登出
@@ -88,7 +59,7 @@ export const useAuth = () => {
           title: "已退出",
           text: "您已成功退出登录",
           icon: "success",
-          timer: 1500,
+          timer: 1000,
           showConfirmButton: false,
         });
         await router.push("/login");
@@ -118,6 +89,7 @@ export const useAuth = () => {
     getExpireDate: () => userinfoStore.expireDate,
     isMembershipExpired: () => userinfoStore.isMembershipExpired,
 
+    loading,
     login,
     logout,
 
