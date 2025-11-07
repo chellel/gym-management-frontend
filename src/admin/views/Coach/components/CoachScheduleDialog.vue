@@ -195,54 +195,6 @@ const handleScheduleSuccess = () => {
   loadSchedule()
 }
 
-// 生成模拟排班数据
-const generateMockSchedules = (coachId: number): CoachSchedule[] => {
-  const today = new Date()
-  const schedules = []
-  
-  for (let i = -7; i <= 14; i++) {
-    const date = new Date(today)
-    date.setDate(today.getDate() + i)
-    const dateStr = date.toISOString().split('T')[0]
-    
-    // 随机生成1-3个课程
-    const classCount = Math.floor(Math.random() * 3) + 1
-    for (let j = 0; j < classCount; j++) {
-      const activities = ['晨间瑜伽', '普拉提核心', '力量训练', '有氧运动', '游泳课', '拳击课']
-      const locations = ['瑜伽室A', '瑜伽室B', '器械区', '游泳池', '拳击台', '有氧区']
-      const times = [
-        { start: '07:00', end: '08:00' },
-        { start: '09:00', end: '10:00' },
-        { start: '18:00', end: '19:00' },
-        { start: '19:00', end: '20:00' },
-        { start: '20:00', end: '21:00' }
-      ]
-      
-      const activity = activities[Math.floor(Math.random() * activities.length)]
-      const location = locations[Math.floor(Math.random() * locations.length)]
-      const time = times[Math.floor(Math.random() * times.length)]
-      const statuses = ['confirmed', 'completed', 'cancelled']
-      const status = i < 0 ? 'completed' : i === 0 ? 'confirmed' : statuses[Math.floor(Math.random() * statuses.length)]
-      
-      schedules.push({
-        id: schedules.length + 1,
-        coach_id: coachId,
-        activity,
-        location,
-        date: dateStr,
-        start_time: time.start,
-        end_time: time.end,
-        max_capacity: Math.floor(Math.random() * 20) + 10,
-        current_bookings: Math.floor(Math.random() * 15) + 5,
-        status: status as 'confirmed' | 'cancelled' | 'completed',
-        notes: Math.random() > 0.7 ? '特殊说明' : undefined
-      })
-    }
-  }
-  
-  return schedules
-}
-
 const formatDate = (date: string) => {
   return new Date(date).toLocaleDateString('zh-CN')
 }
