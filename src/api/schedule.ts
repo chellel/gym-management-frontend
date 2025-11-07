@@ -19,6 +19,7 @@ export interface Schedule {
   updateTime: string;
   isDeleted: number;
   deleteTime?: string;
+  bookingCount: number;
 }
 
 // 排班分页响应接口
