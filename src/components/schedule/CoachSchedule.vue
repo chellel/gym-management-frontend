@@ -182,21 +182,13 @@ const getCoachSchedules = (coachId, date) => {
 
 // 格式化日期
 const formatDate = (date) => {
-  if (typeof date === "string") {
-    date = new Date(date);
-  }
-  return date.toLocaleDateString("zh-CN", { month: "2-digit", day: "2-digit" });
-};
+    return dayjs(date).format("MM/DD");
+  };
 
 // 格式化时间
 const formatTime = (datetime) => {
   if (!datetime) return "";
-  const date = new Date(datetime);
-  return date.toLocaleTimeString("zh-CN", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
+  return dayjs(datetime).format("HH:mm");
 };
 
 // 打开添加排班对话框
