@@ -161,7 +161,6 @@
       </div>
     </div>
 
-
     <!-- 添加/编辑教练对话框 -->
     <CoachFormDialog
       v-model:visible="showEditDialog"
@@ -356,4 +355,3 @@ const getStatusText = (status) => {
   background-color: #f9fafb;
 }
 </style>
-

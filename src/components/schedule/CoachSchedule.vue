@@ -19,7 +19,7 @@
         <thead class="bg-gray-50">
           <tr>
             <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              class="px-4 py-3 text-left text-normala font-medium text-gray-500 uppercase tracking-wider w-32"
             >
               教练
             </th>
@@ -37,7 +37,7 @@
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
           <tr v-for="coach in sortedCoachs" :key="coach.id">
-            <td class="px-6 py-4 whitespace-nowrap">
+            <td class="px-4 py-4 w-32">
               <div class="flex items-center">
                 <div class="flex-shrink-0 h-10 w-10">
                   <div
@@ -48,11 +48,11 @@
                     </span>
                   </div>
                 </div>
-                <div class="ml-4">
-                  <div class="text-sm font-medium text-gray-900">
+                <div class="ml-2 min-w-0">
+                  <div class="text-sm font-medium text-gray-900 truncate">
                     {{ coach.name }}
                   </div>
-                  <div class="text-sm text-gray-500">
+                  <div class="text-sm text-gray-500 w-[100px]">
                     {{ coach.remark }}
                   </div>
                 </div>

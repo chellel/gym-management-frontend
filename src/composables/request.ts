@@ -10,6 +10,9 @@ service.interceptors.request.use(
     //  if (config.method === 'post') {
     //    config.data = querystring.stringify(config.data);
     //  }
+
+    const token = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEwMDAzOCwidXNlcm5hbWUiOm51bGwsIm9wZW5pZCI6Im8tcWNaNmZSM3VXV0Jma3VtMjBmUzRyX281X2MiLCJleHAiOjE3NjI4NjA5MjN9.rzSC81f_rLHfXOMdp5e4uWfxjQ5vsjMHwgAK55QuYLI';
+    config.headers['Authorization'] = token;
     return config;
   },
   (error) => {

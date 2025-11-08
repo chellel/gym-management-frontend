@@ -67,10 +67,6 @@ export const checkinBooking = (id: number) => {
   return post(`/system/gymbooking/checkin`, { id })
 }
 
-// 获取会员的预约列表
-export const getMemberBookings = (memberId: number, params?: BookingQueryParams) => {
-  return get(`/system/gymbooking/member/${memberId}`, params)
-}
 
 // 获取排班的预约列表
 export const getScheduleBookings = (scheduleId: number) => {

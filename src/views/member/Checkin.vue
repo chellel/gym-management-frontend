@@ -13,7 +13,9 @@
         <div class="lg:col-span-2">
           <div class="bg-white rounded-xl shadow-lg p-8 text-center">
             <div class="mb-6">
-              <div class="inline-flex items-center justify-center w-20 h-20 bg-primary-100 rounded-full mb-4">
+              <div
+                class="inline-flex items-center justify-center w-20 h-20 bg-primary-100 rounded-full mb-4"
+              >
                 <el-icon class="w-10 h-10 text-primary-600" size="40">
                   <Check />
                 </el-icon>
@@ -24,7 +26,9 @@
 
             <!-- 签到状态 -->
             <div v-if="isCheckedIn" class="mb-6">
-              <div class="inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+              <div
+                class="inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium"
+              >
                 <el-icon class="w-4 h-4 mr-2">
                   <SuccessFilled />
                 </el-icon>
@@ -36,31 +40,67 @@
             <!-- 课程签到选择 -->
             <div v-else-if="todayBookings.length > 0" class="mb-6">
               <div class="mb-4">
-                <h3 class="text-lg font-semibold text-gray-900 mb-3">选择要签到的课程</h3>
+                <h3 class="text-lg font-semibold text-gray-900 mb-3">
+                  今日预约课程
+                </h3>
                 <div class="space-y-3">
                   <div
                     v-for="booking in todayBookings"
                     :key="booking.id"
-                    class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-                    :class="{ 'ring-2 ring-primary-500 bg-primary-50': selectedBookingId === booking.id }"
-                    @click="selectBooking(booking.id)"
+                    class="flex items-center justify-between p-4 rounded-lg transition-colors"
+                    :class="{
+                      'bg-gray-50 hover:bg-gray-100 cursor-pointer ring-2 ring-primary-500 bg-primary-50':
+                        !booking.isCheckedIn &&
+                        selectedBookingId === booking.id,
+                      'bg-gray-50 hover:bg-gray-100 cursor-pointer':
+                        !booking.isCheckedIn &&
+                        selectedBookingId !== booking.id,
+                      'bg-green-50 cursor-not-allowed opacity-75':
+                        booking.isCheckedIn,
+                    }"
+                    @click="!booking.isCheckedIn && selectBooking(booking.id)"
                   >
-                    <div class="flex-1">
-                      <div class="font-medium text-gray-900">{{ booking.courseName }}</div>
-                      <div class="text-sm text-gray-600">
-                        <span class="mr-4">教练：{{ booking.coachName }}</span>
-                        <span class="mr-4">时间：{{ booking.startTime }} - {{ booking.endTime }}</span>
+                    <div class="flex-1 flex justify-between">
+                      <div class="flex items-center justify-center gap-2">
+                        <div class="font-medium text-gray-900">
+                          {{ booking.courseName }}
+                        </div>
+                        <div
+                          v-if="booking.isCheckedIn"
+                          class="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium"
+                        >
+                          <el-icon class="w-3 h-3 mr-1">
+                            <SuccessFilled />
+                          </el-icon>
+                          已签到
+                        </div>
+                      </div>
+                      <div class="text-sm text-gray-600 mt-1">
+                        <span class="mr-4"
+                          >时间：{{ formatTimeHH(booking.startTime) }} -
+                          {{ formatTimeHH(booking.endTime) }}</span
+                        >
                         <span>地点：{{ booking.location }}</span>
                       </div>
+                      <div
+                        v-if="booking.isCheckedIn && booking.checkinTime"
+                        class="text-xs text-green-600 mt-1"
+                      >
+                        签到时间：{{ formatTime(booking.checkinTime) }}
+                      </div>
                     </div>
-                    <div class="ml-4">
-                      <el-radio :value="selectedBookingId" :label="booking.id" />
+                    <div class="w-0 ml-4 opacity-0" v-if="!booking.isCheckedIn">
+                      <el-radio
+                        :value="selectedBookingId"
+                        :label="booking.id"
+                      />
                     </div>
                   </div>
                 </div>
               </div>
-              
+
               <el-button
+                v-if="todayBookings.some((b) => !b.isCheckedIn)"
                 @click="handleCheckIn"
                 :loading="checkinLoading"
                 :disabled="!selectedBookingId"
@@ -120,7 +160,7 @@
               </el-icon>
             </div>
             <div class="text-3xl font-bold text-blue-600 mb-2">
-              {{ checkinStats.thisWeekCheckins }}
+              {{ thisWeekCheckins }}
             </div>
             <div class="text-sm text-gray-600">次</div>
           </div>
@@ -142,7 +182,7 @@
       </div>
 
       <!-- 最近签到记录 -->
-      <div class="bg-white rounded-xl shadow-lg p-6">
+      <!-- <div class="bg-white rounded-xl shadow-lg p-6">
         <div class="flex items-center justify-between mb-6">
           <h3 class="text-xl font-bold text-gray-900">最近课程签到记录</h3>
           <el-button @click="refreshCheckins" :loading="loading" type="text">
@@ -174,7 +214,9 @@
             class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
           >
             <div class="flex items-center">
-              <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center mr-4">
+              <div
+                class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center mr-4"
+              >
                 <el-icon class="w-5 h-5 text-primary-600">
                   <Check />
                 </el-icon>
@@ -199,140 +241,174 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useAuth } from '@/composables/useAuth'
-import { checkinService } from '@/services/checkinService'
-import { ElMessage } from 'element-plus'
-import dayjs from 'dayjs'
-import relativeTime from 'dayjs/plugin/relativeTime'
-import 'dayjs/locale/zh-cn'
-import PageHeader from '@/components/common/PageHeader.vue'
+import { ref, onMounted, computed } from "vue";
+import { useAuth } from "@/composables/useAuth";
+import { checkinService } from "@/services/checkinService";
+import { ElMessage } from "element-plus";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import "dayjs/locale/zh-cn";
+import PageHeader from "@/components/common/PageHeader.vue";
 
-dayjs.extend(relativeTime)
-dayjs.locale('zh-cn')
+dayjs.extend(relativeTime);
+dayjs.locale("zh-cn");
 
-const { getCurrentUser } = useAuth()
+const { getCurrentUser } = useAuth();
 
 // 响应式数据
-const isCheckedIn = ref(false)
-const todayCheckinTime = ref('')
-const checkinLoading = ref(false)
-const loading = ref(false)
-const recentCheckins = ref([])
-const todayBookings = ref([])
-const selectedBookingId = ref(null)
+const isCheckedIn = ref(false);
+const todayCheckinTime = ref("");
+const checkinLoading = ref(false);
+const loading = ref(false);
+const recentCheckins = ref([]);
+const todayBookings = ref([]);
+const selectedBookingId = ref(null);
 const checkinStats = ref({
   totalCheckins: 0,
-  thisWeekCheckins: 0,
   consecutiveDays: 0,
-  lastCheckin: null
-})
+  lastCheckin: null,
+});
+
+const thisWeekCheckins = computed(() => {
+  return todayBookings.value.filter((b) => b.isCheckedIn).length;
+});
 
 // 初始化
 onMounted(async () => {
-  await loadCheckinData()
+  await loadCheckinData();
 });
+
+const formatTimeHH = (time) => {
+  return dayjs(time).format("HH:mm");
+};
 
 // 加载签到数据
 const loadCheckinData = async () => {
-  loading.value = true
+  loading.value = true;
   try {
-    const user = getCurrentUser()
-    if (!user) return
+    const user = getCurrentUser();
+    if (!user) return;
 
     // 检查今日签到状态
-    const checkedInToday = await checkinService.isCheckedInToday(user.id)
-    isCheckedIn.value = checkedInToday
+    const checkedInToday = await checkinService.isCheckedInToday(user.id);
+    isCheckedIn.value = checkedInToday;
 
     // 获取签到统计
-    const stats = await checkinService.getCheckinStats(user.id)
-    checkinStats.value = stats
+    const stats = await checkinService.getCheckinStats(user.id);
+    checkinStats.value = stats;
 
     // 获取最近签到记录
-    const checkins = await checkinService.getMemberCheckins(user.id, 7)
-    recentCheckins.value = checkins
+    const checkins = await checkinService.getMemberCheckins(user.id, 7);
+    recentCheckins.value = checkins;
 
     // 获取今天可签到的课程
-    const bookings = await checkinService.getTodayBookings(user.id)
-    todayBookings.value = bookings
+    const bookings = await checkinService.getTodayBookings(user.id);
+    todayBookings.value = bookings;
+
+    // 如果之前选中的课程已经签到，清除选中状态
+    if (selectedBookingId.value) {
+      const selectedBooking = bookings.find(
+        (b) => b.id === selectedBookingId.value
+      );
+      if (selectedBooking && selectedBooking.isCheckedIn) {
+        selectedBookingId.value = null;
+      }
+    }
 
     // 如果有今日签到，显示签到时间
     if (checkedInToday && checkins.length > 0) {
-      const todayCheckin = checkins.find(checkin => 
-        checkin.date === dayjs().format('YYYY-MM-DD')
-      )
+      const todayCheckin = checkins.find(
+        (checkin) => checkin.date === dayjs().format("YYYY-MM-DD")
+      );
       if (todayCheckin) {
-        todayCheckinTime.value = todayCheckin.checkin_time
+        todayCheckinTime.value = todayCheckin.checkin_time;
       }
     }
   } catch (error) {
-    console.error('Error loading checkin data:', error)
-    ElMessage.error('加载签到数据失败')
+    console.error("Error loading checkin data:", error);
+    ElMessage.error("加载签到数据失败");
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 // 处理签到
 const handleCheckIn = async () => {
-  checkinLoading.value = true
+  checkinLoading.value = true;
   try {
-    const user = getCurrentUser()
+    const user = getCurrentUser();
     if (!user) {
-      ElMessage.error('请先登录')
-      return
+      ElMessage.error("请先登录");
+      return;
     }
 
     if (!selectedBookingId.value) {
-      ElMessage.warning('请选择要签到的课程')
-      return
+      ElMessage.warning("请选择要签到的课程");
+      return;
     }
 
-    const result = await checkinService.checkIn(user.id, selectedBookingId.value)
-    
+    const result = await checkinService.checkIn(
+      user.id,
+      selectedBookingId.value
+    );
+
     if (result.success) {
-      ElMessage.success(result.message)
-      isCheckedIn.value = true
-      todayCheckinTime.value = result.checkin.checkinTime
-      
+      ElMessage.success(result.message);
+      isCheckedIn.value = true;
+      todayCheckinTime.value = result.checkin.checkinTime;
+
       // 刷新数据
-      await loadCheckinData()
+      await loadCheckinData();
     } else {
-      ElMessage.warning(result.message)
+      ElMessage.warning(result.message);
     }
   } catch (error) {
-    console.error('Error checking in:', error)
-    ElMessage.error('签到失败，请重试')
+    console.error("Error checking in:", error);
+    ElMessage.error("签到失败，请重试");
   } finally {
-    checkinLoading.value = false
+    checkinLoading.value = false;
   }
-}
+};
 
 // 选择预约课程
 const selectBooking = (bookingId) => {
-  selectedBookingId.value = bookingId
-}
+  const booking = todayBookings.value.find((b) => b.id === bookingId);
+  // 只能选择未签到的课程
+  if (booking && !booking.isCheckedIn) {
+    selectedBookingId.value = bookingId;
+  }
+};
 
 // 刷新签到记录
 const refreshCheckins = async () => {
-  await loadCheckinData()
-}
+  await loadCheckinData();
+};
 
 // 格式化日期
 const formatDate = (date) => {
-  return dayjs(date).format('MM月DD日 dddd')
-}
+  return dayjs(date).format("MM月DD日 dddd");
+};
 
 // 格式化相对时间
 const formatRelativeTime = (timestamp) => {
-  return dayjs(timestamp).fromNow()
-}
+  return dayjs(timestamp).fromNow();
+};
+
+// 格式化时间（只显示时分秒）
+const formatTime = (timeString) => {
+  if (!timeString) return "";
+  // 如果是完整的日期时间字符串，提取时间部分
+  if (timeString.includes(" ")) {
+    return timeString.split(" ")[1] || timeString;
+  }
+  return timeString;
+};
 </script>
 
 <style scoped>

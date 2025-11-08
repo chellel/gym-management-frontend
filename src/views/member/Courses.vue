@@ -35,6 +35,7 @@
               placeholder="全部课程"
               @change="handleFilterChange"
               class="w-full"
+              clearable
             >
               <el-option
                 v-for="course in courses"
@@ -402,7 +403,7 @@ onMounted(async () => {
 const pagination = ref({
   total: 0,
   currentPage: 1,
-  pageSize: 20,
+  pageSize: 1000000,
 });
 const handlePageChange = (page) => {
   pagination.value.currentPage = page;
@@ -417,6 +418,8 @@ const getScheduleData = async () => {
     page: pagination.value.currentPage,
     pageSize: pagination.value.pageSize,
     ...searchParams.value,
+    startDate: selectedDate.value,
+    endDate: selectedDate.value,
   });
   if (res.code !== 0) {
     return;
@@ -462,39 +465,6 @@ const loadData = () => {
   getScheduleData();
 };
 
-// 筛选后的课程（基于排班数据）
-// const filteredClasses = computed(() => {
-//   let filtered = schedules.value;
-
-//   // 按日期筛选
-//   if (selectedDate.value) {
-//     filtered = filtered.filter((schedule) => {
-//       const scheduleDate = dayjs(schedule.startTime).format("YYYY-MM-DD");
-//       return scheduleDate === selectedDate.value;
-//     });
-//   }
-
-//   // 按时间段筛选
-//   if (searchParams.value.timeSlot) {
-//     filtered = filtered.filter((schedule) => {
-//       const hour = dayjs(schedule.startTime).hour();
-//       switch (searchParams.value.timeSlot) {
-//         case "morning":
-//           return hour >= 6 && hour < 12;
-//         case "afternoon":
-//           return hour >= 12 && hour < 18;
-//         case "evening":
-//           return hour >= 18 && hour < 24;
-//         default:
-//           return true;
-//       }
-//     });
-//   }
-
-//   return filtered;
-// });
-
-// 统计数据
 const totalClasses = computed(() => schedules.value.length);
 const availableClasses = computed(
   () =>
@@ -622,8 +592,8 @@ const getCourseDescription = (courseId) => {
 
 // 获取教练名称
 const getCoachName = (coachId) => {
-  const coach = coaches.value.find((c) => c.id === coachId);
-  return coach ? coach.name : "未知教练";
+  const coach = coachs.value.find((c) => c.id === coachId);
+  return coach ? coach.name : "教练";
 };
 
 

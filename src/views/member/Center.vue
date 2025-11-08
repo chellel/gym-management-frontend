@@ -327,7 +327,7 @@ const loadMemberData = async () => {
     recentCheckins.value = checkins
 
     // 加载预约记录
-    const bookings = await classService.getMemberBookings(user.id)
+    const bookings = await classService.getMemberBookings({ memberId: user.id })
     recentBookings.value = bookings
 
     // 这里可以添加更多数据加载逻辑

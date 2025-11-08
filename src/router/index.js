@@ -30,7 +30,6 @@ const getRequiredRoleByPath = (path) => {
 
 // 检查用户是否有权限访问指定路径
 const hasPathPermission = (path, userRole) => {
-  return true;
   const requiredRole = getRequiredRoleByPath(path);
   if (!requiredRole) {
     return true; // 公共路径，无需权限检查
