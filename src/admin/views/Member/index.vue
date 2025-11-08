@@ -346,11 +346,12 @@
                   placeholder="请选择会员类型"
                   class="w-full"
                 >
-                  <el-option label="月度会员" value="月度会员" />
-                  <el-option label="季度会员" value="季度会员" />
-                  <el-option label="半年会员" value="半年会员" />
-                  <el-option label="年度会员" value="年度会员" />
-                  <el-option label="终身会员" value="终身会员" />
+                  <el-option
+                    v-for="type in membershipTypes"
+                    :key="type.id"
+                    :label="type.typeName"
+                    :value="type.typeName"
+                  />
                 </el-select>
               </el-form-item>
 
@@ -436,7 +437,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { getMemberList, getMemberStats, createMember, updateMember as updateMemberApi, stopMember as stopMemberApi } from '@/api/member'
+import { getMemberList, getMemberStats, createMember, updateMember as updateMemberApi, stopMember as stopMemberApi, getMembershipTypes } from '@/api/member'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
   Plus, 
@@ -473,7 +474,7 @@ const stats = reactive({
 // 分页数据
 const pagination = reactive({
   total: 0,
-  pageSize: 10,
+  pageSize: 100,
   currentPage: 1
 })
 
@@ -683,6 +684,7 @@ const getStatusClass = (status) => {
 onMounted(() => {
   fetchMembers()
   fetchStats()
+  loadMembershipTypes()
 })
 
 const searchForm = reactive({
@@ -698,6 +700,20 @@ const editingMember = ref(null)
 const currentLeaveMember = ref(null)
 const currentRenewalMember = ref(null)
 const leaveLoading = ref(false)
+
+// 会员类型列表
+const membershipTypes = ref([])
+
+// 加载会员套餐类型列表
+const loadMembershipTypes = async () => {
+  try {
+    const response = await getMembershipTypes({ status: 'active', sortOrder: true })
+    membershipTypes.value = response.rows || response.data || []
+  } catch (error) {
+    console.error('加载套餐类型失败:', error)
+    ElMessage.error('加载套餐类型失败')
+  }
+}
 
 // 会员表单
 const memberForm = reactive({

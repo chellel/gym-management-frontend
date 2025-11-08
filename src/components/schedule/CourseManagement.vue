@@ -208,6 +208,10 @@ const handleSearch = () => {
   // 搜索逻辑已在 computed 中处理
 };
 
+const loadCourses = async () => {
+  getCourseData();
+};
+
 // 刷新课程
 const refreshCourses = () => {
   loadCourses();

@@ -62,7 +62,7 @@
                 </dt>
                 <dd class="flex items-baseline">
                   <div class="text-2xl font-semibold text-gray-900">
-                    {{ kpis.totalMembers }}
+                    {{ kpis.totalMembers.toFixed(0) }}
                   </div>
                   <div
                     class="ml-2 flex items-baseline text-sm font-semibold text-green-600"
@@ -71,7 +71,7 @@
                       <ArrowUp />
                     </el-icon>
                     <span class="sr-only">Increased by</span>
-                    {{ kpis.memberGrowth }}%
+                    {{ kpis.memberGrowth.toFixed(1) }}%
                   </div>
                 </dd>
               </dl>
@@ -96,7 +96,7 @@
                 </dt>
                 <dd class="flex items-baseline">
                   <div class="text-2xl font-semibold text-gray-900">
-                    {{ kpis.totalCheckIns }}
+                    {{ kpis.totalCheckIns.toFixed(0) }}
                   </div>
                   <div
                     class="ml-2 flex items-baseline text-sm font-semibold text-blue-600"
@@ -105,7 +105,7 @@
                       <ArrowUp />
                     </el-icon>
                     <span class="sr-only">Increased by</span>
-                    {{ kpis.checkInGrowth }}%
+                    {{ kpis.checkInGrowth.toFixed(1) }}%
                   </div>
                 </dd>
               </dl>
@@ -129,7 +129,7 @@
                 </dt>
                 <dd class="flex items-baseline">
                   <div class="text-2xl font-semibold text-gray-900">
-                    {{ kpis.activityRate }}%
+                    {{ kpis.activityRate.toFixed(1) }}%
                   </div>
                   <div
                     class="ml-2 flex items-baseline text-sm font-semibold text-green-600"
@@ -138,7 +138,7 @@
                       <ArrowUp />
                     </el-icon>
                     <span class="sr-only">Increased by</span>
-                    {{ kpis.activityGrowth }}%
+                    {{ kpis.activityGrowth.toFixed(1) }}%
                   </div>
                 </dd>
               </dl>
@@ -159,7 +159,7 @@
         </div>
         <div class="p-6">
           <div class="h-64 sm:h-80">
-            <MemberGrowthChart :data="memberGrowthData" :totalMembers="kpis.totalMembers" />
+            <MemberGrowthChart :data="memberGrowthData" />
           </div>
         </div>
       </div>
@@ -391,15 +391,6 @@ import {
   ClassBookingChart,
   PeakHoursChart
 } from "@/components/charts";
-import {
-  getKpiData,
-  getMemberGrowthData,
-  getClassBookingTop5,
-  getPeakHoursData,
-  getMemberDetails,
-  getClassDetails,
-} from "@/api/dashboard";
-import { getMembershipTypes } from "@/api/member";
 
 // 响应式数据
 const currentTab = ref("members");
@@ -413,135 +404,13 @@ const dateRange = ref([
 
 // KPI数据
 const kpis = reactive({
-  totalMembers: 0,
-  memberGrowth: 0,
-  totalCheckIns: 0,
-  checkInGrowth: 0,
-  activityRate: 0,
-  activityGrowth: 0,
+  totalMembers: 1256,
+  memberGrowth: 12.5,
+  totalCheckIns: 3420,
+  checkInGrowth: 15.2,
+  activityRate: 68.5,
+  activityGrowth: 5.1,
 });
-
-// 获取会员详细数据并更新显示
-const fetchMemberDetails = async () => {
-  try {
-    const [startDate, endDate] = dateRange.value || [];
-    const params = startDate && endDate ? { startDate, endDate } : {};
-    
-    const response = await getMemberDetails(params);
-    
-    if (response && response.data && Array.isArray(response.data)) {
-      // 更新会员数据，根据 membershipType 获取套餐名称并回显
-      memberData.value = response.data.map((item) => {
-        // 获取套餐名称
-        const typeName = getMembershipTypeName(item);
-        
-        return {
-          type: typeName || item.type || '',
-          count: item.count || 0,
-          percentage: item.percentage || 0,
-          avgRevenue: item.avgRevenue || 0,
-          // 保留原始数据以便调试
-          originalData: item
-        };
-      });
-      console.log("会员详细数据已更新:", memberData.value);
-    }
-  } catch (error) {
-    console.error("获取会员详细数据失败:", error);
-    // 失败时保持现有数据不变
-  }
-};
-
-// 调用所有看板API并更新显示数据
-const fetchAllDashboardApis = async () => {
-  try {
-    const [startDate, endDate] = dateRange.value || [];
-    const params = startDate && endDate ? { startDate, endDate } : {};
-
-    // 调用所有API
-    const [
-      kpiResponse,
-      memberGrowthResponse,
-      classBookingResponse,
-      peakHoursResponse,
-      classDetailsResponse,
-    ] = await Promise.all([
-      getKpiData(params),
-      getMemberGrowthData(params),
-      getClassBookingTop5(params),
-      getPeakHoursData(params),
-      getClassDetails(params),
-    ]);
-
-    // 更新KPI数据
-    if (kpiResponse && kpiResponse.data) {
-      const kpiData = kpiResponse.data;
-      Object.assign(kpis, {
-        totalMembers: kpiData.totalMembers || 0,
-        memberGrowth: kpiData.memberGrowth || 0,
-        totalCheckIns: kpiData.totalCheckIns || 0,
-        checkInGrowth: kpiData.checkInGrowth || 0,
-        activityRate: kpiData.activityRate || 0,
-        activityGrowth: kpiData.activityGrowth || 0,
-      });
-      console.log("KPI数据已更新:", kpis);
-    } else {
-      console.warn("KPI数据格式异常:", kpiResponse);
-    }
-
-    // 更新会员增长趋势数据
-    if (memberGrowthResponse && memberGrowthResponse.data && Array.isArray(memberGrowthResponse.data)) {
-      memberGrowthData.value = memberGrowthResponse.data.map(item => ({
-        date: item.date || '',
-        newMembers: item.newMembers || 0,
-      }));
-      console.log("会员增长趋势数据已更新:", memberGrowthData.value);
-    } else {
-      console.warn("会员增长趋势数据格式异常:", memberGrowthResponse);
-    }
-
-    // 更新课程预约Top5数据
-    if (classBookingResponse && classBookingResponse.data && Array.isArray(classBookingResponse.data)) {
-      classBookingData.value = classBookingResponse.data.map(item => ({
-        name: item.name || '',
-        bookings: item.bookings || 0
-      }));
-      console.log("课程预约Top5数据已更新:", classBookingData.value);
-    } else {
-      console.warn("课程预约Top5数据格式异常:", classBookingResponse);
-    }
-
-    // 更新训练高峰期数据
-    if (peakHoursResponse && peakHoursResponse.data) {
-      const peakData = peakHoursResponse.data;
-      // 确保数据格式正确，每个时间段都是数组格式
-      peakHoursData.value = {
-        weekday: Array.isArray(peakData.weekday) ? peakData.weekday : [],
-        weekend: Array.isArray(peakData.weekend) ? peakData.weekend : [],
-        morning: Array.isArray(peakData.morning) ? peakData.morning : [],
-        evening: Array.isArray(peakData.evening) ? peakData.evening : []
-      };
-      console.log("训练高峰期数据已更新:", peakHoursData.value);
-    } else {
-      console.warn("训练高峰期数据格式异常:", peakHoursResponse);
-    }
-
-    // 更新课程详细数据
-    if (classDetailsResponse && classDetailsResponse.data && Array.isArray(classDetailsResponse.data)) {
-      classData.value = classDetailsResponse.data.map(item => ({
-        name: item.name || '',
-        bookings: item.bookings || 0,
-        attendanceRate: item.attendanceRate || 0,
-        satisfaction: item.satisfaction || 0
-      }));
-      console.log("课程详细数据已更新:", classData.value);
-    } else {
-      console.warn("课程详细数据格式异常:", classDetailsResponse);
-    }
-  } catch (error) {
-    console.error("获取看板数据失败:", error);
-  }
-};
 
 // 标签页
 const tabs = [
@@ -550,74 +419,21 @@ const tabs = [
   { key: "finance", name: "财务数据" },
 ];
 
-// 会员套餐类型列表
-const membershipTypes = ref([]);
-
-// 加载会员套餐类型列表
-const loadMembershipTypes = async () => {
-  try {
-    const response = await getMembershipTypes({ status: 'active', sortOrder: true });
-    membershipTypes.value = response.rows || response.data || [];
-    console.log("会员套餐类型已加载:", membershipTypes.value);
-  } catch (error) {
-    console.error("加载会员套餐类型失败:", error);
-  }
-};
-
-// 根据 membershipType 或 membershipTypeId 获取套餐名称
-const getMembershipTypeName = (item) => {
-  // 如果 API 返回的是套餐名称，直接使用
-  if (item.typeName) {
-    return item.typeName;
-  }
-  
-  // 如果返回的是 membershipTypeId，从列表中查找
-  if (item.membershipTypeId) {
-    const type = membershipTypes.value.find(t => t.id === item.membershipTypeId);
-    if (type) {
-      return type.typeName;
-    }
-  }
-  
-  // 如果返回的是 membershipType（可能是 typeCode 或 typeName）
-  if (item.membershipType) {
-    // 先尝试通过 typeCode 匹配
-    const typeByCode = membershipTypes.value.find(t => t.typeCode === item.membershipType);
-    if (typeByCode) {
-      return typeByCode.typeName;
-    }
-    // 再尝试通过 typeName 匹配
-    const typeByName = membershipTypes.value.find(t => t.typeName === item.membershipType);
-    if (typeByName) {
-      return typeByName.typeName;
-    }
-    // 如果都找不到，返回原始值
-    return item.membershipType;
-  }
-  
-  // 如果返回的是 type 字段，尝试匹配
-  if (item.type) {
-    const type = membershipTypes.value.find(t => 
-      t.typeName === item.type || 
-      t.typeCode === item.type ||
-      t.id === item.type
-    );
-    if (type) {
-      return type.typeName;
-    }
-    // 如果找不到匹配的，返回原始值
-    return item.type;
-  }
-  
-  // 默认返回空字符串
-  return '';
-};
-
 // 会员数据
-const memberData = ref([]);
+const memberData = ref([
+  { type: "年度会员", count: 456, percentage: 36.3, avgRevenue: 2400 },
+  { type: "半年会员", count: 324, percentage: 25.8, avgRevenue: 1300 },
+  { type: "季度会员", count: 278, percentage: 22.1, avgRevenue: 720 },
+  { type: "月度会员", count: 198, percentage: 15.8, avgRevenue: 280 },
+]);
 
 // 课程数据
-const classData = ref([]);
+const classData = ref([
+  { name: "瑜伽课程", bookings: 456, attendanceRate: 92, satisfaction: 95 },
+  { name: "动感单车", bookings: 378, attendanceRate: 88, satisfaction: 89 },
+  { name: "力量训练", bookings: 234, attendanceRate: 85, satisfaction: 91 },
+  { name: "有氧运动", bookings: 189, attendanceRate: 90, satisfaction: 87 },
+]);
 
 // 财务数据
 const financeData = ref([
@@ -629,25 +445,188 @@ const financeData = ref([
 
 // 图表数据
 // 会员增长趋势数据
-const memberGrowthData = ref([]);
+const memberGrowthData = ref([
+  { date: "1月", newMembers: 45, totalMembers: 1200 },
+  { date: "2月", newMembers: 52, totalMembers: 1252 },
+  { date: "3月", newMembers: 38, totalMembers: 1290 },
+  { date: "4月", newMembers: 67, totalMembers: 1357 },
+  { date: "5月", newMembers: 43, totalMembers: 1400 },
+  { date: "6月", newMembers: 56, totalMembers: 1456 },
+  { date: "7月", newMembers: 48, totalMembers: 1504 },
+  { date: "8月", newMembers: 61, totalMembers: 1565 },
+  { date: "9月", newMembers: 39, totalMembers: 1604 },
+  { date: "10月", newMembers: 52, totalMembers: 1656 },
+  { date: "11月", newMembers: 44, totalMembers: 1700 },
+  { date: "12月", newMembers: 58, totalMembers: 1758 }
+]);
 
 // 课程预约 Top 5 数据
-const classBookingData = ref([]);
+const classBookingData = ref([
+  { name: "瑜伽课程", bookings: 456 },
+  { name: "动感单车", bookings: 378 },
+  { name: "力量训练", bookings: 234 },
+  { name: "有氧运动", bookings: 189 },
+  { name: "普拉提", bookings: 156 }
+]);
+
 
 // 训练高峰期数据 - 按不同时段分类
 const peakHoursData = ref({
-  weekday: [],
-  weekend: [],
-  morning: [],
-  evening: []
+  weekday: [
+    { time: "06:00", activeUsers: 25 },
+    { time: "07:00", activeUsers: 45 },
+    { time: "08:00", activeUsers: 35 },
+    { time: "09:00", activeUsers: 20 },
+    { time: "10:00", activeUsers: 15 },
+    { time: "11:00", activeUsers: 18 },
+    { time: "12:00", activeUsers: 30 },
+    { time: "13:00", activeUsers: 25 },
+    { time: "14:00", activeUsers: 20 },
+    { time: "15:00", activeUsers: 22 },
+    { time: "16:00", activeUsers: 28 },
+    { time: "17:00", activeUsers: 55 },
+    { time: "18:00", activeUsers: 85 },
+    { time: "19:00", activeUsers: 95 },
+    { time: "20:00", activeUsers: 78 },
+    { time: "21:00", activeUsers: 45 },
+    { time: "22:00", activeUsers: 25 }
+  ],
+  weekend: [
+    { time: "08:00", activeUsers: 15 },
+    { time: "09:00", activeUsers: 25 },
+    { time: "10:00", activeUsers: 35 },
+    { time: "11:00", activeUsers: 45 },
+    { time: "12:00", activeUsers: 40 },
+    { time: "13:00", activeUsers: 30 },
+    { time: "14:00", activeUsers: 35 },
+    { time: "15:00", activeUsers: 50 },
+    { time: "16:00", activeUsers: 65 },
+    { time: "17:00", activeUsers: 70 },
+    { time: "18:00", activeUsers: 60 },
+    { time: "19:00", activeUsers: 45 },
+    { time: "20:00", activeUsers: 30 },
+    { time: "21:00", activeUsers: 20 }
+  ],
+  morning: [
+    { time: "06:00", activeUsers: 25 },
+    { time: "07:00", activeUsers: 45 },
+    { time: "08:00", activeUsers: 35 },
+    { time: "09:00", activeUsers: 20 },
+    { time: "10:00", activeUsers: 15 },
+    { time: "11:00", activeUsers: 18 }
+  ],
+  evening: [
+    { time: "17:00", activeUsers: 55 },
+    { time: "18:00", activeUsers: 85 },
+    { time: "19:00", activeUsers: 95 },
+    { time: "20:00", activeUsers: 78 },
+    { time: "21:00", activeUsers: 45 },
+    { time: "22:00", activeUsers: 25 }
+  ]
 });
 
+// Mock数据函数 - 根据时间范围生成不同的mock数据
+const mockDataByRange = (range) => {
+  const isWeek = range === 'week'
+  
+  // Mock KPI数据
+  if (isWeek) {
+    // 本周数据 - 数据相对较小
+    Object.assign(kpis, {
+      totalMembers: 1180 + Math.floor(Math.random() * 100),
+      memberGrowth: 8.5 + Math.random() * 5,
+      totalCheckIns: 2800 + Math.floor(Math.random() * 500),
+      checkInGrowth: 12.3 + Math.random() * 5,
+      activityRate: 65.2 + Math.random() * 8,
+      activityGrowth: 4.2 + Math.random() * 3,
+    })
+    
+    // Mock会员增长趋势 - 本周按天显示
+    const weekDays = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+    memberGrowthData.value = weekDays.map((day, index) => ({
+      date: day,
+      newMembers: 5 + Math.floor(Math.random() * 10),
+      totalMembers: 1150 + index * 5 + Math.floor(Math.random() * 20)
+    }))
+    
+    // Mock课程预约Top5 - 本周数据
+    classBookingData.value = [
+      { name: "瑜伽课程", bookings: 320 + Math.floor(Math.random() * 50) },
+      { name: "动感单车", bookings: 280 + Math.floor(Math.random() * 40) },
+      { name: "力量训练", bookings: 180 + Math.floor(Math.random() * 30) },
+      { name: "有氧运动", bookings: 150 + Math.floor(Math.random() * 25) },
+      { name: "普拉提", bookings: 120 + Math.floor(Math.random() * 20) }
+    ]
+    
+    // Mock会员详细数据 - 本周
+    memberData.value = [
+      { type: "年度会员", count: 420 + Math.floor(Math.random() * 50), percentage: 35.6, avgRevenue: 2400 },
+      { type: "半年会员", count: 300 + Math.floor(Math.random() * 40), percentage: 25.4, avgRevenue: 1300 },
+      { type: "季度会员", count: 250 + Math.floor(Math.random() * 35), percentage: 21.2, avgRevenue: 720 },
+      { type: "月度会员", count: 180 + Math.floor(Math.random() * 30), percentage: 15.3, avgRevenue: 280 },
+    ]
+    
+    // Mock课程详细数据 - 本周
+    classData.value = [
+      { name: "瑜伽课程", bookings: 320, attendanceRate: 90 + Math.floor(Math.random() * 5), satisfaction: 94 },
+      { name: "动感单车", bookings: 280, attendanceRate: 86 + Math.floor(Math.random() * 5), satisfaction: 88 },
+      { name: "力量训练", bookings: 180, attendanceRate: 83 + Math.floor(Math.random() * 5), satisfaction: 90 },
+      { name: "有氧运动", bookings: 150, attendanceRate: 88 + Math.floor(Math.random() * 5), satisfaction: 86 },
+    ]
+  } else {
+    // 本月数据 - 数据相对较大
+    Object.assign(kpis, {
+      totalMembers: 1256 + Math.floor(Math.random() * 150),
+      memberGrowth: 12.5 + Math.random() * 8,
+      totalCheckIns: 3420 + Math.floor(Math.random() * 800),
+      checkInGrowth: 15.2 + Math.random() * 8,
+      activityRate: 68.5 + Math.random() * 10,
+      activityGrowth: 5.1 + Math.random() * 5,
+    })
+    
+    // Mock会员增长趋势 - 本月按周显示
+    const monthWeeks = ['第1周', '第2周', '第3周', '第4周']
+    memberGrowthData.value = monthWeeks.map((week, index) => ({
+      date: week,
+      newMembers: 40 + Math.floor(Math.random() * 20),
+      totalMembers: 1200 + index * 15 + Math.floor(Math.random() * 30)
+    }))
+    
+    // Mock课程预约Top5 - 本月数据
+    classBookingData.value = [
+      { name: "瑜伽课程", bookings: 456 + Math.floor(Math.random() * 100) },
+      { name: "动感单车", bookings: 378 + Math.floor(Math.random() * 80) },
+      { name: "力量训练", bookings: 234 + Math.floor(Math.random() * 60) },
+      { name: "有氧运动", bookings: 189 + Math.floor(Math.random() * 50) },
+      { name: "普拉提", bookings: 156 + Math.floor(Math.random() * 40) }
+    ]
+    
+    // Mock会员详细数据 - 本月
+    memberData.value = [
+      { type: "年度会员", count: 456 + Math.floor(Math.random() * 80), percentage: 36.3, avgRevenue: 2400 },
+      { type: "半年会员", count: 324 + Math.floor(Math.random() * 60), percentage: 25.8, avgRevenue: 1300 },
+      { type: "季度会员", count: 278 + Math.floor(Math.random() * 50), percentage: 22.1, avgRevenue: 720 },
+      { type: "月度会员", count: 198 + Math.floor(Math.random() * 40), percentage: 15.8, avgRevenue: 280 },
+    ]
+    
+    // Mock课程详细数据 - 本月
+    classData.value = [
+      { name: "瑜伽课程", bookings: 456, attendanceRate: 92 + Math.floor(Math.random() * 5), satisfaction: 95 },
+      { name: "动感单车", bookings: 378, attendanceRate: 88 + Math.floor(Math.random() * 5), satisfaction: 89 },
+      { name: "力量训练", bookings: 234, attendanceRate: 85 + Math.floor(Math.random() * 5), satisfaction: 91 },
+      { name: "有氧运动", bookings: 189, attendanceRate: 90 + Math.floor(Math.random() * 5), satisfaction: 87 },
+    ]
+  }
+  
+  // 训练高峰期数据保持不变（因为这是按时间段统计的）
+  console.log(`已加载${isWeek ? '本周' : '本月'}的mock数据`)
+}
+
 // 初始化
-onMounted(async () => {
-  // 先加载会员套餐类型列表
-  await loadMembershipTypes();
-  // 刷新所有数据（包括KPI、图表、详细数据等）
-  await refreshData();
+onMounted(() => {
+  // 初始化时加载本月mock数据
+  mockDataByRange('month');
+  refreshData();
 });
 
 // 设置快速时间范围
@@ -671,24 +650,15 @@ const setQuickRange = (range) => {
     today.toISOString().split("T")[0]
   ];
 
-  // 时间范围改变时，刷新数据（refreshData 内部会调用 fetchMemberDetails）
+  // 根据时间范围mock数据
+  mockDataByRange(range);
+  
   refreshData();
 };
 
 // 刷新数据
 const refreshData = async () => {
   try {
-    // 确保会员套餐类型列表已加载（如果还没有加载）
-    if (membershipTypes.value.length === 0) {
-      await loadMembershipTypes();
-    }
-    
-    // 调用所有看板API
-    await fetchAllDashboardApis();
-    
-    // 获取会员详细数据（会更新显示）
-    await fetchMemberDetails();
-    
     // 模拟数据加载
     await new Promise(resolve => setTimeout(resolve, 1000));
     

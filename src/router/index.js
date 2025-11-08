@@ -151,6 +151,11 @@ const routes = [
         name: "Reports",
         component: () => import("@/views/Reports.vue"),
       },
+      {
+        path: "reportsMock",
+        name: "ReportsMock",
+        component: () => import("@/views/ReportsMock.vue"),
+      },
       // {
       //   path: "finance",
       //   name: "Finance",

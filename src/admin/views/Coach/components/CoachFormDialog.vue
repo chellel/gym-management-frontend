@@ -27,6 +27,10 @@
             <el-input v-model="form.userId" placeholder="请输入工号" />
           </el-form-item>
 
+          <el-form-item label="用户名" prop="username">
+            <el-input v-model="form.username" placeholder="请输入用户名（用于登录）" />
+          </el-form-item>
+
           <el-form-item label="邮箱" prop="email">
             <el-input v-model="form.email" placeholder="请输入邮箱地址" />
           </el-form-item>
@@ -150,6 +154,7 @@ const loading = ref(false);
 const defaultForm = {
   name: "",
   userId: "",
+  username: "",
   email: "",
   phone: "",
   password: "",
@@ -175,6 +180,15 @@ const rules = {
     { type: "email", message: "请输入正确的邮箱格式", trigger: "blur" },
   ],
   userId: [{ required: true, message: "请输入教练工号", trigger: "blur" }],
+  username: [
+    { required: true, message: "请输入用户名", trigger: "blur" },
+    { min: 3, max: 50, message: "用户名长度在 3 到 50 个字符", trigger: "blur" },
+    {
+      pattern: /^[a-zA-Z0-9_]+$/,
+      message: "用户名只能包含字母、数字和下划线",
+      trigger: "blur",
+    },
+  ],
   phone: [
     { required: true, message: "请输入电话号码", trigger: "blur" },
     {
@@ -219,6 +233,7 @@ watch(
           Object.assign(form, {
             name: coachData.name || "",
             userId: coachData.userId || "",
+            username: coachData.username || "",
             email: coachData.email || "",
             phone: coachData.phone || "",
             gender: coachData.gender || 1,

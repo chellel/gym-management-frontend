@@ -52,6 +52,7 @@
         :schedules="schedules"
         @schedule-click="editSchedule"
         @date-change="handleDateChange"
+        @view-mode-change="handleViewModeChange"
       />
 
       <!-- 统计信息 -->
@@ -115,6 +116,7 @@ const schedules = ref<CoachSchedule[]>([])
 const selectedDate = ref(new Date())
 const editingSchedule = ref<CoachSchedule | null>(null)
 const showAddScheduleDialog = ref(false)
+const viewMode = ref<'week' | 'month'>('week')
 
 // 统计数据
 const scheduleStats = reactive({
@@ -143,20 +145,39 @@ watch(() => props.coach, (newCoach) => {
 }, { immediate: true })
 
 // 加载排班数据
-const loadSchedule = async () => {
+const loadSchedule = async (date?: Date, mode?: 'week' | 'month') => {
   if (!props.coach) return
 
   try {
     loading.value = true
+    const targetDate = date || selectedDate.value
+    const targetMode = mode || viewMode.value
+    
     // 模拟数据
     const mockSchedules = generateMockSchedules(props.coach.id)
     schedules.value = mockSchedules
     updateStats()
 
-    // 实际API调用
+    // 实际API调用 - 根据视图模式计算日期范围
+    // let startDate: string
+    // let endDate: string
+    // 
+    // if (targetMode === 'month') {
+    //   const firstDay = dayjs(targetDate).startOf('month')
+    //   const lastDay = dayjs(targetDate).endOf('month')
+    //   startDate = firstDay.format('YYYY-MM-DD')
+    //   endDate = lastDay.format('YYYY-MM-DD')
+    // } else {
+    //   const dayOfWeek = dayjs(targetDate).day()
+    //   const startOfWeek = dayjs(targetDate).subtract(dayOfWeek, 'day')
+    //   const endOfWeek = startOfWeek.add(6, 'day')
+    //   startDate = startOfWeek.format('YYYY-MM-DD')
+    //   endDate = endOfWeek.format('YYYY-MM-DD')
+    // }
+    // 
     // const response = await getCoachSchedule(props.coach.id, {
-    //   start_date: getDateRange().start,
-    //   end_date: getDateRange().end
+    //   start_date: startDate,
+    //   end_date: endDate
     // })
     // schedules.value = response.data
     // updateStats()
@@ -177,8 +198,17 @@ const updateStats = () => {
 }
 
 // 处理日期变化
-const handleDateChange = (date: Date) => {
+const handleDateChange = (date: Date, mode: 'week' | 'month') => {
   selectedDate.value = date
+  viewMode.value = mode
+  loadSchedule(date, mode)
+}
+
+// 处理视图模式变化
+const handleViewModeChange = (mode: 'week' | 'month', date: Date) => {
+  viewMode.value = mode
+  selectedDate.value = date
+  loadSchedule(date, mode)
 }
 
 // 编辑排班

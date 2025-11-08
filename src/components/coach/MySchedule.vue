@@ -9,6 +9,8 @@
       default-view-mode="week"
       @schedule-click="viewClassDetails"
       @refresh="refreshSchedule"
+      @date-change="handleDateChange"
+      @view-mode-change="handleViewModeChange"
     />
 
     <!-- 课程详情模态框 -->
@@ -72,8 +74,9 @@ const showClassDetailsModal = ref(false)
 const selectedClass = ref(null)
 const loading = ref(false)
 
-// 当前周
-const currentWeek = ref(new Date())
+// 当前日期和视图模式
+const currentDate = ref(new Date())
+const viewMode = ref('week')
 
 // 计算属性 - 周日期
 const weekDays = computed(() => {
@@ -98,7 +101,7 @@ onMounted(async () => {
 })
 
 // 加载排班数据
-const loadScheduleData = async () => {
+const loadScheduleData = async (date, mode) => {
   if (!currentUser.value?.id) {
     console.error('用户未登录')
     return
@@ -107,14 +110,31 @@ const loadScheduleData = async () => {
   try {
     loading.value = true
     
-    // 使用 dayjs 获取本周的开始和结束日期
-    const startOfWeek = dayjs(currentWeek.value).startOf('week')
-    const endOfWeek = startOfWeek.add(6, 'day')
+    const targetDate = date || currentDate.value
+    const targetMode = mode || viewMode.value
+    
+    let startDate
+    let endDate
+    
+    if (targetMode === 'month') {
+      // 月视图：获取整个月的日期范围
+      const firstDay = dayjs(targetDate).startOf('month')
+      const lastDay = dayjs(targetDate).endOf('month')
+      startDate = firstDay.format('YYYY-MM-DD')
+      endDate = lastDay.format('YYYY-MM-DD')
+    } else {
+      // 周视图：获取本周的开始和结束日期
+      const dayOfWeek = dayjs(targetDate).day()
+      const startOfWeek = dayjs(targetDate).subtract(dayOfWeek, 'day')
+      const endOfWeek = startOfWeek.add(6, 'day')
+      startDate = startOfWeek.format('YYYY-MM-DD')
+      endDate = endOfWeek.format('YYYY-MM-DD')
+    }
     
     const response = await getScheduleList({
       coachId: currentUser.value.id,
-      startDate: startOfWeek.format('YYYY-MM-DD'),
-      endDate: endOfWeek.format('YYYY-MM-DD'),
+      startDate: startDate,
+      endDate: endDate,
       page: 1,
       pageSize: 100,
       isDeleted: 0
@@ -149,6 +169,20 @@ const refreshSchedule = async () => {
       icon: 'error'
     })
   }
+}
+
+// 处理日期变化
+const handleDateChange = (date, mode) => {
+  currentDate.value = date
+  viewMode.value = mode
+  loadScheduleData(date, mode)
+}
+
+// 处理视图模式变化
+const handleViewModeChange = (mode, date) => {
+  viewMode.value = mode
+  currentDate.value = date
+  loadScheduleData(date, mode)
 }
 
 const viewClassDetails = (classItem) => {

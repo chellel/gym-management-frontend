@@ -49,20 +49,13 @@
               />
             </el-form-item>
 
-            <el-form-item label="请假开始日期" required>
+            <el-form-item label="请假日期范围" required>
               <el-date-picker
-                v-model="form.startDate"
-                type="date"
-                placeholder="选择开始日期"
-                class="w-full"
-              />
-            </el-form-item>
-
-            <el-form-item label="请假结束日期" required>
-              <el-date-picker
-                v-model="form.endDate"
-                type="date"
-                placeholder="选择结束日期"
+                v-model="form.dateRange"
+                type="daterange"
+                range-separator="至"
+                start-placeholder="开始日期"
+                end-placeholder="结束日期"
                 class="w-full"
               />
             </el-form-item>
@@ -116,8 +109,7 @@ const emit = defineEmits(['close', 'submit'])
 const form = reactive({
   leaveType: '',
   reason: '',
-  startDate: '',
-  endDate: ''
+  dateRange: null
 })
 
 // 重置表单
@@ -125,8 +117,7 @@ const resetForm = () => {
   Object.assign(form, {
     leaveType: '',
     reason: '',
-    startDate: '',
-    endDate: ''
+    dateRange: null
   })
 }
 
@@ -139,13 +130,19 @@ const handleClose = () => {
 // 提交表单
 const handleSubmit = () => {
   // 验证表单
-  if (!form.leaveType || !form.reason || !form.startDate || !form.endDate) {
+  if (!form.leaveType || !form.reason || !form.dateRange) {
     ElMessage.warning('请填写完整的请假信息')
     return
   }
 
-  // 验证日期
-  if (new Date(form.startDate) >= new Date(form.endDate)) {
+  // 验证日期范围
+  if (!Array.isArray(form.dateRange) || form.dateRange.length !== 2) {
+    ElMessage.warning('请选择有效的日期范围')
+    return
+  }
+
+  const [startDate, endDate] = form.dateRange
+  if (new Date(startDate) >= new Date(endDate)) {
     ElMessage.warning('结束日期必须晚于开始日期')
     return
   }
@@ -154,8 +151,8 @@ const handleSubmit = () => {
   emit('submit', {
     leaveType: form.leaveType,
     reason: form.reason,
-    startDate: form.startDate,
-    endDate: form.endDate
+    startDate: startDate,
+    endDate: endDate
   })
 }
 

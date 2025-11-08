@@ -42,11 +42,12 @@
         
         <el-form-item label="会籍类型" prop="membership_type">
           <el-select v-model="form.membership_type" placeholder="请选择会籍类型" class="w-full">
-            <el-option label="月度会员" value="月度会员" />
-            <el-option label="季度会员" value="季度会员" />
-            <el-option label="半年会员" value="半年会员" />
-            <el-option label="年度会员" value="年度会员" />
-            <el-option label="终身会员" value="终身会员" />
+            <el-option
+              v-for="type in membershipTypes"
+              :key="type.id"
+              :label="type.typeName"
+              :value="type.typeName"
+            />
           </el-select>
         </el-form-item>
 
@@ -102,9 +103,9 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, computed, watch } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { updateMember } from '@/api/member'
+import { getMembershipTypes } from '@/api/member'
 
 // Props
 const props = defineProps<{
@@ -121,6 +122,7 @@ const emit = defineEmits<{
 // 响应式数据
 const formRef = ref()
 const loading = ref(false)
+const membershipTypes = ref([])
 
 const form = reactive({
   membership_type: '',
@@ -152,6 +154,17 @@ const dialogVisible = computed({
   set: (value) => emit('update:visible', value)
 })
 
+// 加载会员套餐类型列表
+const loadMembershipTypes = async () => {
+  try {
+    const response = await getMembershipTypes({ status: 'active', sortOrder: true })
+    membershipTypes.value = (response as any).rows || (response as any).data || []
+  } catch (error) {
+    console.error('加载套餐类型失败:', error)
+    ElMessage.error('加载套餐类型失败')
+  }
+}
+
 // 监听会员数据变化
 watch(
   () => props.member,
@@ -169,28 +182,53 @@ watch(
   { immediate: true }
 )
 
+// 组件挂载时加载会员类型列表
+onMounted(() => {
+  loadMembershipTypes()
+})
+
 // 提交表单
 const handleSubmit = async () => {
   try {
     await formRef.value?.validate()
     loading.value = true
 
-    const params = {
+    const updateData = {
+      userId: props.member?.userId,
+      userCode: props.member?.userCode,
+      userName: props.member?.userName,
       membership_type: form.membership_type,
       start_date: form.start_date,
       expire_date: form.expire_date,
       status: form.status,
-      remark: form.remark
+      remark: form.remark,
+      updateTime: new Date().toISOString()
     }
 
-    await updateMember(props.member?.userId, params)
-    ElMessage.success('会籍信息更新成功')
+    // 存储到本地 localStorage
+    const storageKey = 'membership_updates'
+    const existingUpdates = JSON.parse(localStorage.getItem(storageKey) || '[]')
+    
+    // 检查是否已存在该会员的更新记录，如果存在则更新，否则添加
+    const existingIndex = existingUpdates.findIndex(
+      (item: any) => item.userId === props.member?.userId
+    )
+    
+    if (existingIndex >= 0) {
+      existingUpdates[existingIndex] = updateData
+    } else {
+      existingUpdates.push(updateData)
+    }
+    
+    localStorage.setItem(storageKey, JSON.stringify(existingUpdates))
+    
+    ElMessage.success('会籍信息已保存到本地')
     
     emit('success')
     handleClose()
   } catch (error) {
-    console.error('更新会籍信息失败:', error)
-    ElMessage.error('更新会籍信息失败')
+    console.error('保存会籍信息失败:', error)
+    ElMessage.error('保存会籍信息失败')
   } finally {
     loading.value = false
   }

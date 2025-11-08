@@ -28,6 +28,7 @@ export interface CoachStats {
 export interface Coach {
   id: number
   userId: string
+  username?: string
   name: string
   phone: string
   email: string

@@ -34,6 +34,10 @@ const props = defineProps({
   data: {
     type: Array,
     default: () => []
+  },
+  totalMembers: {
+    type: Number,
+    default: 0
   }
 })
 
@@ -119,7 +123,7 @@ const chartOption = computed(() => {
       {
         name: '总会员数',
         type: 'line',
-        data: props.data.map(item => item.totalMembers),
+        data: [props.totalMembers],
         smooth: true,
         lineStyle: {
           color: '#10b981'

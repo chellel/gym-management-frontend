@@ -45,7 +45,6 @@ export const checkinService = {
       });
 
       if (result.code === 0) {
-        // 只返回已签到的记录
         return result.rows
           .filter((booking) => booking.checkinTime)
           .map((booking) => ({

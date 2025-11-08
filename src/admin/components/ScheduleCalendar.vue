@@ -7,14 +7,14 @@
           <el-button-group v-if="showViewToggle">
             <el-button 
               :type="viewMode === 'week' ? 'primary' : 'default'"
-              @click="viewMode = 'week'"
+              @click="handleViewModeChange('week')"
               size="small"
             >
               周视图
             </el-button>
             <el-button 
               :type="viewMode === 'month' ? 'primary' : 'default'"
-              @click="viewMode = 'month'"
+              @click="handleViewModeChange('month')"
               size="small"
             >
               月视图
@@ -150,8 +150,9 @@ const props = withDefaults(defineProps<{
 // Emits
 const emit = defineEmits<{
   'schedule-click': [schedule: Schedule]
-  'date-change': [date: Date]
+  'date-change': [date: Date, viewMode: 'week' | 'month']
   'refresh': []
+  'view-mode-change': [viewMode: 'week' | 'month', date: Date]
 }>()
 
 // 响应式数据
@@ -163,12 +164,18 @@ const currentMonth = ref(new Date())
 const weekDays = computed(() => {
   const days = []
   // 使用 dayjs 获取本周的开始日期（星期日）
-  const startOfWeek = dayjs(currentWeek.value).startOf('week')
+  // 通过减去当前日期的星期几来获取本周的星期日
+  const currentDate = dayjs(currentWeek.value)
+  const dayOfWeek = currentDate.day() // 0=周日, 1=周一, ..., 6=周六
+  const startOfWeek = currentDate.subtract(dayOfWeek, 'day')
 
+  const weekDayNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+  
   for (let i = 0; i < 7; i++) {
     const day = startOfWeek.add(i, 'day')
+    const actualDayOfWeek = day.day() // 获取实际的星期几
     days.push({
-      name: ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][i],
+      name: weekDayNames[actualDayOfWeek],
       date: day.format('YYYY-MM-DD')
     })
   }
@@ -179,7 +186,8 @@ const monthDays = computed(() => {
   const days = []
   // 使用 dayjs 获取月份的第一天和该周的开始日期（星期日）
   const firstDay = dayjs(currentMonth.value).startOf('month')
-  const startDate = firstDay.startOf('week')
+  const dayOfWeek = firstDay.day() // 0=周日, 1=周一, ..., 6=周六
+  const startDate = firstDay.subtract(dayOfWeek, 'day')
   
   for (let i = 0; i < 42; i++) {
     const day = startDate.add(i, 'day')
@@ -194,8 +202,10 @@ const monthDays = computed(() => {
 
 // 工具函数
 const formatWeekRange = (date: Date) => {
-  // 使用 dayjs 获取本周的开始和结束日期
-  const startOfWeek = dayjs(date).startOf('week')
+  // 使用 dayjs 获取本周的开始和结束日期（星期日到星期六）
+  const currentDate = dayjs(date)
+  const dayOfWeek = currentDate.day() // 0=周日, 1=周一, ..., 6=周六
+  const startOfWeek = currentDate.subtract(dayOfWeek, 'day')
   const endOfWeek = startOfWeek.add(6, 'day')
   return `${formatDate(startOfWeek.toDate())} - ${formatDate(endOfWeek.toDate())}`
 }
@@ -239,29 +249,37 @@ const refreshSchedule = () => {
   emit('refresh')
 }
 
+// 处理视图模式切换
+const handleViewModeChange = (mode: 'week' | 'month') => {
+  viewMode.value = mode
+  const currentDate = mode === 'week' ? currentWeek.value : currentMonth.value
+  emit('view-mode-change', mode, currentDate)
+  emit('date-change', currentDate, mode)
+}
+
 // 周/月导航
 const previousWeek = () => {
   const newWeek = dayjs(currentWeek.value).subtract(1, 'week').toDate()
   currentWeek.value = newWeek
-  emit('date-change', newWeek)
+  emit('date-change', newWeek, 'week')
 }
 
 const nextWeek = () => {
   const newWeek = dayjs(currentWeek.value).add(1, 'week').toDate()
   currentWeek.value = newWeek
-  emit('date-change', newWeek)
+  emit('date-change', newWeek, 'week')
 }
 
 const previousMonth = () => {
   const newMonth = dayjs(currentMonth.value).subtract(1, 'month').toDate()
   currentMonth.value = newMonth
-  emit('date-change', newMonth)
+  emit('date-change', newMonth, 'month')
 }
 
 const nextMonth = () => {
   const newMonth = dayjs(currentMonth.value).add(1, 'month').toDate()
   currentMonth.value = newMonth
-  emit('date-change', newMonth)
+  emit('date-change', newMonth, 'month')
 }
 </script>
 

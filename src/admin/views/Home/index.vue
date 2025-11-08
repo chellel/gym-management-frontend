@@ -41,7 +41,7 @@
           </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200 cursor-pointer" @click="navigateTo('classes')">
+        <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200 cursor-pointer" @click="navigateTo('schedules')">
           <div class="flex items-center">
             <div class="flex-shrink-0">
               <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -51,8 +51,8 @@
               </div>
             </div>
             <div class="ml-4">
-              <h3 class="text-lg font-semibold text-gray-900">课程管理</h3>
-              <p class="text-gray-600 text-sm">安排和管理课程</p>
+              <h3 class="text-lg font-semibold text-gray-900">排班管理</h3>
+              <p class="text-gray-600 text-sm">安排和管理排班</p>
             </div>
           </div>
         </div>
@@ -94,7 +94,7 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- 今日统计 -->
         <div class="bg-white rounded-lg shadow-md p-6">
-          <h3 class="text-lg font-semibold text-gray-900 mb-4">今日统计</h3>
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">数据统计</h3>
           <div class="space-y-4">
             <div class="flex justify-between items-center">
               <span class="text-gray-600">新增会员</span>
@@ -106,7 +106,7 @@
             </div>
             <div class="flex justify-between items-center">
               <span class="text-gray-600">在馆人数</span>
-              <span class="text-2xl font-bold text-purple-600">156</span>
+              <span class="text-2xl font-bold text-purple-600">6</span>
             </div>
           </div>
         </div>
@@ -160,8 +160,8 @@ export default {
     const navigateTo = (section) => {
       const routes = {
         members: '/admin/member',
-        classes: '/admin/classes',
         trainers: '/admin/schedules',
+        schedules: '/admin/schedules',
         reports: '/admin/reports'
       }
       

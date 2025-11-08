@@ -54,6 +54,7 @@
               placeholder="全部教练"
               @change="handleFilterChange"
               class="w-full"
+              filterable
             >
               <el-option label="全部教练" value="" />
               <el-option
